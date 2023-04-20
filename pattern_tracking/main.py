@@ -52,15 +52,18 @@ def run():
 
     # -- live display loop
     ret, live_frame = live_feed.read()
+    # required to merge mask onto current frame
+    live_frame = cv.cvtColor(live_frame, cv.COLOR_RGB2RGBA)
     key_pressed = 0
 
     while ret and live_feed.isOpened() and key_pressed != ord('q'):
-        # cv.imshow(WINDOW_NAME, live_frame)
-        cv.imshow(WINDOW_NAME, drawing_mask)
+        live_frame[:, :, :] = drawing_mask
+        cv.imshow(WINDOW_NAME, live_frame)
+        # cv.imshow(WINDOW_NAME, drawing_mask)
         key_pressed = cv.waitKey(1)
         ret, live_frame = live_feed.read()
+        live_frame = cv.cvtColor(live_frame, cv.COLOR_RGB2RGBA)
 
-    cv.imwrite("mask.png", drawing_mask)
     live_feed.release()
     cv.destroyAllWindows()
 
