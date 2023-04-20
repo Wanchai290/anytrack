@@ -1,6 +1,8 @@
 import cv2 as cv
 import numpy as np
 
+from pattern_tracking.utils import alpha_blend
+
 WINDOW_NAME = 'window'
 
 # -- Global variables definition
@@ -57,9 +59,8 @@ def run():
     key_pressed = 0
 
     while ret and live_feed.isOpened() and key_pressed != ord('q'):
-        live_frame[:, :, :] = drawing_mask
-        cv.imshow(WINDOW_NAME, live_frame)
-        # cv.imshow(WINDOW_NAME, drawing_mask)
+        frame = alpha_blend(live_frame, drawing_mask)
+        cv.imshow(WINDOW_NAME, frame)
         key_pressed = cv.waitKey(1)
         ret, live_frame = live_feed.read()
         live_frame = cv.cvtColor(live_frame, cv.COLOR_RGB2RGBA)
