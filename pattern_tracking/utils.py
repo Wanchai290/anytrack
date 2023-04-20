@@ -18,7 +18,8 @@ def alpha_blend(bg: cv.Mat, fg: cv.Mat) -> np.ndarray:
 
     # alpha channels are normalized to a 0..1 range
     # required because of the alpha blending formula
-    # see
+    # see https://en.wikipedia.org/wiki/Alpha_compositing#Description
+    # ("over" alpha compositing formula)
     try:
         bg_alpha = bg[..., 3] / 255.0
         fg_alpha = fg[..., 3] / 255.0
@@ -31,7 +32,7 @@ def alpha_blend(bg: cv.Mat, fg: cv.Mat) -> np.ndarray:
     fg_rgb = fg[..., :3]
 
     # computing resulting channels
-    result_alpha = bg_alpha + fg_alpha * (1 - bg_alpha)
+    result_alpha = fg_alpha + bg_alpha * (1 - fg_alpha)
     result_alpha[np.where(result_alpha == 0)] = 1  # avoid div by zero
 
     # note: broadcasting of the alpha channels is required here, so that numpy can
@@ -39,9 +40,9 @@ def alpha_blend(bg: cv.Mat, fg: cv.Mat) -> np.ndarray:
     # you can learn more about broadcasting numpy arrays on the official docs
     # https://numpy.org/doc/stable/user/basics.broadcasting.html
     result_rgb = 1.0 * (
-            bg_rgb * bg_alpha[:, :, np.newaxis]
-            + fg_rgb * fg_alpha[:, :, np.newaxis]
-            * (1 - bg_alpha[:, :, np.newaxis])
+            fg_rgb * fg_alpha[:, :, np.newaxis]
+            + bg_rgb * bg_alpha[:, :, np.newaxis]
+            * (1 - fg_alpha[:, :, np.newaxis])
         ) / result_alpha[:, :, np.newaxis]
 
     # merging into result image
@@ -55,7 +56,7 @@ if __name__ == '__main__':
     fore = cv.imread('assets/KTIfd.png', cv.IMREAD_UNCHANGED)
     back = cv.imread('assets/Tyxgv.png', cv.IMREAD_UNCHANGED)
 
-    res = alpha_blend(back, fore)
+    res = alpha_blend(fg=back, bg=fore)
     cv.imshow('', res)
     cv.waitKey(-1)
     cv.destroyAllWindows()
