@@ -29,6 +29,7 @@ def alpha_blend(src1: cv.Mat, src2: cv.Mat) -> np.ndarray:
 
     # computing resulting channels
     result_alpha = src1_alpha + src2_alpha * (1 - src1_alpha)
+    result_alpha[np.where(result_alpha == 0)] = 1  # avoid div by zero
 
     # note: broadcasting of the alpha channels is required here, so that numpy can
     # automatically multiply the rgb array and alpha array
@@ -42,10 +43,6 @@ def alpha_blend(src1: cv.Mat, src2: cv.Mat) -> np.ndarray:
 
     # merging into result image
     # result should always be an RGBA image here
-    # result = np.zeros((*result_rgb.shape[:2], 4))
-    # result[:, :, :3] = result_rgb
-    # result[:, :, 3] = result_alpha
-
     result = np.dstack((result_rgb, result_alpha*255)).astype(np.uint8)
 
     return result
