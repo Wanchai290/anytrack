@@ -11,6 +11,11 @@ WINDOW_NAME = 'Live template matching prototype'
 # of the region of interest
 ROI_WIDTH, ROI_HEIGHT = 50, 50
 
+# When detecting a template in the current live feed,
+# if the detection is not at least above the given
+# number, then we should not apply a rectangle
+DETECTION_THRESHOLD = 0.9
+
 # -- Global variables definition
 
 # These two are used to store the cv.VideoCapture object
@@ -73,13 +78,15 @@ def highlight_roi(image: cv.Mat | np.ndarray, region: np.ndarray) -> np.ndarray:
     )
 
     # fetch best match possibility location
-    _, _, _, top_left_max_loc = cv.minMaxLoc(confidence_map)
+    _, max_val, _, top_left_max_loc = cv.minMaxLoc(confidence_map)
+    print(max_val)
     bottom_right_max_loc = (top_left_max_loc[0] + region.shape[0], top_left_max_loc[1] + region.shape[1])
 
     # apply it on the drawing mask, which is reset right before
     global drawing_mask
     drawing_mask = np.zeros((*live_frame.shape[:2], 4), dtype=np.uint8)
-    cv.rectangle(drawing_mask, top_left_max_loc, bottom_right_max_loc, (255, 255, 255, 255), 1)
+    if max_val >= DETECTION_THRESHOLD:
+        cv.rectangle(drawing_mask, top_left_max_loc, bottom_right_max_loc, (255, 255, 255, 255), 1)
 
     return drawing_mask
 
