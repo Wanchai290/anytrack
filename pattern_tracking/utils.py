@@ -43,20 +43,37 @@ def alpha_blend(bg: cv.Mat, fg: cv.Mat) -> np.ndarray:
             fg_rgb * fg_alpha[:, :, np.newaxis]
             + bg_rgb * bg_alpha[:, :, np.newaxis]
             * (1 - fg_alpha[:, :, np.newaxis])
-        ) / result_alpha[:, :, np.newaxis]
+    ) / result_alpha[:, :, np.newaxis]
 
     # merging into result image
     # result should always be an RGBA image here
-    result = np.dstack((result_rgb, result_alpha*255)).astype(np.uint8)
+    result = np.dstack((result_rgb, result_alpha * 255)).astype(np.uint8)
 
     return result
 
 
-if __name__ == '__main__':
-    fore = cv.imread('assets/KTIfd.png', cv.IMREAD_UNCHANGED)
-    back = cv.imread('assets/Tyxgv.png', cv.IMREAD_UNCHANGED)
+def get_roi(image: np.ndarray, x: int, w: int, y: int, h: int) -> np.ndarray:
+    """
+    Selects and returns a specific ROI (Region Of Interest) from a given
+    image. The top-left corner of the ROI should be specified by parameters
+    x and y.
+    Note that the returned ROI will be selected with the lower and upper bounds
+    included (thus, between x and x+w+1 for the x coordinates)
 
-    res = alpha_blend(fg=back, bg=fore)
-    cv.imshow('', res)
-    cv.waitKey(-1)
-    cv.destroyAllWindows()
+    :param image: The image to extract the ROI from
+    :param x: X coordinate of the top-left corner of the ROI
+    :param w: Width of the ROI, starting from the top-left corner
+    :param y: Y coordinate of the top-left corner of the ROI
+    :param h: Height of the ROI, starting from the top-left corner
+    :return: A copy of the image, cropped to be the ROI
+    """
+    if x < 0:
+        raise IndexError("x coordinate cannot be negative")
+    if y < 0:
+        raise IndexError("y coordinate cannot be negative")
+    if x + w > image.shape[1]:
+        raise IndexError("x coordinates ROI is out of bounds !")
+    if y + h + 1 > image.shape[0]:
+        raise IndexError("y coordinates of ROI is out of bounds !")
+
+    return image[y: y+h+1, x: x+w+1]
