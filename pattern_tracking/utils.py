@@ -4,7 +4,7 @@ import cv2 as cv
 import numpy as np
 
 
-def alpha_blend(bg: cv.Mat, fg: cv.Mat) -> np.ndarray:
+def alpha_blend(bg: cv.Mat | np.ndarray, fg: cv.Mat | np.ndarray) -> np.ndarray:
     """
     Merges two RGBA images together, by applying the image
     'fg' on top of 'bg'
