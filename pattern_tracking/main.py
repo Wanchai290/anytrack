@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 
-from pattern_tracking.utils import alpha_blend, get_roi
+from pattern_tracking.utils import alpha_blend, get_roi, middle_of
 from cardinal_directions import Direction
 
 # -- Constants
@@ -15,7 +15,7 @@ ROI_WIDTH, ROI_HEIGHT = 50, 50
 # When detecting a template in the current live feed,
 # if the detection is not at least above the given
 # number, then we should not apply a rectangle
-DETECTION_THRESHOLD = 0.9
+DETECTION_THRESHOLD = 0.99
 
 # -- Global variables definition
 # These two are used to store the cv.VideoCapture object
@@ -30,15 +30,17 @@ drawing_mask: np.ndarray
 # The currently selected ROI that is defined
 # by the user to track and display in real-time
 roi: np.ndarray = None
+roi_xwyh: tuple[int, int, int, int] = (-1, -1, -1, -1)
 
 
 def mouse_click_handler(event, x, y, flags, param):
     global live_frame
     global drawing_mask
-    global roi
+    global roi, roi_xwyh
     if event == cv.EVENT_LBUTTONDOWN:
         # TODO: be able to place ROI on edges properly
-        roi = get_roi(live_frame, int(x - ROI_WIDTH / 2), ROI_WIDTH, int(y - ROI_HEIGHT / 2), ROI_HEIGHT)
+        roi_xwyh = (int(x - ROI_WIDTH / 2), ROI_WIDTH, int(y - ROI_HEIGHT / 2), ROI_HEIGHT)
+        roi = get_roi(live_frame, *roi_xwyh)
 
 
 def setup(camera_id: int):
@@ -59,7 +61,7 @@ def setup(camera_id: int):
     drawing_mask = cv.cvtColor(drawing_mask, cv.COLOR_RGB2RGBA)
 
 
-def compute_cross_tracking_regions(image: cv.Mat | np.ndarray, region_xwyh: tuple[int, int, int, int], space_away: int) \
+def compute_cross_tracking_regions(image: cv.Mat | np.ndarray, region_xwyh: tuple[int, int, int, int], space_away: int)\
         -> dict[Direction, np.ndarray]:
     """
     With a given image, and the region of interest to find in this image,
@@ -91,10 +93,51 @@ def compute_cross_tracking_regions(image: cv.Mat | np.ndarray, region_xwyh: tupl
     return compass_regions
 
 
-def cross_template_match(image: cv.Mat | np.ndarray, cross_regions: dict[Direction, tuple[int, int, int, int]]) \
-        -> np.ndarray:
+def cross_template_match(image: cv.Mat | np.ndarray, region_xwyh: tuple[int, int, int, int],
+                         detection_threshold: float) -> tuple[int, int, int, int]:
+
+    cross_regions: dict[Direction, np.ndarray] = compute_cross_tracking_regions(image, region_xwyh, space_away=20)
+
+    vertical_match, horizontal_match = None, None
     if Direction.NORTH in cross_regions.keys() and Direction.SOUTH in cross_regions.keys():
-        cmap = cv.matchTemplate(image, cross_regions.get(Direction.NORTH))
+        vertical_match = two_regions_matching(image,
+                                              cross_regions.get(Direction.NORTH),
+                                              cross_regions.get(Direction.SOUTH),
+                                              detection_threshold)
+
+    if Direction.EAST in cross_regions.keys() and Direction.WEST in cross_regions.keys():
+        horizontal_match = two_regions_matching(image,
+                                                cross_regions.get(Direction.EAST),
+                                                cross_regions.get(Direction.WEST),
+                                                detection_threshold)
+
+    # todo: refactor
+    rx, rw, ry, rh = region_xwyh
+
+    if vertical_match is None:
+        if horizontal_match is None:
+            x, w, y, h = -1, 0, -1, 0
+        else:
+            x, y = horizontal_match
+
+    else:
+        if horizontal_match is None:
+            x, y = vertical_match
+
+        else:
+            # average of both regions
+            x, y = middle_of(horizontal_match, vertical_match)
+
+    return x, rw, y, rh
+
+
+def two_regions_matching(base: np.ndarray, r1: np.ndarray, r2: np.ndarray, detection_threshold: float):
+    reg_corners_r1 = find_template_in_image(base, r1, detection_threshold)
+    mid_r1 = middle_of(*reg_corners_r1)
+    reg_corners_r2 = find_template_in_image(base, r2, detection_threshold)
+    mid_r2 = middle_of(*reg_corners_r2)
+
+    return middle_of(mid_r1, mid_r2)
 
 
 def find_template_in_image(image: cv.Mat | np.ndarray, region: np.ndarray, detection_threshold: float)\
@@ -123,25 +166,24 @@ def find_template_in_image(image: cv.Mat | np.ndarray, region: np.ndarray, detec
     return region_matched_location
 
 
-def update_drawing_mask(drawing_sheet: cv.Mat | np.ndarray, corners: tuple[tuple[int, int], tuple[int, int]]) \
+def update_drawing_mask(corners: tuple[tuple[int, int], tuple[int, int]]) \
         -> np.ndarray:
     """
     Resets the drawing mask, and applies a rectangle at the given xy tuple location
     :param corners: Tuple of the top-left coordinates and bottom-right
-    :param drawing_sheet: The image to draw on
     :return: The modified drawing mask
     """
-    # apply it on the drawing mask, which is reset right before
     drawing_sheet = np.zeros((*live_frame.shape[:2], 4), dtype=np.uint8)
-    cv.rectangle(drawing_sheet, corners[0], corners[1], (255, 255, 255, 255), 1)
-
+    if corners != (-1, -1):
+        # apply it on the drawing mask, which is reset right before
+        cv.rectangle(drawing_sheet, corners[0], corners[1], (255, 255, 255, 255), 1)
     return drawing_sheet
 
 
 def run():
     global live_feed, live_frame
     global drawing_mask
-    global roi
+    global roi, roi_xwyh
 
     ret, live_frame = live_feed.read()
 
@@ -151,10 +193,16 @@ def run():
 
     while ret and live_feed.isOpened() and key_pressed != ord('q'):
 
+        frame = live_frame
         if roi is not None:
             matched_region = find_template_in_image(live_frame, roi, DETECTION_THRESHOLD)
-            drawing_mask = update_drawing_mask(drawing_mask, matched_region)
-        frame = alpha_blend(live_frame, drawing_mask)
+            # matched_region = cross_template_match(live_frame, roi_xwyh, DETECTION_THRESHOLD)
+            # region_rect = (
+            #     (matched_region[0], matched_region[2]),
+            #     (sum(matched_region[:2]), sum(matched_region[2:4]))
+            # )
+            drawing_mask = update_drawing_mask(matched_region)
+            frame = alpha_blend(live_frame, drawing_mask)
 
         cv.imshow(WINDOW_NAME, frame)
         key_pressed = cv.waitKey(1)

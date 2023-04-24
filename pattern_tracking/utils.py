@@ -77,3 +77,10 @@ def get_roi(image: np.ndarray, x: int, w: int, y: int, h: int) -> np.ndarray:
         raise IndexError("y coordinates of ROI is out of bounds !")
 
     return image[y: y+h+1, x: x+w+1]
+
+
+def middle_of(p1: tuple[int, int], p2: tuple[int, int])\
+        -> tuple[int, int]:
+    return int((p1[0] + p2[0]) / 2), int((p1[1] + p2[1]) / 2)
+
+
