@@ -61,85 +61,6 @@ def setup(camera_id: int):
     drawing_mask = cv.cvtColor(drawing_mask, cv.COLOR_RGB2RGBA)
 
 
-def compute_cross_tracking_regions(image: cv.Mat | np.ndarray, region_xwyh: tuple[int, int, int, int], space_away: int)\
-        -> dict[Direction, np.ndarray]:
-    """
-    With a given image, and the region of interest to find in this image,
-    computes up to 4 additional regions that will serve to track the original
-    given region.
-    :param image: The base image
-    :param region_xwyh: The top-left coordinates, width and height of the ROI in the base image
-                        Order is as follows : (x, w, y, h)
-    :param space_away: The number of pixels that should separate the
-                       additional regions from the original one
-    :return: Up to 4 regions to track, in the four cardinal directions (North, East, South, West)
-    """
-    compass_regions: dict[Direction, np.ndarray] = {}
-    rx, rw, ry, rh = region_xwyh
-
-    dir_region_xwyh: dict[Direction, tuple[int, int, int, int]] = {
-        Direction.NORTH: (rx, rw, ry - space_away, rh),
-        Direction.EAST: (rx + space_away, rw, ry, rh),
-        Direction.SOUTH: (rx, rw, ry + space_away, rh),
-        Direction.WEST: (rx - space_away, rw, ry, rh)
-    }
-
-    for direction, xwyh in dir_region_xwyh.items():
-        try:
-            compass_regions[direction] = get_roi(image, *xwyh)
-        except IndexError:
-            continue
-
-    return compass_regions
-
-
-def cross_template_match(image: cv.Mat | np.ndarray, region_xwyh: tuple[int, int, int, int],
-                         detection_threshold: float) -> tuple[int, int, int, int]:
-
-    cross_regions: dict[Direction, np.ndarray] = compute_cross_tracking_regions(image, region_xwyh, space_away=20)
-
-    vertical_match, horizontal_match = None, None
-    if Direction.NORTH in cross_regions.keys() and Direction.SOUTH in cross_regions.keys():
-        vertical_match = two_regions_matching(image,
-                                              cross_regions.get(Direction.NORTH),
-                                              cross_regions.get(Direction.SOUTH),
-                                              detection_threshold)
-
-    if Direction.EAST in cross_regions.keys() and Direction.WEST in cross_regions.keys():
-        horizontal_match = two_regions_matching(image,
-                                                cross_regions.get(Direction.EAST),
-                                                cross_regions.get(Direction.WEST),
-                                                detection_threshold)
-
-    # todo: refactor
-    rx, rw, ry, rh = region_xwyh
-
-    if vertical_match is None:
-        if horizontal_match is None:
-            x, w, y, h = -1, 0, -1, 0
-        else:
-            x, y = horizontal_match
-
-    else:
-        if horizontal_match is None:
-            x, y = vertical_match
-
-        else:
-            # average of both regions
-            x, y = middle_of(horizontal_match, vertical_match)
-
-    return x, rw, y, rh
-
-
-def two_regions_matching(base: np.ndarray, r1: np.ndarray, r2: np.ndarray, detection_threshold: float):
-    reg_corners_r1 = find_template_in_image(base, r1, detection_threshold)
-    mid_r1 = middle_of(*reg_corners_r1)
-    reg_corners_r2 = find_template_in_image(base, r2, detection_threshold)
-    mid_r2 = middle_of(*reg_corners_r2)
-
-    return middle_of(mid_r1, mid_r2)
-
-
 def find_template_in_image(image: cv.Mat | np.ndarray, region: np.ndarray, detection_threshold: float)\
         -> tuple[tuple[int, int], tuple[int, int]]:
     """
@@ -196,11 +117,6 @@ def run():
         frame = live_frame
         if roi is not None:
             matched_region = find_template_in_image(live_frame, roi, DETECTION_THRESHOLD)
-            # matched_region = cross_template_match(live_frame, roi_xwyh, DETECTION_THRESHOLD)
-            # region_rect = (
-            #     (matched_region[0], matched_region[2]),
-            #     (sum(matched_region[:2]), sum(matched_region[2:4]))
-            # )
             drawing_mask = update_drawing_mask(matched_region)
             frame = alpha_blend(live_frame, drawing_mask)
 
