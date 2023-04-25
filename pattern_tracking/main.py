@@ -10,7 +10,7 @@ WINDOW_NAME = 'Live template matching prototype'
 
 # Number of pixels defining the width and height
 # of the region of interest
-ROI_WIDTH, ROI_HEIGHT = 50, 50
+POI_WIDTH, POI_HEIGHT = 50, 50
 
 # When detecting a template in the current live feed,
 # if the detection is not at least above the given
@@ -27,20 +27,49 @@ live_frame: np.ndarray
 # It has the same shape as the video, but with the alpha channel added
 drawing_mask: np.ndarray
 
-# The currently selected ROI that is defined
+# The currently selected POI that is defined
 # by the user to track and display in real-time
-roi: np.ndarray = None
-roi_xwyh: tuple[int, int, int, int] = (-1, -1, -1, -1)
+poi: np.ndarray = None
+poi_xwyh: tuple[int, int, int, int] = (-1, -1, -1, -1)
+
+# Remembers the region in which to find a specific ROI
+# This is to avoid searching in the whole image for the template
+region_limit_xwyh = (0, 0, 0, 0)
+region_limit_start, region_limit_end = (0, 0), (0, 0)
+
+# Used to handle drawing rectangles on the screen,
+# and to highlight the specified ROI
+is_drawing: bool = False
 
 
 def mouse_click_handler(event, x, y, flags, param):
     global live_frame
     global drawing_mask
-    global roi, roi_xwyh
+    global poi, poi_xwyh
+    global region_limit_xwyh, region_limit_start, region_limit_end
+    global is_drawing
+
     if event == cv.EVENT_LBUTTONDOWN:
-        # TODO: be able to place ROI on edges properly
-        roi_xwyh = (int(x - ROI_WIDTH / 2), ROI_WIDTH, int(y - ROI_HEIGHT / 2), ROI_HEIGHT)
-        roi = get_roi(live_frame, *roi_xwyh)
+        # TODO: be able to place POI on edges properly
+        poi_xwyh = (int(x - POI_WIDTH / 2), POI_WIDTH, int(y - POI_HEIGHT / 2), POI_HEIGHT)
+        poi = get_roi(live_frame, *poi_xwyh)
+
+    elif event == cv.EVENT_RBUTTONDOWN:
+        is_drawing = True
+        region_limit_start = (x, y)
+        region_limit_end = (x, y)
+
+    elif event == cv.EVENT_MOUSEMOVE and is_drawing:
+        region_limit_end = (x, y)
+    elif event == cv.EVENT_RBUTTONUP:
+        is_drawing = False
+        rx, rw, ry, rh = \
+            min(region_limit_start[0], region_limit_end[0]), \
+            abs(region_limit_end[0] - region_limit_start[0]), \
+            min(region_limit_start[1], region_limit_end[1]), \
+            abs(region_limit_end[1] - region_limit_start[1])
+
+        region_limit_xwyh = rx, rw, ry, rh
 
 
 def setup(camera_id: int):
@@ -52,7 +81,7 @@ def setup(camera_id: int):
     if not live_feed.isOpened() or not ret:
         raise IOError("Couldn't open camera feed !")
 
-    cv.namedWindow(WINDOW_NAME)
+    cv.namedWindow(WINDOW_NAME, cv.WINDOW_GUI_NORMAL)  # WINDOW_GUI_NORMAL to disable default right-click dropdown menus
     cv.setWindowProperty(WINDOW_NAME, cv.WND_PROP_OPENGL, 1)  # enable OpenGL
     cv.setMouseCallback(WINDOW_NAME, mouse_click_handler)
 
@@ -61,25 +90,26 @@ def setup(camera_id: int):
     drawing_mask = cv.cvtColor(drawing_mask, cv.COLOR_RGB2RGBA)
 
 
-def find_template_in_image(image: cv.Mat | np.ndarray, region: np.ndarray, detection_threshold: float)\
+def find_template_in_image(image: cv.Mat | np.ndarray, roi: np.ndarray, detection_threshold: float) \
         -> tuple[tuple[int, int], tuple[int, int]]:
     """
     In a given image, computes the possible locations of the
     given region (template) to find, and returns the location
     :param image: The base image, in which to find the ROI.
-    :param region: The region of interest to find in the image
+    :param roi: The region of interest to find in the image
     :param detection_threshold: Minimum value of the match correlation, to consider the matched region as valid
     :return: The xy location of the region in the image, or (-1, -1) if no match has been found
     """
     region_matched_location = (-1, -1)
     confidence_map = cv.matchTemplate(
-        image, region,
+        image, roi,
         cv.TM_CCORR_NORMED
     )
 
     # fetch best match possibility location
     _, max_val, _, top_left_max_loc = cv.minMaxLoc(confidence_map)
-    bottom_right_max_loc: tuple[int, int] = (top_left_max_loc[0] + region.shape[0], top_left_max_loc[1] + region.shape[1])
+    bottom_right_max_loc: tuple[int, int] = (
+        top_left_max_loc[0] + roi.shape[0], top_left_max_loc[1] + roi.shape[1])
 
     if max_val >= detection_threshold:
         region_matched_location = (top_left_max_loc, bottom_right_max_loc)
@@ -97,14 +127,15 @@ def update_drawing_mask(corners: tuple[tuple[int, int], tuple[int, int]]) \
     drawing_sheet = np.zeros((*live_frame.shape[:2], 4), dtype=np.uint8)
     if corners != (-1, -1):
         # apply it on the drawing mask, which is reset right before
-        cv.rectangle(drawing_sheet, corners[0], corners[1], (255, 255, 255, 255), 1)
+        cv.rectangle(drawing_sheet, corners[0], corners[1], (255, 255, 255, 255), 2)
     return drawing_sheet
 
 
 def run():
     global live_feed, live_frame
     global drawing_mask
-    global roi, roi_xwyh
+    global poi, poi_xwyh
+    global region_limit_xwyh, region_limit_start, region_limit_end
 
     ret, live_frame = live_feed.read()
 
@@ -115,9 +146,38 @@ def run():
     while ret and live_feed.isOpened() and key_pressed != ord('q'):
 
         frame = live_frame
-        if roi is not None:
-            matched_region = find_template_in_image(live_frame, roi, DETECTION_THRESHOLD)
+        # draw current region bounds selected, ie where to find the image to track
+        region_limit: np.ndarray = None
+        if region_limit_xwyh != (0, 0, 0, 0):
+            cv.rectangle(frame, region_limit_start, region_limit_end, (0, 255, 0, 255), 2)
+            region_limit = get_roi(live_frame, *region_limit_xwyh)
+
+        # draw currently selected poi, ie the part of the image to track
+        if poi is not None:
+            offset: tuple[int, int] = (0, 0)
+
+            if region_limit is None:
+                matched_region = find_template_in_image(live_frame, poi, DETECTION_THRESHOLD)
+
+            else:
+                matched_region = find_template_in_image(region_limit, poi, DETECTION_THRESHOLD)
+                offset = region_limit_start
+
+            # offset the found region
+            if matched_region != (-1, -1):
+                matched_region = (
+                    (
+                        matched_region[0][0] + offset[0],
+                        matched_region[0][1] + offset[1]
+                    ),
+                    (
+                        matched_region[1][0] + offset[0],
+                        matched_region[1][1] + offset[1]
+                    )
+                )
+
             drawing_mask = update_drawing_mask(matched_region)
+            # apply drawing mask onto frame
             frame = alpha_blend(live_frame, drawing_mask)
 
         cv.imshow(WINDOW_NAME, frame)
@@ -131,4 +191,5 @@ def run():
 
 if __name__ == '__main__':
     setup(0)
+    # setup("./test_assets/ムービー_49.avi")
     run()
