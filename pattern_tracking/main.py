@@ -23,10 +23,6 @@ DETECTION_THRESHOLD = 0.99
 live_feed: cv.VideoCapture
 live_frame: np.ndarray
 
-# The additional drawing mask is overlapped onto the live video feed
-# It has the same shape as the video, but with the alpha channel added
-drawing_mask: np.ndarray
-
 # The currently selected POI that is defined
 # by the user to track and display in real-time
 poi: np.ndarray = None
@@ -44,7 +40,6 @@ is_drawing: bool = False
 
 def mouse_click_handler(event, x, y, flags, param):
     global live_frame
-    global drawing_mask
     global poi, poi_xwyh
     global region_limit_xwyh, region_limit_start, region_limit_end
     global is_drawing
@@ -85,10 +80,6 @@ def setup(camera_id: int):
     cv.setWindowProperty(WINDOW_NAME, cv.WND_PROP_OPENGL, 1)  # enable OpenGL
     cv.setMouseCallback(WINDOW_NAME, mouse_click_handler)
 
-    global drawing_mask
-    drawing_mask = np.zeros((*live_frame.shape[:2], 4), dtype=np.uint8)
-    drawing_mask = cv.cvtColor(drawing_mask, cv.COLOR_RGB2RGBA)
-
 
 def find_template_in_image(image: cv.Mat | np.ndarray, roi: np.ndarray, detection_threshold: float) \
         -> tuple[tuple[int, int], tuple[int, int]]:
@@ -117,35 +108,18 @@ def find_template_in_image(image: cv.Mat | np.ndarray, roi: np.ndarray, detectio
     return region_matched_location
 
 
-def update_drawing_mask(corners: tuple[tuple[int, int], tuple[int, int]]) \
-        -> np.ndarray:
-    """
-    Resets the drawing mask, and applies a rectangle at the given xy tuple location
-    :param corners: Tuple of the top-left coordinates and bottom-right
-    :return: The modified drawing mask
-    """
-    drawing_sheet = np.zeros((*live_frame.shape[:2], 4), dtype=np.uint8)
-    if corners != (-1, -1):
-        # apply it on the drawing mask, which is reset right before
-        cv.rectangle(drawing_sheet, corners[0], corners[1], (255, 255, 255, 255), 2)
-    return drawing_sheet
-
-
 def run():
     global live_feed, live_frame
-    global drawing_mask
     global poi, poi_xwyh
     global region_limit_xwyh, region_limit_start, region_limit_end
 
     ret, live_frame = live_feed.read()
 
-    # required to merge mask onto current frame
-    live_frame = cv.cvtColor(live_frame, cv.COLOR_RGB2RGBA)
     key_pressed = 0
 
     while ret and live_feed.isOpened() and key_pressed != ord('q'):
 
-        frame = live_frame
+        frame = live_frame  # todo: is diz a copy ?
         # draw current region bounds selected, ie where to find the image to track
         region_limit: np.ndarray = None
         if region_limit_xwyh != (0, 0, 0, 0):
@@ -176,9 +150,7 @@ def run():
                     )
                 )
 
-            drawing_mask = update_drawing_mask(matched_region)
-            # apply drawing mask onto frame
-            frame = alpha_blend(live_frame, drawing_mask)
+                cv.rectangle(frame, *matched_region, (255, 255, 255, 255), 2)
 
         cv.imshow(WINDOW_NAME, frame)
         key_pressed = cv.waitKey(1)
