@@ -1,8 +1,7 @@
 import cv2 as cv
 import numpy as np
 
-from pattern_tracking.utils import alpha_blend, get_roi, middle_of
-from cardinal_directions import Direction
+from pattern_tracking.utils import get_roi, normalize_region
 
 # -- Constants
 # Name of the window displayed to the user
@@ -56,13 +55,19 @@ def mouse_click_handler(event, x, y, flags, param):
 
     elif event == cv.EVENT_MOUSEMOVE and is_drawing:
         region_limit_end = (x, y)
+
     elif event == cv.EVENT_RBUTTONUP:
         is_drawing = False
+
+        # normalize selected region
+        region_limit_start, region_limit_end = normalize_region(region_limit_start, region_limit_end)
+
+        # compute width and height
         rx, rw, ry, rh = \
-            min(region_limit_start[0], region_limit_end[0]), \
-            abs(region_limit_end[0] - region_limit_start[0]), \
-            min(region_limit_start[1], region_limit_end[1]), \
-            abs(region_limit_end[1] - region_limit_start[1])
+            region_limit_start[0], \
+            region_limit_end[0] - region_limit_start[0], \
+            region_limit_start[1], \
+            region_limit_end[1] - region_limit_start[1]
 
         region_limit_xwyh = rx, rw, ry, rh
 
@@ -100,7 +105,8 @@ def find_template_in_image(image: cv.Mat | np.ndarray, roi: np.ndarray, detectio
     # fetch best match possibility location
     _, max_val, _, top_left_max_loc = cv.minMaxLoc(confidence_map)
     bottom_right_max_loc: tuple[int, int] = (
-        top_left_max_loc[0] + roi.shape[0], top_left_max_loc[1] + roi.shape[1])
+        top_left_max_loc[0] + roi.shape[0], top_left_max_loc[1] + roi.shape[1]
+    )
 
     if max_val >= detection_threshold:
         region_matched_location = (top_left_max_loc, bottom_right_max_loc)

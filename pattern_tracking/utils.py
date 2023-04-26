@@ -76,11 +76,37 @@ def get_roi(image: np.ndarray, x: int, w: int, y: int, h: int) -> np.ndarray:
     if y + h + 1 > image.shape[0]:
         raise IndexError("y coordinates of ROI is out of bounds !")
 
-    return image[y: y+h+1, x: x+w+1]
+    return image[y: y + h + 1, x: x + w + 1]
 
 
-def middle_of(p1: tuple[int, int], p2: tuple[int, int])\
+def middle_of(p1: tuple[int, int], p2: tuple[int, int]) \
         -> tuple[int, int]:
     return int((p1[0] + p2[0]) / 2), int((p1[1] + p2[1]) / 2)
 
 
+def normalize_region(pt1: tuple[int, int], pt2: tuple[int, int])\
+        -> tuple[tuple[int, int], tuple[int, int]]:
+    """
+    Creates a valid region by computing the minimum and maximum
+    of each x and y coordinate in each point.
+
+    This is mainly used to get valid region coordinates
+    when it is selected by the user (since the start and end point can be anywhere)
+
+    :param pt1: Tuple of x,y coordinates
+    :param pt2: Tuple of x,y coordinates
+    :return: Two points, where the first point is the most top-left location,
+             and the other point is the most top-right location
+    """
+    x_coords = (pt1[0], pt2[0])
+    y_coords = (pt1[1], pt2[1])
+
+    min_x_index = min(range(len(x_coords)), key=x_coords.__getitem__)
+    min_x = x_coords[min_x_index]
+    max_x = x_coords[(min_x_index + 1) % 2]
+
+    min_y_index = min(range(len(y_coords)), key=y_coords.__getitem__)
+    min_y = y_coords[min_y_index]
+    max_y = y_coords[(min_y_index + 1) % 2]
+
+    return (min_x, min_y), (max_x, max_y)
