@@ -133,7 +133,7 @@ def run():
             region_limit = get_roi(live_frame, *region_limit_xwyh)
 
         # draw currently selected poi, ie the part of the image to track
-        if poi is not None:
+        if poi is not None and not is_drawing:
             offset: tuple[int, int] = (0, 0)
 
             if region_limit is None:
