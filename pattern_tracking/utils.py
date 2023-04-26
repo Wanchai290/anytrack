@@ -84,11 +84,12 @@ def middle_of(p1: tuple[int, int], p2: tuple[int, int]) \
     return int((p1[0] + p2[0]) / 2), int((p1[1] + p2[1]) / 2)
 
 
-def normalize_region(pt1: tuple[int, int], pt2: tuple[int, int])\
-        -> tuple[tuple[int, int], tuple[int, int]]:
+def normalize_region(pt1: np.ndarray, pt2: np.ndarray) -> np.ndarray:
     """
     Creates a valid region by computing the minimum and maximum
     of each x and y coordinate in each point.
+
+    Will consider that pt1 and pt2 are of length 2. No check is done in the function
 
     This is mainly used to get valid region coordinates
     when it is selected by the user (since the start and end point can be anywhere)
@@ -109,4 +110,32 @@ def normalize_region(pt1: tuple[int, int], pt2: tuple[int, int])\
     min_y = y_coords[min_y_index]
     max_y = y_coords[(min_y_index + 1) % 2]
 
-    return (min_x, min_y), (max_x, max_y)
+    return np.array([[min_x, min_y], [max_x, max_y]])
+
+
+def find_template_in_image(image: cv.Mat | np.ndarray, roi: np.ndarray, detection_threshold: float) \
+        -> np.ndarray:
+    """
+    In a given image, computes the possible locations of the
+    given region (template) to find, and returns the location
+    :param image: The base image, in which to find the ROI.
+    :param roi: The region of interest to find in the image
+    :param detection_threshold: Minimum value of the match correlation, to consider the matched region as valid
+    :return: The xy location of the region in the image, or (-1, -1) if no match has been found
+    """
+    region_matched_location = np.array([[-1, -1], [-1, -1]])
+    confidence_map = cv.matchTemplate(
+        image, roi,
+        cv.TM_CCORR_NORMED
+    )
+
+    # fetch best match possibility location
+    _, max_val, _, top_left_max_loc = cv.minMaxLoc(confidence_map)
+    bottom_right_max_loc: tuple[int, int] = (
+        top_left_max_loc[0] + roi.shape[0], top_left_max_loc[1] + roi.shape[1]
+    )
+
+    if max_val >= detection_threshold:
+        region_matched_location[:] = (top_left_max_loc, bottom_right_max_loc)
+
+    return region_matched_location
