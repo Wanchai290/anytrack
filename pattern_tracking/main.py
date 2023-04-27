@@ -104,10 +104,10 @@ def run():
             region_limit = get_roi(live_frame, *region_limit_xwyh)
 
         # draw currently selected poi, ie the part of the image to track
-        if not poi[poi == -1].any() and not is_drawing:
+        if not (poi == -1).any() and not is_drawing:
             offset: np.ndarray = np.array([0, 0])
 
-            if region_limit[region_limit == -1].any():
+            if (region_limit == -1).any():
                 matched_region = find_template_in_image(live_frame, poi, DETECTION_THRESHOLD)
 
             else:
@@ -115,7 +115,7 @@ def run():
                 offset = region_limit_start
 
             # offset the found region & display it
-            if not matched_region[matched_region == -1].any():
+            if not (matched_region == -1).any():
                 matched_region += offset
                 cv.rectangle(frame, *matched_region, (255, 255, 255, 255), 2)
 
