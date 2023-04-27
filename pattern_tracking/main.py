@@ -99,20 +99,22 @@ def run():
         frame = live_frame  # todo: is diz a copy ?
         # draw current region bounds selected, ie where to find the image to track
         region_limit: np.ndarray = np.array([-1])
-        if region_limit_xwyh[region_limit_xwyh == 0].all():
+        if not (region_limit_xwyh == 0).all():
             cv.rectangle(frame, region_limit_start, region_limit_end, (0, 255, 0, 255), 2)
             region_limit = get_roi(live_frame, *region_limit_xwyh)
 
-        # draw currently selected poi, ie the part of the image to track
-        if not (poi == -1).any() and not is_drawing:
+        if (region_limit == -1).any():
+            roi = live_frame
             offset: np.ndarray = np.array([0, 0])
+        else:
+            roi = region_limit
+            offset: np.ndarray = region_limit_start
 
-            if (region_limit == -1).any():
-                matched_region = find_template_in_image(live_frame, poi, DETECTION_THRESHOLD)
+        # draw currently selected poi, ie the part of the image to track
+        if not (poi == -1).any() and not is_drawing \
+                and (np.array(roi.shape) >= np.array(poi.shape)).all():
 
-            else:
-                matched_region = find_template_in_image(region_limit, poi, DETECTION_THRESHOLD)
-                offset = region_limit_start
+            matched_region = find_template_in_image(roi, poi, DETECTION_THRESHOLD)
 
             # offset the found region & display it
             if not (matched_region == -1).any():
