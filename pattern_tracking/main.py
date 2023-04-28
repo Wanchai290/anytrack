@@ -1,7 +1,10 @@
+from queue import Queue
+from threading import Thread, Event
+
 import cv2 as cv
 import numpy as np
 
-from pattern_tracking.utils import get_roi, normalize_region, find_template_in_image
+from pattern_tracking.utils import get_roi, normalize_region, find_template_in_image, video_reader
 
 # -- Constants
 # Name of the window displayed to the user
@@ -17,10 +20,14 @@ POI_WIDTH, POI_HEIGHT = 50, 50
 DETECTION_THRESHOLD = 0.99
 
 # -- Global variables definition
-# These two are used to store the cv.VideoCapture object
-# and the cv.Mat object of the current frame
+# For the video feed and the background video reader thread
+# All other tasks rely on the video reader
 live_feed: cv.VideoCapture
 live_frame: np.ndarray
+frames_queue: Queue[tuple[int, cv.Mat]]
+th_vid_reader: Thread
+halt_work: Event
+
 
 # The currently selected POI that is defined
 # by the user to track and display in real-time
@@ -71,10 +78,14 @@ def mouse_click_handler(event, x, y, flags, param):
         region_limit_xwyh = np.array([rx, rw, ry, rh])
 
 
-def setup(camera_id: int):
-    global live_feed, live_frame
+def setup(camera_id: int, max_frames: int = 300):
+    global live_feed, live_frame, frames_queue, th_vid_reader, halt_work
+
+    frames_queue = Queue(max_frames)
+    halt_work = Event()
 
     live_feed = cv.VideoCapture(camera_id)
+    th_vid_reader = Thread(target=video_reader, args=(live_feed, frames_queue, halt_work))
 
     ret, live_frame = live_feed.read()
     if not live_feed.isOpened() or not ret:
@@ -86,15 +97,15 @@ def setup(camera_id: int):
 
 
 def run():
-    global live_feed, live_frame
+    global live_feed, live_frame, th_vid_reader, halt_work
     global poi, poi_xwyh
     global region_limit_xwyh, region_limit_start, region_limit_end
 
-    ret, live_frame = live_feed.read()
-
+    th_vid_reader.start()
+    _, live_frame = frames_queue.get()
     key_pressed = 0
 
-    while ret and live_feed.isOpened() and key_pressed != ord('q'):
+    while not halt_work.is_set() and key_pressed != ord('q'):
 
         frame = live_frame  # todo: is diz a copy ?
         # draw current region bounds selected, ie where to find the image to track
@@ -103,6 +114,7 @@ def run():
             cv.rectangle(frame, region_limit_start, region_limit_end, (0, 255, 0, 255), 2)
             region_limit = get_roi(live_frame, *region_limit_xwyh)
 
+        # change whether we find the POI in a region, or in the whole frame
         if (region_limit == -1).any():
             roi = live_frame
             offset: np.ndarray = np.array([0, 0])
@@ -114,16 +126,19 @@ def run():
         if not (poi == -1).any() and not is_drawing \
                 and (np.array(roi.shape) >= np.array(poi.shape)).all():
 
-            matched_region = find_template_in_image(roi, poi, DETECTION_THRESHOLD)
+            poi_matched_region = find_template_in_image(roi, poi, DETECTION_THRESHOLD)
 
             # offset the found region & display it
-            if not (matched_region == -1).any():
-                matched_region += offset
-                cv.rectangle(frame, *matched_region, (255, 255, 255, 255), 2)
+            if not (poi_matched_region == -1).any():
+                poi_matched_region += offset
+                cv.rectangle(frame, *poi_matched_region, (255, 255, 255, 255), 2)
 
         cv.imshow(WINDOW_NAME, frame)
         key_pressed = cv.waitKey(1)
-        ret, live_frame = live_feed.read()
+        _, live_frame = frames_queue.get()
+
+    halt_work.set()
+    th_vid_reader.join()
 
     live_feed.release()
     cv.destroyAllWindows()

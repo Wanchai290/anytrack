@@ -1,4 +1,6 @@
 import sys
+from queue import Queue
+from threading import Event
 
 import cv2 as cv
 import numpy as np
@@ -67,16 +69,18 @@ def get_roi(image: np.ndarray, x: int, w: int, y: int, h: int) -> np.ndarray:
     :param h: Height of the ROI, starting from the top-left corner
     :return: A copy of the image, cropped to be the ROI
     """
+    x_edge = x + w
+    y_edge = y + h
     if x < 0:
-        raise IndexError("x coordinate cannot be negative")
+        x = 0
     if y < 0:
-        raise IndexError("y coordinate cannot be negative")
-    if x + w > image.shape[1]:
-        raise IndexError("x coordinates ROI is out of bounds !")
-    if y + h + 1 > image.shape[0]:
-        raise IndexError("y coordinates of ROI is out of bounds !")
+        y = 0
+    if x_edge > image.shape[1]:
+        x_edge = image.shape[1]
+    if y_edge > image.shape[0]:
+        y_edge = image.shape[0]
 
-    return image[y: y + h + 1, x: x + w + 1]
+    return image[y: y_edge, x: x_edge]
 
 
 def middle_of(p1: tuple[int, int], p2: tuple[int, int]) \
@@ -139,3 +143,27 @@ def find_template_in_image(image: cv.Mat | np.ndarray, roi: np.ndarray, detectio
         region_matched_location[:] = (top_left_max_loc, bottom_right_max_loc)
 
     return region_matched_location
+
+
+def video_reader(video: cv.VideoCapture, w_read_frames_q: Queue[tuple[int, cv.Mat]],
+                 halt_event: Event):
+    """
+    Thread-safe video reader
+    Opens a video file (or video capture device feed),
+    then continuously reads the frames of the video and stores them in a queue
+
+    Data format of the items that are written to the queue are as follows :
+    tuple[int, cv.Mat]|None
+    """
+    frame_id = 0
+    while video.isOpened() and not halt_event.is_set():
+        ret, frame = video.read()
+        if not ret:
+            print('Error, did the video end ?')
+            break
+
+        w_read_frames_q.put((frame_id, frame))
+
+        frame_id += 1
+
+    halt_event.set()
