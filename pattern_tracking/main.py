@@ -27,6 +27,7 @@ live_frame: np.ndarray
 frames_queue: Queue[tuple[int, cv.Mat]]
 th_vid_reader: Thread
 halt_work: Event
+is_video: bool
 
 
 # The currently selected POI that is defined
@@ -78,8 +79,10 @@ def mouse_click_handler(event, x, y, flags, param):
         region_limit_xwyh = np.array([rx, rw, ry, rh])
 
 
-def setup(camera_id: int, max_frames: int = 300):
-    global live_feed, live_frame, frames_queue, th_vid_reader, halt_work
+def setup(camera_id: int | str, max_frames: int = 300):
+    global live_feed, live_frame, frames_queue, th_vid_reader, halt_work, is_video
+
+    is_video = type(camera_id) == str
 
     frames_queue = Queue(max_frames)
     halt_work = Event()
@@ -97,7 +100,7 @@ def setup(camera_id: int, max_frames: int = 300):
 
 
 def run():
-    global live_feed, live_frame, th_vid_reader, halt_work
+    global live_feed, live_frame, th_vid_reader, halt_work, is_video
     global poi, poi_xwyh
     global region_limit_xwyh, region_limit_start, region_limit_end
 
@@ -134,7 +137,7 @@ def run():
                 cv.rectangle(frame, *poi_matched_region, (255, 255, 255, 255), 2)
 
         cv.imshow(WINDOW_NAME, frame)
-        key_pressed = cv.waitKey(1)
+        key_pressed = cv.waitKey(60) if is_video else cv.waitKey(1)
         _, live_frame = frames_queue.get()
 
     halt_work.set()
@@ -145,6 +148,6 @@ def run():
 
 
 if __name__ == '__main__':
-    setup(0)
-    # setup("./test_assets/ムービー_49.avi")
+    # setup(0)
+    setup("./test_assets/ムービー_149.avi")
     run()
