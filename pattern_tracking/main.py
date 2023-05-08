@@ -4,20 +4,8 @@ from threading import Thread, Event
 import cv2 as cv
 import numpy as np
 
+from constants import *
 from pattern_tracking.utils import get_roi, normalize_region, find_template_in_image, video_reader
-
-# -- Constants
-# Name of the window displayed to the user
-WINDOW_NAME = 'Live template matching prototype'
-
-# Number of pixels defining the width and height
-# of the region of interest
-POI_WIDTH, POI_HEIGHT = 50, 50
-
-# When detecting a template in the current live feed,
-# if the detection is not at least above the given
-# number, then we should not apply a rectangle
-DETECTION_THRESHOLD = 0.99
 
 # -- Global variables definition
 # For the video feed and the background video reader thread
@@ -46,6 +34,18 @@ region_limit_end: np.ndarray = np.array([0, 0])
 is_drawing: bool = False
 
 
+def region_intersect(r1: np.ndarray | tuple[int, int, int, int],
+                     r2: np.ndarray | tuple[int, int, int, int]):
+    """
+    Checks whether the given regions intersect
+    :param r1: Tuple of descriptive coordinates, in the form x, w, y, h
+    :param r2: Tuple of descriptive coordinates, in the form x, w, y, h
+    :return: True if r1 intersects r2 or the other way around
+    """
+    return r1[0] <= r2[0] <= sum(r1[:2]) \
+        and r1[2] <= r2[2] <= sum(r1[2:4])
+
+
 def mouse_click_handler(event, x, y, flags, param):
     global live_frame
     global poi, poi_xwyh
@@ -54,8 +54,10 @@ def mouse_click_handler(event, x, y, flags, param):
 
     if event == cv.EVENT_LBUTTONDOWN:
         # TODO: be able to place POI on edges properly
-        poi_xwyh[:] = (int(x - POI_WIDTH / 2), POI_WIDTH, int(y - POI_HEIGHT / 2), POI_HEIGHT)
-        poi = get_roi(live_frame, *poi_xwyh)
+        computed_poi_xwyh = (int(x - POI_WIDTH / 2), POI_WIDTH, int(y - POI_HEIGHT / 2), POI_HEIGHT)
+        if (region_limit_xwyh == 0).all() or region_intersect(r1=region_limit_xwyh, r2=computed_poi_xwyh):
+            poi_xwyh[:] = computed_poi_xwyh
+            poi = get_roi(live_frame, *poi_xwyh)
 
     elif event == cv.EVENT_RBUTTONDOWN:
         is_drawing = True
