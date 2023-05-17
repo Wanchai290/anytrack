@@ -38,11 +38,15 @@ class Highlighter:
         """
         self.__frame = frame
 
+        # Update the backing image of the detection region & draw it
         if not self.__detection_region.is_undefined():
             self.__detection_region.set_parent_image(self.__frame)
             self.__draw_detection_region(self.__detection_region.get_coords())
 
-        if not self.__poi.is_undefined():
+        # Find location of POI if it is defined,
+        # and if POI is smaller than region
+        if not self.__poi.is_undefined() \
+                and (np.array(self.__poi.get_image().shape) <= np.array(self.__detection_region.get_image().shape)).all():
             found_poi = utils.find_template_in_image(
                 self.__frame,
                 self.__poi.get_image(),
