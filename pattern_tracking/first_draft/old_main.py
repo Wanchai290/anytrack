@@ -5,7 +5,7 @@ import cv2 as cv
 import numpy as np
 
 from constants import *
-from pattern_tracking.utils import get_roi, normalize_region, find_template_in_image, video_reader
+from pattern_tracking.first_draft.utils import get_roi, normalize_region, find_template_in_image, video_reader
 
 # -- Global variables definition
 # For the video feed and the background video reader thread
@@ -150,6 +150,6 @@ def run():
 
 
 if __name__ == '__main__':
-    # setup(0)
-    setup("./test_assets/ムービー_149.avi")
+    setup(0)
+    # setup("./test_assets/ムービー_149.avi")
     run()
