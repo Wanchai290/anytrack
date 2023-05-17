@@ -103,6 +103,7 @@ def normalize_region(pt1: np.ndarray | tuple[int, int], pt2: np.ndarray | tuple[
     :return: Two points, where the first point is the most top-left location,
              and the other point is the most top-right location
     """
+    # TODO: use fancy math matrix instead of boring assignment
     x_coords = (pt1[0], pt2[0])
     y_coords = (pt1[1], pt2[1])
 

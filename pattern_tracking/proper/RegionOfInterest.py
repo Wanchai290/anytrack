@@ -1,4 +1,3 @@
-import copy
 from enum import Enum
 
 import numpy as np
@@ -169,33 +168,10 @@ class RegionOfInterest:
         when it is selected by the user (since the start and end point can be anywhere)
 
         """
-        # TODO: use fancy math matrix instead of boring assignment
-        # TODO: duplicate of utils.normalize_region()
-        # compute the valid region with the current points of the ROI
-        x_coords = (
-            self.__coords[RegionOfInterest.PointCoords.TOP_LEFT.value][0],
-            self.__coords[RegionOfInterest.PointCoords.BOTTOM_RIGHT.value][0]
-        )
-        y_coords = (
-            self.__coords[RegionOfInterest.PointCoords.TOP_LEFT.value][1],
-            self.__coords[RegionOfInterest.PointCoords.BOTTOM_RIGHT.value][1]
-        )
-
-        min_x_index = min(range(len(x_coords)), key=x_coords.__getitem__)
-        min_x = x_coords[min_x_index]
-        max_x = x_coords[(min_x_index + 1) % 2]
-
-        min_y_index = min(range(len(y_coords)), key=y_coords.__getitem__)
-        min_y = y_coords[min_y_index]
-        max_y = y_coords[(min_y_index + 1) % 2]
+        pt_start, pt_end = utils.normalize_region(*self.__coords)
 
         # update attributes accordingly
-        x, w, y, h = (
-            min_x,
-            max_x - min_x,
-            min_y,
-            max_y - min_y
-        )
+        x, w, y, h = utils.convert_points_to_xwyh(pt_start, pt_end)
 
         self.__update_image(np.array((x, w, y, h)))
 

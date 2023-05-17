@@ -56,41 +56,6 @@ class Highlighter:
                 if self.__detection_region.intersects(self.__poi):
                     self.__draw_poi(found_poi.get_coords())
 
-        # # Just display the frame if there is nothing to track
-        # if self.__detection_region.is_undefined() \
-        #         and self.__poi.is_undefined():
-        #     return
-        #
-        # # change whether we find the POI in a region, or in the whole frame
-        # if self.__detection_region.is_undefined():
-        #     region = self.__frame
-        #     offset: np.ndarray = np.array([0, 0])
-        # else:
-        #     region = self.__detection_region.get_image()
-        #     offset: np.ndarray = self.__detection_region.get_coords(
-        #         RegionOfInterest.PointCoords.TOP_LEFT.value
-        #     )
-        #     # Draw the detection region as well
-        #     self.__draw_detection_region(self.__detection_region)
-        #
-        # # Compute location of POI
-        # if not self.__poi.is_undefined():
-        #     found_poi = utils.find_template_in_image(
-        #         region,
-        #         self.__poi.get_image(),
-        #         constants.DETECTION_THRESHOLD
-        #     )
-        #     # Draw computed POI location on display frame, only if the POI has been found
-        #     # TODO: split these two conditions, avoid useless computing power usage
-        #     if not found_poi.is_undefined():
-        #         # Display POI only in two cases :
-        #         # - if detection region is valid and POI is in detection region
-        #         # - if detection region is not specified
-        #         if (not self.__detection_region.is_undefined() and self.__detection_region.intersects(self.__poi)) \
-        #                 or self.__detection_region.is_undefined():
-        #             found_poi = found_poi.offset(offset)
-        #             self.__draw_poi(found_poi)
-
     def __draw_poi(self, rect: np.ndarray):
         """
         Draws a rectangle highlighting the point of interest
