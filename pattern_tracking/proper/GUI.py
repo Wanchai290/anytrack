@@ -9,18 +9,29 @@ from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
 
 
 class GUI:
+    """
+    User interface class
+    Handles mouse interactions and some logic when redefining
+    the region of interest and point of interest to track
+    """
 
     def __init__(self, window_name: str, video_feed_shape: tuple[int, int], highlighter: Highlighter,
                  halt_event: Event):
 
         self.__WIN_NAME = window_name
+        """The name of the window displayed"""
         self.__key_pressed = ord(" ")
+        """The last key pressed by the user"""
         self.__drawing = False
+        """Defines whether the user is drawing something onto the window"""
 
         self.__current_frame = np.zeros(video_feed_shape)
+        """The currently displayed image to the user"""
 
         self.__HIGHLIGHTER = highlighter
+        """The unique highlighter object"""
         self.__halt = halt_event
+        """Event used to stop all actions of the program"""
 
     def start_gui(self):
         # WINDOW_GUI_NORMAL to disable default right-click dropdown menus

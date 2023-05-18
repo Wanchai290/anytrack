@@ -15,19 +15,38 @@ class RegionOfInterest:
         """Index aliases for the RegionOfInterest class"""
         TOP_LEFT = 0
         BOTTOM_RIGHT = 1
-
-    # -- Constructors
     @staticmethod
     def new(parent_image: np.ndarray, x: int, width: int, y: int, height: int):
+        """
+        Creates a new region of interest with the given parameters.
+        This constructor is only an alias to create the object differently if required
+        See the base constructor for more details
+        """
         return RegionOfInterest(parent_image, (x, width, y, height))
+
+    # -- Constructors
 
     @staticmethod
     def from_points(parent_image: np.ndarray, p1: tuple[int, int], p2: tuple[int, int]):
+        """
+        Alias constructor, that creates a region of interest object using two points.
+        The coordinates will be normalized to a valid area, meaning that we consider both points
+        as on the same diagonal, and to be two corners of the rectangle
+        :param parent_image: The parent image in which the ROI is defined
+        :param p1: Coordinates of a corner of the rectangle
+        :param p2: Coordinates of the opposite corner to p1
+        :return: A new RegionOfInterest object
+        """
+        p1, p2 = utils.normalize_region(p1, p2)
         x, w, y, h = utils.convert_points_to_xwyh(p1, p2)
         return RegionOfInterest.new(parent_image, x, w, y, h)
 
     @staticmethod
     def new_empty():
+        """
+        Returns a new invalid region of interest
+        :return: A invalid region of interest object
+        """
         return RegionOfInterest(np.zeros((0, 0)), (0, 0, 0, 0))
 
     def __init__(self, parent_image: np.ndarray, xwyh: tuple[int, int, int, int] | np.ndarray):
@@ -46,19 +65,36 @@ class RegionOfInterest:
 
         # specify dummy values to initialize variables
         self.__xwyh: list[int, int, int, int] | np.ndarray = [0, 0, 0, 0]
+        """Describe the x, y point coordinates, and width and height of the region"""
         self.__coords: list[np.ndarray] = []
+        """Point coordinates of the top-left and bottom-right corners of the region"""
         self.__x: int = 0
+        """X coordinate of the region"""
         self.__width: int = 0
+        """Width of the region"""
         self.__y: int = 0
+        """Y coordinate of the region"""
         self.__height: int = 0
+        """Height of the region"""
         self.__image: np.ndarray = np.array([])
+        """The image extracted from the parent image, using the coordinates of this region"""
 
+        # avoid region to be outside the parent image
         xwyh = RegionOfInterest.__limit_to_image(parent_image.shape, xwyh)
 
         self.__parent_image = parent_image
         self.__update_image(xwyh)
 
     # -- Methods
+
+    def __update_image(self, xwyh: np.ndarray):
+        self.__xwyh = xwyh
+        self.__x, self.__width, self.__y, self.__height = xwyh
+        self.__image = utils.get_roi(self.__parent_image, *xwyh)
+
+        # Top-left then bottom-right coordinates
+        self.__coords = [np.array((xwyh[0], xwyh[2])),
+                         np.array((sum(xwyh[:2]), sum(xwyh[2:4])))]
 
     def intersects(self, other):
         """
@@ -75,15 +111,32 @@ class RegionOfInterest:
             and self.__y <= other.__y <= sum(self.__xwyh[2:4])
 
     def get_x(self) -> int:
+        """
+        Returns the y coordinate of the top-left point of this region of interest
+        :return: The y coordinate of the top-left point of the ROI
+        """
+
         return self.__x
 
     def get_width(self) -> int:
+        """
+        Returns the width of this region of interest
+        :return: The width of the ROI
+        """
         return self.__width
 
     def get_y(self) -> int:
+        """
+        Returns the y coordinate of the top-left point of this region of interest
+        :return: The y coordinate of the top-left point of the ROI
+        """
         return self.__y
 
     def get_height(self) -> int:
+        """
+        Returns the height of this region of interest
+        :return: The height of the ROI
+        """
         return self.__height
 
     def get_xwyh(self) -> np.ndarray:
@@ -95,9 +148,17 @@ class RegionOfInterest:
         return self.__xwyh
 
     def is_undefined(self):
+        """
+        Checks whether this region of interest is valid or not
+        :return: A boolean, false if this region of interest is valid
+        """
         return (self.__xwyh == 0).all()
 
     def get_parent_image(self) -> np.ndarray:
+        """
+        Returns the parent image in which this region of interest is defined
+        :return: The parent image as a NumPy array
+        """
         return self.__parent_image
 
     def set_parent_image(self, parent_image: np.ndarray):
@@ -115,12 +176,24 @@ class RegionOfInterest:
         self.__image = utils.get_roi(parent_image, *self.__xwyh)
 
     def get_image(self) -> np.ndarray:
+        """
+        Returns the current image as delimited by this region of interest
+        :return: The NumPy array image of this region of interest, in the parent image
+        """
         return self.__image
 
     def get_coords(self, index: int | None = None) -> list[np.ndarray] | np.ndarray:
+        """
+        Retrieve only 1 point, or both points from this region of interest.
+        If
+        :param index:
+        :return:
+        """
         if index is not None:
             if not 2 > RegionOfInterest.PointCoords.BOTTOM_RIGHT.value - index > -1:
-                raise IndexError("Index of coordinates wanted invalid. See RegionOfInterest.Coords for valid indexes")
+                raise IndexError(
+                    "Index of coordinates wanted invalid. See RegionOfInterest.PointCoords for valid indexes"
+                )
             return self.__coords[index]
         else:
             return self.__coords
@@ -183,12 +256,7 @@ class RegionOfInterest:
         self.__update_image(np.array((x, w, y, h)))
 
     def __iter__(self):
-        return self.__coords.__iter__()  # todo: iz work good ?
-
-    @classmethod
-    def __index_check(cls, i):
-        if not cls.PointCoords.TOP_LEFT <= i <= cls.PointCoords.BOTTOM_RIGHT:
-            raise IndexError("Index must be between 0 and 1 included")
+        return self.__coords.__iter__()
 
     @staticmethod
     def __limit_to_image(parent_shape: tuple[int, int], xwyh: np.ndarray) -> np.ndarray:
@@ -214,24 +282,3 @@ class RegionOfInterest:
             h = parent_shape[0]
 
         return np.array((x, w, y, h))
-
-    def __update_image(self, xwyh: np.ndarray):
-        self.__xwyh = xwyh
-        self.__x, self.__width, self.__y, self.__height = xwyh
-        self.__image = utils.get_roi(self.__parent_image, *xwyh)
-
-        # Top-left then bottom-right coordinates
-        self.__coords = [np.array((xwyh[0], xwyh[2])),
-                         np.array((sum(xwyh[:2]), sum(xwyh[2:4])))]
-
-    def offset(self, offset: np.ndarray) -> np.ndarray:
-        """
-        Offsets the coordinates of the current object's points
-        Does not update the other attributes
-        :param offset: The offset to apply to each point
-        :return: Top-left and bottom-right coordinates of the region's coordinates
-                 modified using the given offset
-        """
-        return np.array(
-            [self.__coords[i] + offset for i in range(len(self.__coords))]
-        )

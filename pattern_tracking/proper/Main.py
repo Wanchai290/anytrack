@@ -1,5 +1,7 @@
 from threading import Event
 
+import cv2 as cv
+
 from pattern_tracking.proper import constants
 from pattern_tracking.proper.GUI import GUI
 from pattern_tracking.proper.Highlighter import Highlighter
@@ -30,6 +32,7 @@ class Main:
             self.__HIGHLIGHTER.update(live_frame)
             edited_frame = self.__HIGHLIGHTER.get_edited_frame()
             self.__GUI.change_frame_to_display(edited_frame)
+        cv.destroyAllWindows()
 
 
 if __name__ == '__main__':

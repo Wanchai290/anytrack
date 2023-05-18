@@ -6,25 +6,35 @@ import numpy as np
 
 
 class VideoReader:
+    """
+    Continuously reads frames from a video file
+    or from a video feed, and puts them in a readable
+    queue, alongside the frame number
+    """
     def __init__(self, camera_feed: str | int,
                  is_video: bool,
                  halt_work: Event,
                  max_frames_in_queue: int = 30):
 
         self.__video_feed: cv.VideoCapture = cv.VideoCapture(camera_feed)
-        if not self.__video_feed.isOpened():
-            raise IOError("Couldn't open video feed !")
+        """Video feed"""
 
-        self.__frames_queue: Queue = Queue(max_frames_in_queue)
+        self.__frames_queue: Queue[tuple[int, np.ndarray] | None] = Queue(max_frames_in_queue)
+        """The queue containing all the frames grabbed by the video reader"""
         self.__is_video = is_video
+        """True if the feed is a static video, false if it is live"""
         self.__stop_event = halt_work
+        """Event used to check whether or not to continue working"""
 
         self.__thread: Thread | None = None
+        """The thread used to process frames in the background"""
+
+        if not self.__video_feed.isOpened():
+            raise IOError("Couldn't open video feed !")
 
     def run_threaded(self):
         """
         Reads & places all grabbed frames in a queue of the object
-        :return:
         """
         self.__thread = Thread(target=self.async_process,
                                args=(self.__video_feed, self.__frames_queue, self.__stop_event))
@@ -32,7 +42,7 @@ class VideoReader:
 
     def join_process(self, timeout: int = None):
         """
-        Waits for the main processing thread to
+        Waits for the background processing thread to finish
         :param timeout: Maximum time out to wait for
         """
         if self.__thread.is_alive():
@@ -42,7 +52,6 @@ class VideoReader:
     def async_process(video: cv.VideoCapture, w_read_frames_q: Queue[tuple[int, cv.Mat]],
                       halt_event: Event):
         """
-        TODO: put in utils ?
         Thread-safe video reader method
         Opens a video file (or video capture device feed),
         then continuously reads the frames of the video and stores them in a queue
@@ -72,4 +81,5 @@ class VideoReader:
     def grab_frame(self,
                    block: bool | None = None,
                    timeout: float | None = None) -> tuple[int, np.ndarray]:
+        """Returns the oldest frame obtained from the video feed"""
         return self.__frames_queue.get(block, timeout)

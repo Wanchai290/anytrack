@@ -6,6 +6,10 @@ from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
 
 
 class Highlighter:
+    """
+    In charge of detecting & tracking a template image in a given
+    detection region, or in a whole frame if the detection region is undefined
+    """
 
     def __init__(self):
         self.__detection_region = RegionOfInterest.new_empty()
@@ -18,9 +22,11 @@ class Highlighter:
     # -- Getters
 
     def get_edited_frame(self) -> cv.Mat | np.ndarray:
+        """:return: The frame that has been edited by this highlighter"""
         return self.__frame
 
     def get_detection_region(self) -> RegionOfInterest:
+        """:return: The detection region of this object"""
         return self.__detection_region
 
     def set_detection_region(self, region: RegionOfInterest):
@@ -53,6 +59,7 @@ class Highlighter:
                 constants.DETECTION_THRESHOLD,
                 detection_bounds=self.__detection_region
             )
+
             if self.__detection_region.is_undefined():
                 if not found_poi.is_undefined():
                     self.__draw_poi(found_poi.get_coords())
