@@ -15,6 +15,7 @@ class RegionOfInterest:
         """Index aliases for the RegionOfInterest class"""
         TOP_LEFT = 0
         BOTTOM_RIGHT = 1
+
     @staticmethod
     def new(parent_image: np.ndarray, x: int, width: int, y: int, height: int):
         """

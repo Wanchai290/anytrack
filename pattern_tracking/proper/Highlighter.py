@@ -16,14 +16,16 @@ class Highlighter:
         """The region in which we limit ourselves to find the POI"""
         self.__poi = RegionOfInterest.new_empty()
         """The part of the image that we want to find in the current frame"""
-        self.__frame: cv.Mat | np.ndarray = np.zeros((1, 1))
+        self.__base_frame: cv.Mat | np.ndarray = np.zeros((1, 1))
         """The current frame to be displayed to the user, with the highlighted zones"""
+        self.__drawing_frame = np.zeros(self.__base_frame.shape)
+        """A copy of the base frame, that will be edited by the highlighter"""
 
     # -- Getters
 
     def get_edited_frame(self) -> cv.Mat | np.ndarray:
         """:return: The frame that has been edited by this highlighter"""
-        return self.__frame
+        return self.__drawing_frame
 
     def get_detection_region(self) -> RegionOfInterest:
         """:return: The detection region of this object"""
@@ -36,17 +38,19 @@ class Highlighter:
         self.__poi = poi
 
     # -- Methods
-    def update(self, frame: cv.Mat | np.ndarray):
+    def update(self, base_frame: np.ndarray, drawing_frame: np.ndarray):
         """
         Updates the tracking of the current POI in the given
         detection region
-        :param frame: The current new frame that came from a video feed
+        :param base_frame: The current new frame that came from a video feed
+        :param drawing_frame: The frame on which the highlighter will draw on
         """
-        self.__frame = frame
+        self.__base_frame = base_frame
+        self.__drawing_frame = drawing_frame
 
         # Update the backing image of the detection region & draw it
         if not self.__detection_region.is_undefined():
-            self.__detection_region.set_parent_image(self.__frame)
+            self.__detection_region.set_parent_image(self.__base_frame)
             self.__draw_detection_region(self.__detection_region.get_coords())
 
         # Find location of POI if it is defined,
@@ -54,7 +58,7 @@ class Highlighter:
         if not self.__poi.is_undefined() \
                 and (np.array(self.__poi.get_image().shape) <= np.array(self.__detection_region.get_image().shape)).all():
             found_poi = utils.find_template_in_image(
-                self.__frame,
+                self.__base_frame,
                 self.__poi.get_image(),
                 constants.DETECTION_THRESHOLD,
                 detection_bounds=self.__detection_region
@@ -74,7 +78,7 @@ class Highlighter:
         :param rect: The rectangle to draw on the object's frame
         """
         cv.rectangle(
-            self.__frame,
+            self.__drawing_frame,
             *rect,
             (255, 255, 255),
             2
@@ -87,7 +91,7 @@ class Highlighter:
         :param rect: The rectangle to draw on the object's frame
         """
         cv.rectangle(
-            self.__frame,
+            self.__drawing_frame,
             *rect,
             (0, 255, 0),  # green
             2  # thickness

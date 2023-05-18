@@ -24,12 +24,12 @@ class Main:
             self.__halt_event
         )
 
+    def run(self):
         self.__GUI.start_gui()
 
-    def run(self):
         while not self.__halt_event.is_set():
             live_frame = self.__LIVE_FEED.grab_frame(block=True)[1]
-            self.__HIGHLIGHTER.update(live_frame)
+            self.__HIGHLIGHTER.update(live_frame, live_frame.copy())
             edited_frame = self.__HIGHLIGHTER.get_edited_frame()
             self.__GUI.change_frame_to_display(edited_frame)
         cv.destroyAllWindows()
