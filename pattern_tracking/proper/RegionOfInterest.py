@@ -127,7 +127,8 @@ class RegionOfInterest:
 
     def set_coords(self,
                    xy: np.ndarray,
-                   index: int | None = None):
+                   index: int | None = None,
+                   normalize: bool = False):
         """
         Redefine coordinates of this ROI on the parent image
         that was used when the object was created
@@ -141,6 +142,7 @@ class RegionOfInterest:
         :param xy: Two xy coordinates, or a single xy coordinate
         :param index: Which coordinate to change (top-left or bottom-right).
                       Optional if you redefine both
+        :param normalize:
         """
         if len(xy) > 2:
             raise ValueError("Must only give 2 tuples of values for coordinates")
@@ -154,6 +156,10 @@ class RegionOfInterest:
                 raise ValueError("Can only specify top-left and bottom-right coordinates")
             self.__coords[index] = xy
 
+        # normalize points if required
+        if normalize:
+            self.__coords = utils.normalize_region(*self.__coords)
+
         # convert points into xwyh coordinates description
         x, w, y, h = utils.convert_points_to_xwyh(*self.__coords)
 
@@ -164,20 +170,17 @@ class RegionOfInterest:
         Creates a valid region by computing the minimum and maximum
         of each x and y coordinate in each point of the ROI.
 
+        If the points are not ordered such that p1 is the top-left corner,
+        and p2 is the bottom-right corner, the function will normalize the coordinates
+        so that they match what was said previously.
+        Warning: Leads to point swapping bugs when used interactively
+
         This is mainly used to get valid region coordinates
         when it is selected by the user (since the start and end point can be anywhere)
-
         """
-        pt_start, pt_end = utils.normalize_region(*self.__coords)
-
-        # update attributes accordingly
-        x, w, y, h = utils.convert_points_to_xwyh(pt_start, pt_end)
-
+        self.__coords = utils.normalize_region(*self.__coords)
+        x, w, y, h = utils.convert_points_to_xwyh(*self.__coords)
         self.__update_image(np.array((x, w, y, h)))
-
-    def __getitem__(self, key) -> int:
-        RegionOfInterest.__index_check(key)
-        return self.__xwyh[key]
 
     def __iter__(self):
         return self.__coords.__iter__()  # todo: iz work good ?

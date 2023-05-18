@@ -50,10 +50,11 @@ class GUI:
             self.__create_new_detection_region(x, y)
 
         elif event == cv.EVENT_MOUSEMOVE and self.__drawing:
-            self.__update_detection_region_end(highlighter, x, y)
+            self.__update_detection_region_end(x, y)
+            highlighter.set_detection_region(self.__detection_region)
 
         elif event == cv.EVENT_RBUTTONUP:
-            self.__end_detection_region_creation()
+            self.__end_detection_region_creation(highlighter)
             highlighter.set_detection_region(self.__detection_region)
 
     def __place_poi(self, current_frame: np.ndarray, highlighter: Highlighter, x: int, y: int):
@@ -95,7 +96,7 @@ class GUI:
         self.__detection_region = \
             RegionOfInterest.from_points(self.__current_frame, (x, y), (x, y))
 
-    def __update_detection_region_end(self, highlighter: Highlighter, x_end: int, y_end: int):
+    def __update_detection_region_end(self, x_end: int, y_end: int):
         """
         Updates the end point of the detection region for tracking
         :param x_end: X coordinate of the bottom right point
@@ -103,12 +104,14 @@ class GUI:
         """
         self.__detection_region.set_coords(
             np.array((x_end, y_end)),
-            index=RegionOfInterest.PointCoords.BOTTOM_RIGHT.value
+            index=RegionOfInterest.PointCoords.BOTTOM_RIGHT.value,
+            normalize=False
         )
-        highlighter.set_detection_region(self.__detection_region)
 
-    def __end_detection_region_creation(self):
+    def __end_detection_region_creation(self, highlighter: Highlighter):
         """
-        Disables drawing mode
+        Disables drawing mode, and assigns the newly made detection region
+        to the highlighter
         """
         self.__drawing = False
+        self.__detection_region.normalize()

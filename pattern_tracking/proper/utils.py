@@ -163,7 +163,19 @@ def find_template_in_image(image: np.ndarray, roi: np.ndarray, detection_thresho
 
 
 def convert_points_to_xwyh(p1, p2) -> tuple[int, int, int, int]:
-    p1, p2 = normalize_region(p1, p2)
+    """
+    Given two points p1 and p2 describing the corners of a rectangle,
+    returns the description coordinates with width and height of the
+    objective rectangle.
+
+    This function assumes that p1 is the top-left corner, and p2
+    is the bottom-right corner of the rectangle.
+    To normalize those points, you can use utils.normalize_region()
+
+    :param p1: Edge corner coordinates of a point of the rectangle
+    :param p2: The opposite corner's coordinates
+    :return: A tuple of integers, in this order : (x, width, y, height)
+    """
     x, y = p1
     w = p2[0] - p1[0]
     h = p2[1] - p1[1]
