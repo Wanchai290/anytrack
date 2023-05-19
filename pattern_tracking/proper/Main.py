@@ -14,7 +14,7 @@ class Main:
     def __init__(self):
         self.__halt_event = Event()
 
-        self.__HIGHLIGHTER = TemplateTracker()
+        self.__HIGHLIGHTER = TemplateTracker("Default")
         self.__LIVE_FEED = VideoReader(0, False, self.__halt_event)
         self.__LIVE_FEED.run_threaded()
 

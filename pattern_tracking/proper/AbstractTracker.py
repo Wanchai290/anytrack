@@ -8,7 +8,9 @@ from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
 
 class AbstractTracker(ABC):
 
-    def __init__(self):
+    def __init__(self, name: str):
+        self._name = name
+        """Name of the tracker"""
         self._detection_region = RegionOfInterest.new_empty()
         """The region in which we limit ourselves to find the POI"""
         self._poi = RegionOfInterest.new_empty()

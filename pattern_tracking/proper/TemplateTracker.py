@@ -14,8 +14,8 @@ class TemplateTracker(AbstractTracker):
     detection region, or in a whole frame if the detection region is undefined
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name: str):
+        super().__init__(name)
 
     # -- Getters
 
