@@ -10,7 +10,7 @@ class AbstractTracker(ABC):
 
     def __init__(self, name: str):
         self._name = name
-        """Name of the tracker"""
+        """Name of the tracker. Cannot (and shouldn't) be modified"""
         self._detection_region = RegionOfInterest.new_empty()
         """The region in which we limit ourselves to find the POI"""
         self._poi = RegionOfInterest.new_empty()
@@ -23,6 +23,9 @@ class AbstractTracker(ABC):
     def get_edited_frame(self) -> cv.Mat | np.ndarray:
         """:return: The frame that has been edited by this highlighter"""
         return self._drawing_frame
+
+    def get_name(self) -> str:
+        return self._name
 
     def get_detection_region(self) -> RegionOfInterest:
         """:return: The detection region of this object"""
