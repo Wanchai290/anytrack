@@ -65,37 +65,37 @@ class RegionOfInterest:
             xwyh = np.array(xwyh)
 
         # specify dummy values to initialize variables
-        self.__xwyh: list[int, int, int, int] | np.ndarray = [0, 0, 0, 0]
+        self._xwyh: list[int, int, int, int] | np.ndarray = [0, 0, 0, 0]
         """Describe the x, y point coordinates, and width and height of the region"""
-        self.__coords: list[np.ndarray] = []
+        self._coords: list[np.ndarray] = []
         """Point coordinates of the top-left and bottom-right corners of the region"""
-        self.__x: int = 0
+        self._x: int = 0
         """X coordinate of the region"""
-        self.__width: int = 0
+        self._width: int = 0
         """Width of the region"""
-        self.__y: int = 0
+        self._y: int = 0
         """Y coordinate of the region"""
-        self.__height: int = 0
+        self._height: int = 0
         """Height of the region"""
-        self.__image: np.ndarray = np.array([])
+        self._image: np.ndarray = np.array([])
         """The image extracted from the parent image, using the coordinates of this region"""
 
         # avoid region to be outside the parent image
-        xwyh = RegionOfInterest.__limit_to_image(parent_image.shape, xwyh)
+        xwyh = RegionOfInterest._limit_to_image(parent_image.shape, xwyh)
 
-        self.__parent_image = parent_image
-        self.__update_image(xwyh)
+        self._parent_image = parent_image
+        self._update_image(xwyh)
 
     # -- Methods
 
-    def __update_image(self, xwyh: np.ndarray):
-        self.__xwyh = xwyh
-        self.__x, self.__width, self.__y, self.__height = xwyh
-        self.__image = utils.get_roi(self.__parent_image, *xwyh)
+    def _update_image(self, xwyh: np.ndarray):
+        self._xwyh = xwyh
+        self._x, self._width, self._y, self._height = xwyh
+        self._image = utils.get_roi(self._parent_image, *xwyh)
 
         # Top-left then bottom-right coordinates
-        self.__coords = [np.array((xwyh[0], xwyh[2])),
-                         np.array((sum(xwyh[:2]), sum(xwyh[2:4])))]
+        self._coords = [np.array((xwyh[0], xwyh[2])),
+                        np.array((sum(xwyh[:2]), sum(xwyh[2:4])))]
 
     def intersects(self, other):
         """
@@ -108,8 +108,8 @@ class RegionOfInterest:
         if self.is_undefined() or other.is_undefined():
             return False
 
-        return self.__x <= other.__x <= sum(self.__xwyh[:2]) \
-            and self.__y <= other.__y <= sum(self.__xwyh[2:4])
+        return self._x <= other._x <= sum(self._xwyh[:2]) \
+            and self._y <= other._y <= sum(self._xwyh[2:4])
 
     def get_x(self) -> int:
         """
@@ -117,28 +117,28 @@ class RegionOfInterest:
         :return: The y coordinate of the top-left point of the ROI
         """
 
-        return self.__x
+        return self._x
 
     def get_width(self) -> int:
         """
         Returns the width of this region of interest
         :return: The width of the ROI
         """
-        return self.__width
+        return self._width
 
     def get_y(self) -> int:
         """
         Returns the y coordinate of the top-left point of this region of interest
         :return: The y coordinate of the top-left point of the ROI
         """
-        return self.__y
+        return self._y
 
     def get_height(self) -> int:
         """
         Returns the height of this region of interest
         :return: The height of the ROI
         """
-        return self.__height
+        return self._height
 
     def get_xwyh(self) -> np.ndarray:
         """
@@ -146,21 +146,21 @@ class RegionOfInterest:
         :return: A NumPy array of length 4 containing the x, width, y and height
                  data of this region of interest, in the order described
         """
-        return self.__xwyh
+        return self._xwyh
 
     def is_undefined(self):
         """
         Checks whether this region of interest is valid or not
         :return: A boolean, false if this region of interest is valid
         """
-        return (self.__xwyh == 0).all()
+        return (self._xwyh == 0).all()
 
     def get_parent_image(self) -> np.ndarray:
         """
         Returns the parent image in which this region of interest is defined
         :return: The parent image as a NumPy array
         """
-        return self.__parent_image
+        return self._parent_image
 
     def set_parent_image(self, parent_image: np.ndarray):
         """
@@ -171,17 +171,17 @@ class RegionOfInterest:
         Same region in terms of coordinates, but different image
         :param parent_image: The new parent image
         """
-        if self.__parent_image.shape != parent_image.shape:
+        if self._parent_image.shape != parent_image.shape:
             raise AssertionError("New parent image must have same shape as the replaced parent")
-        self.__parent_image = parent_image
-        self.__image = utils.get_roi(parent_image, *self.__xwyh)
+        self._parent_image = parent_image
+        self._image = utils.get_roi(parent_image, *self._xwyh)
 
     def get_image(self) -> np.ndarray:
         """
         Returns the current image as delimited by this region of interest
         :return: The NumPy array image of this region of interest, in the parent image
         """
-        return self.__image
+        return self._image
 
     def get_coords(self, index: int | None = None) -> list[np.ndarray] | np.ndarray:
         """
@@ -195,9 +195,9 @@ class RegionOfInterest:
                 raise IndexError(
                     "Index of coordinates wanted invalid. See RegionOfInterest.PointCoords for valid indexes"
                 )
-            return self.__coords[index]
+            return self._coords[index]
         else:
-            return self.__coords
+            return self._coords
 
     def set_coords(self,
                    xy: np.ndarray,
@@ -221,23 +221,23 @@ class RegionOfInterest:
         if len(xy) > 2:
             raise ValueError("Must only give 2 tuples of values for coordinates")
         if index is None:
-            self.__coords = xy
+            self._coords = xy
         else:
             if not \
                     RegionOfInterest.PointCoords.TOP_LEFT.value \
                     <= index \
                     <= RegionOfInterest.PointCoords.BOTTOM_RIGHT.value:
                 raise ValueError("Can only specify top-left and bottom-right coordinates")
-            self.__coords[index] = xy
+            self._coords[index] = xy
 
         # normalize points if required
         if normalize:
-            self.__coords = utils.normalize_region(*self.__coords)
+            self._coords = utils.normalize_region(*self._coords)
 
         # convert points into xwyh coordinates description
-        x, w, y, h = utils.convert_points_to_xwyh(*self.__coords)
+        x, w, y, h = utils.convert_points_to_xwyh(*self._coords)
 
-        self.__update_image(np.array((x, w, y, h)))
+        self._update_image(np.array((x, w, y, h)))
 
     def normalize(self):
         """
@@ -252,15 +252,15 @@ class RegionOfInterest:
         This is mainly used to get valid region coordinates
         when it is selected by the user (since the start and end point can be anywhere)
         """
-        self.__coords = utils.normalize_region(*self.__coords)
-        x, w, y, h = utils.convert_points_to_xwyh(*self.__coords)
-        self.__update_image(np.array((x, w, y, h)))
+        self._coords = utils.normalize_region(*self._coords)
+        x, w, y, h = utils.convert_points_to_xwyh(*self._coords)
+        self._update_image(np.array((x, w, y, h)))
 
     def __iter__(self):
-        return self.__coords.__iter__()
+        return self._coords.__iter__()
 
     @staticmethod
-    def __limit_to_image(parent_shape: tuple[int, int], xwyh: np.ndarray) -> np.ndarray:
+    def _limit_to_image(parent_shape: tuple[int, int], xwyh: np.ndarray) -> np.ndarray:
         """
         Binds the given coordinates (x,y and width, height) to the given
         parent shape. If the coordinates go beyond the parent shape,

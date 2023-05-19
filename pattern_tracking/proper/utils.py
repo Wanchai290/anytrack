@@ -3,6 +3,7 @@ import numpy as np
 
 from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
 
+
 def get_roi(image: np.ndarray, x: int, w: int, y: int, h: int) -> np.ndarray:
     """
     Selects and returns a specific ROI (Region Of Interest) from a given

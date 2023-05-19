@@ -16,37 +16,37 @@ class VideoReader:
                  halt_work: Event,
                  max_frames_in_queue: int = 30):
 
-        self.__video_feed: cv.VideoCapture = cv.VideoCapture(camera_feed)
+        self._video_feed: cv.VideoCapture = cv.VideoCapture(camera_feed)
         """Video feed"""
 
-        self.__frames_queue: Queue[tuple[int, np.ndarray] | None] = Queue(max_frames_in_queue)
+        self._frames_queue: Queue[tuple[int, np.ndarray] | None] = Queue(max_frames_in_queue)
         """The queue containing all the frames grabbed by the video reader"""
-        self.__is_video = is_video
+        self._is_video = is_video
         """True if the feed is a static video, false if it is live"""
-        self.__stop_event = halt_work
+        self._stop_event = halt_work
         """Event used to check whether or not to continue working"""
 
-        self.__thread: Thread | None = None
+        self._thread: Thread | None = None
         """The thread used to process frames in the background"""
 
-        if not self.__video_feed.isOpened():
+        if not self._video_feed.isOpened():
             raise IOError("Couldn't open video feed !")
 
     def run_threaded(self):
         """
         Reads & places all grabbed frames in a queue of the object
         """
-        self.__thread = Thread(target=self.async_process,
-                               args=(self.__video_feed, self.__frames_queue, self.__stop_event))
-        self.__thread.start()
+        self._thread = Thread(target=self.async_process,
+                              args=(self._video_feed, self._frames_queue, self._stop_event))
+        self._thread.start()
 
     def join_process(self, timeout: int = None):
         """
         Waits for the background processing thread to finish
         :param timeout: Maximum time out to wait for
         """
-        if self.__thread.is_alive():
-            self.__thread.join(timeout if timeout is not None else 0)
+        if self._thread.is_alive():
+            self._thread.join(timeout if timeout is not None else 0)
 
     @staticmethod
     def async_process(video: cv.VideoCapture, w_read_frames_q: Queue[tuple[int, cv.Mat]],
@@ -76,10 +76,10 @@ class VideoReader:
         any work being done. This will affect other processes
         using the same Event object as well
         """
-        self.__stop_event.set()
+        self._stop_event.set()
 
     def grab_frame(self,
                    block: bool | None = None,
                    timeout: float | None = None) -> tuple[int, np.ndarray]:
         """Returns the oldest frame obtained from the video feed"""
-        return self.__frames_queue.get(block, timeout)
+        return self._frames_queue.get(block, timeout)

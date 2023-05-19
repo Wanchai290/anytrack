@@ -2,9 +2,10 @@ from threading import Event
 
 import cv2 as cv
 
+import pattern_tracking.proper.utils
 from pattern_tracking.proper import constants
 from pattern_tracking.proper.GUI import GUI
-from pattern_tracking.proper.Highlighter import Highlighter
+from pattern_tracking.proper.TemplateTracker import TemplateTracker
 from pattern_tracking.proper.VideoReader import VideoReader
 
 
@@ -13,7 +14,7 @@ class Main:
     def __init__(self):
         self.__halt_event = Event()
 
-        self.__HIGHLIGHTER = Highlighter()
+        self.__HIGHLIGHTER = TemplateTracker()
         self.__LIVE_FEED = VideoReader(0, False, self.__halt_event)
         self.__LIVE_FEED.run_threaded()
 
