@@ -27,6 +27,9 @@ class TemplateTracker(AbstractTracker):
         :param base_frame: The current new frame that came from a video feed
         :param drawing_frame: The frame on which the highlighter will draw on
         """
+        # dev note: This isn't the most performant logic structure, there are some checks that are done multiple times
+        # but could have been done only once.
+        # Doing the latter would have led to less readable code, so I took the first option
         self._base_frame = base_frame
         self._drawing_frame = drawing_frame
 
@@ -37,15 +40,18 @@ class TemplateTracker(AbstractTracker):
 
         # Find location of POI if it is defined,
         # and if POI is smaller than region
-        if not self._poi.is_undefined() \
-                and (np.array(self._poi.get_image().shape) <= np.array(self._detection_region.get_image().shape)).all():
-            found_poi = utils.find_template_in_image(
-                self._base_frame,
-                self._poi.get_image(),
-                constants.DETECTION_THRESHOLD,
-                detection_bounds=self._detection_region
-            )
+        if not self._poi.is_undefined():
+            try:
+                found_poi = utils.find_template_in_image(
+                    self._base_frame,
+                    self._poi.get_image(),
+                    constants.DETECTION_THRESHOLD,
+                    detection_bounds=self._detection_region
+                )
+            except AssertionError:
+                found_poi = RegionOfInterest.new_empty()
 
+            # Determine what we have to draw
             if self._detection_region.is_undefined():
                 if not found_poi.is_undefined():
                     self._draw_poi(found_poi.get_coords())

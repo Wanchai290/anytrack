@@ -6,6 +6,7 @@ import numpy as np
 from constants import POI_WIDTH, POI_HEIGHT
 from pattern_tracking.proper.AbstractTracker import AbstractTracker
 from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
+from pattern_tracking.proper.TrackerManager import TrackerManager
 
 
 class GUI:
@@ -17,7 +18,7 @@ class GUI:
 
     def __init__(self, window_name: str,
                  video_feed_shape: tuple[int, int],
-                 highlighter: AbstractTracker,
+                 tracker_manager: TrackerManager,
                  halt_event: Event):
 
         self._WIN_NAME = window_name
@@ -30,7 +31,7 @@ class GUI:
         self._current_frame = np.zeros(video_feed_shape)
         """The currently displayed image to the user"""
 
-        self._HIGHLIGHTER = highlighter
+        self._tracker_manager = tracker_manager
         """The unique highlighter object"""
         self._halt = halt_event
         """Event used to stop all actions of the program"""
@@ -42,7 +43,7 @@ class GUI:
         # enable OpenGL
         cv.setWindowProperty(self._WIN_NAME, cv.WND_PROP_OPENGL, 1)
 
-        cv.setMouseCallback(self._WIN_NAME, self._mouse_click_handler, self._HIGHLIGHTER)
+        cv.setMouseCallback(self._WIN_NAME, self._mouse_click_handler, self._tracker_manager)
 
     def change_frame_to_display(self, frame: np.ndarray):
         self._current_frame = frame
@@ -51,24 +52,27 @@ class GUI:
         if self._key_pressed == ord('q'):
             self._halt.set()
 
-    def _mouse_click_handler(self, event, x, y, flags, param: AbstractTracker):
+    def _mouse_click_handler(self, event, x, y, flags, tracker_manager: TrackerManager):
 
-        highlighter = param
+        tracker = tracker_manager.get_active_selected_tracker()
         current_frame = self._current_frame
 
+        # TODO: every tracker should have its own click handler (?)
+        # but cv.EVENT_LBUTTONDOWN should stay in the GUI
+        # call instead tracker.event_left_click_down()
         if event == cv.EVENT_LBUTTONDOWN:
-            self._place_poi(current_frame, highlighter, x, y)
+            self._place_poi(current_frame, tracker, x, y)
 
         elif event == cv.EVENT_RBUTTONDOWN:
             self._create_new_detection_region(x, y)
 
         elif event == cv.EVENT_MOUSEMOVE and self._drawing:
             self._update_detection_region_end(x, y)
-            highlighter.set_detection_region(self.__detection_region)
+            tracker.set_detection_region(self.__detection_region)
 
         elif event == cv.EVENT_RBUTTONUP:
             self._end_detection_region_creation()
-            highlighter.set_detection_region(self.__detection_region)
+            tracker.set_detection_region(self.__detection_region)
 
     def _place_poi(self, current_frame: np.ndarray, highlighter: AbstractTracker, x: int, y: int):
         """
