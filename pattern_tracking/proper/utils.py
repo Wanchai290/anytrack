@@ -86,7 +86,7 @@ def find_template_in_image(image: np.ndarray, roi: np.ndarray, detection_thresho
         base: np.ndarray = image
         offset: np.ndarray = np.zeros((1, 2), dtype=int)
     else:
-        if (np.array(roi.shape) >= np.array(detection_bounds.get_image().shape)).any():
+        if (np.array(roi.shape[:2]) > np.array(detection_bounds.get_image().shape[:2])).any():
             return region_matched_location
         base: np.ndarray = detection_bounds.get_image()
         offset: np.ndarray = detection_bounds.get_coords(RegionOfInterest.PointCoords.TOP_LEFT.value)
