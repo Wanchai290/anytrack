@@ -17,9 +17,12 @@ class Main:
 
         self.__TRACKER_MANAGER = TrackerManager()
 
-        # required as there's no GUI at the moment to add a tracker
+        # <<< required as there's no GUI at the moment to add a tracker
         self.__TRACKER_MANAGER.add_tracker(TemplateTracker("Default"))
+        self.__TRACKER_MANAGER.add_tracker(TemplateTracker("Auxiliary"))
         self.__TRACKER_MANAGER.set_active_tracker("Default")
+        # >>>
+
         self.__LIVE_FEED = VideoReader(0, False, self.__halt_event)
         self.__LIVE_FEED.run_threaded()
 

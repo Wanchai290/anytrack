@@ -49,8 +49,20 @@ class GUI:
         self._current_frame = frame
         cv.imshow(self._WIN_NAME, frame)
         self._key_pressed = cv.waitKey(1)
+        self._key_press_handler()
+
+    def _key_press_handler(self):
+        """
+        Handles actions in function of the key pressed
+        """
         if self._key_pressed == ord('q'):
             self._halt.set()
+        elif self._key_pressed == ord('v'):
+            # TODO: temp assign, until I setup the GUI for this selection
+            if self._tracker_manager.get_active_selected_tracker().get_name() == "Default":
+                self._tracker_manager.set_active_tracker("Auxiliary")
+            else:
+                self._tracker_manager.set_active_tracker("Default")
 
     def _mouse_click_handler(self, event, x, y, flags, tracker_manager: TrackerManager):
 
