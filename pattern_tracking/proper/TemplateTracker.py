@@ -38,24 +38,24 @@ class TemplateTracker(AbstractTracker):
 
         # Find location of POI if it is defined,
         # and if POI is smaller than region
-        if not self._poi.is_undefined():
+        if not self._template_poi.is_undefined():
             try:
-                found_poi = utils.find_template_in_image(
+                self._found_poi = utils.find_template_in_image(
                     self._base_frame,
-                    self._poi.get_image(),
+                    self._template_poi.get_image(),
                     constants.DETECTION_THRESHOLD,
                     detection_bounds=self._detection_region
                 )
             except AssertionError:
-                found_poi = RegionOfInterest.new_empty()
+                self._found_poi = RegionOfInterest.new_empty()
 
             # Determine what we have to draw
             if self._detection_region.is_undefined():
-                if not found_poi.is_undefined():
-                    self._draw_poi(found_poi.get_coords())
+                if not self._found_poi.is_undefined():
+                    self._draw_poi(self._found_poi.get_coords())
             else:
-                if self._detection_region.intersects(self._poi):
-                    self._draw_poi(found_poi.get_coords())
+                if self._detection_region.intersects(self._template_poi):
+                    self._draw_poi(self._found_poi.get_coords())
 
     def _draw_poi(self, rect: np.ndarray):
         """
