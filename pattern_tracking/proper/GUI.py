@@ -32,7 +32,7 @@ class GUI:
         """The currently displayed image to the user"""
 
         self._tracker_manager = tracker_manager
-        """The unique highlighter object"""
+        """Contains all the trackers, and the current active one"""
         self._halt = halt_event
         """Event used to stop all actions of the program"""
 
@@ -57,9 +57,6 @@ class GUI:
         tracker = tracker_manager.get_active_selected_tracker()
         current_frame = self._current_frame
 
-        # TODO: every tracker should have its own click handler (?)
-        # but cv.EVENT_LBUTTONDOWN should stay in the GUI
-        # call instead tracker.event_left_click_down()
         if event == cv.EVENT_LBUTTONDOWN:
             self._place_poi(current_frame, tracker, x, y)
 
