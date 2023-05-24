@@ -64,13 +64,12 @@ class GUI:
             else:
                 self._tracker_manager.set_active_tracker("Default")
 
-    def _mouse_click_handler(self, event, x, y, flags, tracker_manager: TrackerManager):
+    def _mouse_click_handler(self, event, x, y, _, tracker_manager: TrackerManager):
 
         tracker = tracker_manager.get_active_selected_tracker()
-        current_frame = self._current_frame
 
         if event == cv.EVENT_LBUTTONDOWN:
-            self._place_poi(current_frame, tracker, x, y)
+            self._place_poi(tracker, x, y)
 
         elif event == cv.EVENT_RBUTTONDOWN:
             self._create_new_detection_region(x, y)
@@ -83,13 +82,12 @@ class GUI:
             self._end_detection_region_creation()
             tracker.set_detection_region(self.__detection_region)
 
-    def _place_poi(self, current_frame: np.ndarray, highlighter: AbstractTracker, x: int, y: int):
+    def _place_poi(self, highlighter: AbstractTracker, x: int, y: int):
         """
         Tries to create a new point of interest in the image.
         Will assign it to the highlighter in two cases :
             - The detection region is unspecified
             - The selected POI is inside the detection region
-        :param current_frame: The current frame grabbed from the live feed
         :param highlighter: The highlighter objects
         :param x: X coordinate of the click of the user
         :param y: Y coordinate of the click of the user
@@ -99,7 +97,7 @@ class GUI:
         # Create the point of interest using the user's selection as
         # the center of the point of interest
         computed_poi = RegionOfInterest.new(
-            current_frame,
+            self._current_frame,
             int(x - POI_WIDTH / 2), POI_WIDTH, int(y - POI_HEIGHT / 2), POI_HEIGHT
         )
 

@@ -108,8 +108,8 @@ class RegionOfInterest:
         if self.is_undefined() or other.is_undefined():
             return False
 
-        return self._x <= other._x <= sum(self._xwyh[:2]) \
-            and self._y <= other._y <= sum(self._xwyh[2:4])
+        return self._x <= other.get_x() <= sum(self._xwyh[:2]) \
+            and self._y <= other.get_y() <= sum(self._xwyh[2:4])
 
     def get_x(self) -> int:
         """
