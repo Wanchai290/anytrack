@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 import cv2 as cv
 import numpy as np
 
+from pattern_tracking.proper import utils
 from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
 
 
@@ -38,6 +39,14 @@ class AbstractTracker(ABC):
 
     def set_poi(self, poi: RegionOfInterest):
         self._template_poi = poi
+
+    def get_found_poi_center(self) -> np.ndarray | None:
+        """:return: Coordinates of the center of the location of the POI in this tracker's frame"""
+        # TODO: add tests
+        if self._found_poi.is_undefined():
+            return None
+
+        return utils.middle_of(*self._found_poi.get_coords())
 
     @abstractmethod
     def update(self, base_frame: np.ndarray, drawing_frame: np.ndarray):

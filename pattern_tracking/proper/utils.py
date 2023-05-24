@@ -33,9 +33,9 @@ def get_roi(image: np.ndarray, x: int, w: int, y: int, h: int) -> np.ndarray:
     return image[y: y_edge, x: x_edge]
 
 
-def middle_of(p1: tuple[int, int], p2: tuple[int, int]) \
-        -> tuple[int, int]:
-    return int((p1[0] + p2[0]) / 2), int((p1[1] + p2[1]) / 2)
+def middle_of(p1: np.ndarray | tuple[int, int], p2: np.ndarray | tuple[int, int]) \
+        -> np.ndarray:
+    return np.array((int((p1[0] + p2[0]) / 2), int((p1[1] + p2[1]) / 2)))
 
 
 def normalize_region(pt1: np.ndarray | tuple[int, int], pt2: np.ndarray | tuple[int, int]) -> np.ndarray:

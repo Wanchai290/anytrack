@@ -185,10 +185,10 @@ class RegionOfInterest:
 
     def get_coords(self, index: int | None = None) -> list[np.ndarray] | np.ndarray:
         """
-        Retrieve only 1 point, or both points from this region of interest.
-        If
-        :param index:
-        :return:
+        Retrieve the top-left point's coordinates, or the bottom-right point's coordinates,
+        or both if index is set to None
+        :param index: The point to retrieve, top-left or bottom-right. See self.PointCoords class
+        :return: A NumPy array if index is set, or a list of NumPy array if index is None
         """
         if index is not None:
             if not 2 > RegionOfInterest.PointCoords.BOTTOM_RIGHT.value - index > -1:

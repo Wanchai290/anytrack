@@ -2,8 +2,8 @@ from threading import Event
 
 import cv2 as cv
 
-import pattern_tracking.proper.utils
 from pattern_tracking.proper import constants
+from pattern_tracking.proper.DistanceObserver import DistanceObserver
 from pattern_tracking.proper.GUI import GUI
 from pattern_tracking.proper.TemplateTracker import TemplateTracker
 from pattern_tracking.proper.TrackerManager import TrackerManager
@@ -21,6 +21,12 @@ class Main:
         self.__TRACKER_MANAGER.add_tracker(TemplateTracker("Default"))
         self.__TRACKER_MANAGER.add_tracker(TemplateTracker("Auxiliary"))
         self.__TRACKER_MANAGER.set_active_tracker("Default")
+        self.__DISTANCE_OBSERVER = \
+            DistanceObserver(
+                "DistanceDefault",
+                self.__TRACKER_MANAGER.get_tracker("Default"),
+                self.__TRACKER_MANAGER.get_tracker("Auxiliary")
+            )
         # >>>
 
         self.__LIVE_FEED = VideoReader(0, False, self.__halt_event)
@@ -40,6 +46,9 @@ class Main:
             live_frame = self.__LIVE_FEED.grab_frame(block=True)[1]
             edited_frame = self.__TRACKER_MANAGER.update_trackers(live_frame, drawing_sheet=live_frame.copy())
             self.__GUI.change_frame_to_display(edited_frame)
+            d = self.__DISTANCE_OBSERVER.distance()
+            if d != 0:
+                print(d)
         cv.destroyAllWindows()
 
 
