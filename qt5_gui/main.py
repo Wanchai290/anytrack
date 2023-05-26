@@ -9,8 +9,9 @@ from pyqtgraph import PlotDataItem, PlotItem, PlotWidget
 
 
 def update_plot(plot_data_item: PlotDataItem):
-    time.sleep(2)
-    plot_data_item.setData([(i + int(i / 4)) * i for i in range(10, 0, -1)])
+    for j in range(30):
+        time.sleep(0.3)
+        plot_data_item.setData([(i + int(i / 4)) * i for i in range(0, j+1)])
     return
 
 
