@@ -10,11 +10,13 @@ class AppMainWindow(QMainWindow):
     with the different menus, sidebar menus and buttons
     """
 
-    def __init__(self):
+    def __init__(self, tracker_manager: TrackerManager):
         super().__init__()
 
-        self._TRACKER_MANAGER = TrackerManager()
-        self._FRAME_DISPLAY: QWidget = FrameDisplayWidget(self._TRACKER_MANAGER)
+        self._FRAME_DISPLAY = FrameDisplayWidget(tracker_manager)
         # self._live_dist_plot: QWidget =
 
         self.setCentralWidget(self._FRAME_DISPLAY)
+
+    def get_frame_display_widget(self) -> FrameDisplayWidget:
+        return self._FRAME_DISPLAY

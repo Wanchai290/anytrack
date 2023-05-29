@@ -38,7 +38,7 @@ class FrameDisplayWidget(QLabel):
     def get_current_frame(self):
         return self._current_frame
 
-    def change_frame_to_display(self, frame: np.ndarray):
+    def change_frame_to_display(self, frame: np.ndarray, swap_rgb: bool = False):
         """
         Updates the current image displayed by this QLabel,
         by converting the passed NumPy frame as a QPixmap
@@ -46,11 +46,17 @@ class FrameDisplayWidget(QLabel):
         Why do it again if someone did it already ?
 
         :param frame: The frame to be displayed
+        :param swap_rgb: True if we have to swap the RGB order of the image
+                         Often necessary when working with OpenCV for example
         """
+        self._current_frame = frame
+
         height, width, channel = frame.shape
         bytes_per_line = 3 * width
         q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888)
-        self.setPixmap(QPixmap(q_img))
+        self.setPixmap(QPixmap(
+            q_img.rgbSwapped() if swap_rgb else q_img
+        ))
 
     # -- Mouse events binding
     # We override Qt's mouse interaction methods to do our stuff

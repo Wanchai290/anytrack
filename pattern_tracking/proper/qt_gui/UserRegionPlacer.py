@@ -27,6 +27,7 @@ class UserRegionPlacer:
         self._FRAME_DISPLAY_WIDGET = frame_display_widget
         self._drawing = False
         """Defines whether the user is trying to create a new hand-drawn region"""
+        self._detection_region = RegionOfInterest.new_empty()
 
     def create_new_poi(self, tracker: AbstractTracker, mx: int, my: int):
         """
@@ -63,7 +64,7 @@ class UserRegionPlacer:
         :param my: Y coordinate of the user's mouse when he clicked
         """
         self._drawing = True
-        self.__detection_region = \
+        self._detection_region = \
             RegionOfInterest.from_points(
                 self._FRAME_DISPLAY_WIDGET.get_current_frame(), (mx, my), (mx, my)
             )
@@ -74,7 +75,7 @@ class UserRegionPlacer:
         :param mx_end: X coordinate of the bottom right point
         :param my_end: Y coordinate of the bottom right point
         """
-        self.__detection_region.set_coords(
+        self._detection_region.set_coords(
             np.array((mx_end, my_end)),
             index=RegionOfInterest.PointCoords.BOTTOM_RIGHT.value,
             normalize=False
@@ -86,7 +87,7 @@ class UserRegionPlacer:
         to the highlighter
         """
         self._drawing = False
-        self.__detection_region.normalize()
+        self._detection_region.normalize()
 
     def drawing(self) -> bool:
         return self._drawing
