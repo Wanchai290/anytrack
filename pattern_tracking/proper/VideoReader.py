@@ -68,7 +68,7 @@ class VideoReader:
             w_read_frames_q.put((frame_id, frame))
             frame_id += 1
 
-        halt_event.set()
+        # halt_event.set()  # TODO: remove, only Qt will be allowed to set the halt flag
 
     def force_halt(self):
         """
@@ -76,7 +76,7 @@ class VideoReader:
         any work being done. This will affect other processes
         using the same Event object as well
         """
-        self._stop_event.set()
+        self._stop_event.set()  # TODO: remove, only Qt will be allowed to set the halt flag
 
     def grab_frame(self,
                    block: bool | None = None,

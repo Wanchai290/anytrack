@@ -1,55 +1,41 @@
+import sys
 from threading import Event
 
-import cv2 as cv
+from PySide6.QtWidgets import QApplication
 
-from pattern_tracking.proper import constants
-from pattern_tracking.proper.DistanceObserver import DistanceObserver
-from pattern_tracking.proper.GUI import GUI
-from pattern_tracking.proper.TemplateTracker import TemplateTracker
-from pattern_tracking.proper.TrackerManager import TrackerManager
 from pattern_tracking.proper.VideoReader import VideoReader
+from pattern_tracking.proper.qt_gui.AppMainWindow import AppMainWindow
 
 
 class Main:
+    """
+    Launches all separate operations on their own thread,
+    the main thread will launch Qt's user interface.
+    """
 
     def __init__(self):
-        self.__halt_event = Event()
+        self._app = QApplication(sys.argv)
+        """Qt GUI application object"""
+        self._halt_event = Event()
+        """Event used to halt operations on separate threads. Should only be modified by the Qt aboutToQuit() signal"""
+        # self._operations_linker = OperationsLinker()  # TODO
+        """Connects the widgets and the children threads together"""
+        self._live_feed = VideoReader(0, False, self._halt_event)
+        """Continuously reads the current video stream"""
+        self._main_window = AppMainWindow()
+        """QT Main window object"""
 
-        self.__TRACKER_MANAGER = TrackerManager()
-
-        # <<< required as there's no GUI at the moment to add a tracker
-        self.__TRACKER_MANAGER.add_tracker(TemplateTracker("Default"))
-        self.__TRACKER_MANAGER.add_tracker(TemplateTracker("Auxiliary"))
-        self.__TRACKER_MANAGER.set_active_tracker("Default")
-        self.__DISTANCE_OBSERVER = \
-            DistanceObserver(
-                "DistanceDefault",
-                self.__TRACKER_MANAGER.get_tracker("Default"),
-                self.__TRACKER_MANAGER.get_tracker("Auxiliary")
-            )
-        # >>>
-
-        self.__LIVE_FEED = VideoReader(0, False, self.__halt_event)
-        self.__LIVE_FEED.run_threaded()
-
-        self.__GUI = GUI(
-            constants.WINDOW_NAME,
-            self.__LIVE_FEED.grab_frame(block=True)[1].shape,
-            self.__TRACKER_MANAGER,
-            self.__halt_event
-        )
+        self._app.aboutToQuit.connect(self._stop_children_operations)
+        """Allows us to do properly stop children threads before the Qt interface exits"""
 
     def run(self):
-        self.__GUI.start_gui()
+        self._live_feed.run_threaded()
+        self._main_window.show()
+        self._app.exec()
 
-        while not self.__halt_event.is_set():
-            live_frame = self.__LIVE_FEED.grab_frame(block=True)[1]
-            edited_frame = self.__TRACKER_MANAGER.update_trackers(live_frame, drawing_sheet=live_frame.copy())
-            self.__GUI.change_frame_to_display(edited_frame)
-            d = self.__DISTANCE_OBSERVER.distance()
-            if d != 0:
-                print(d)
-        cv.destroyAllWindows()
+    def _stop_children_operations(self):
+        print("stopping")
+        self._halt_event.set()
 
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
 from pattern_tracking.proper.TrackerManager import TrackerManager
 
 
-class GUI:
+class OldGUI:
     """
     User interface class
     Handles mouse interactions and some logic when redefining
@@ -93,7 +93,6 @@ class GUI:
         :param y: Y coordinate of the click of the user
         """
         # TODO: be able to place POI on edges properly
-
         # Create the point of interest using the user's selection as
         # the center of the point of interest
         computed_poi = RegionOfInterest.new(
