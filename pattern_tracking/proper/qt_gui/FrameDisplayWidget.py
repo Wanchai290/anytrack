@@ -1,3 +1,5 @@
+import time
+
 import PySide6.QtCore
 from PySide6.QtGui import QMouseEvent, QPixmap, QImage
 from PySide6.QtWidgets import QLabel
@@ -50,13 +52,14 @@ class FrameDisplayWidget(QLabel):
                          Often necessary when working with OpenCV for example
         """
         self._current_frame = frame
-
+        start = time.time()
         height, width, channel = frame.shape
         bytes_per_line = 3 * width
         q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888)
         self.setPixmap(QPixmap(
             q_img.rgbSwapped() if swap_rgb else q_img
         ))
+        print(f"Elapsed : {time.time() - start} s")
 
     # -- Mouse events binding
     # We override Qt's mouse interaction methods to do our stuff
