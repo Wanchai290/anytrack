@@ -4,6 +4,7 @@ import numpy as np
 
 from pattern_tracking.proper.AbstractTracker import AbstractTracker
 from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
+from pattern_tracking.proper.TrackerManager import TrackerManager
 from pattern_tracking.proper.constants import POI_WIDTH, POI_HEIGHT
 
 # used to avoid circular imports because of type hinting
@@ -79,6 +80,7 @@ class UserRegionPlacer:
             index=RegionOfInterest.PointCoords.BOTTOM_RIGHT.value,
             normalize=False
         )
+        self._FRAME_DISPLAY_WIDGET.get_active_selected_tracker().set_detection_region(self._detection_region)
 
     def end_detection_region_creation(self):
         """
@@ -87,6 +89,7 @@ class UserRegionPlacer:
         """
         self._drawing = False
         self._detection_region.normalize()
+        self._FRAME_DISPLAY_WIDGET.get_active_selected_tracker().set_detection_region(self._detection_region)
 
     def drawing(self) -> bool:
         return self._drawing

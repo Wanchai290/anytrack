@@ -24,6 +24,9 @@ class FrameDisplayWidget(QLabel):
     def __init__(self, tracker_manager: TrackerManager, frames_shape: tuple):
         super().__init__()
 
+        # Disable resize of this widget
+        self.setFixedSize(*frames_shape[1::-1])
+
         self._USER_REGION_PLACER = UserRegionPlacer(self)
         """
         Logic object for user mouse interaction
@@ -73,4 +76,7 @@ class FrameDisplayWidget(QLabel):
 
     def mouseReleaseEvent(self, ev: PySide6.QtGui.QMouseEvent) -> None:
         self._USER_REGION_PLACER.end_detection_region_creation()
+
+    def get_active_selected_tracker(self):
+        return self._tracker_manager.get_active_selected_tracker()
 
