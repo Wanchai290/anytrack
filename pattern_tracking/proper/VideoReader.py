@@ -32,6 +32,8 @@ class VideoReader:
         if not self._video_feed.isOpened():
             raise IOError("Couldn't open video feed !")
 
+        self._frames_shape = self._video_feed.read()[1].shape
+
     def run_threaded(self):
         """
         Reads & places all grabbed frames in a queue of the object
@@ -83,3 +85,6 @@ class VideoReader:
                    timeout: float | None = None) -> tuple[int, np.ndarray]:
         """Returns the oldest frame obtained from the video feed"""
         return self._frames_queue.get(block, timeout)
+
+    def get_shape(self):
+        return self._frames_shape

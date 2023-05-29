@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+from PySide6.QtGui import QImage, QPixmap
 
 from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
 
@@ -130,3 +131,22 @@ def convert_points_to_xwyh(p1, p2) -> tuple[int, int, int, int]:
     w = p2[0] - p1[0]
     h = p2[1] - p1[1]
     return x, w, y, h
+
+
+def ndarray_to_qimage(image: np.ndarray,
+                      swap_rgb: bool = False,
+                      as_qpixmap: bool = False) -> QImage | QPixmap:
+    """
+    Converts a NumPy array representing an RGB image
+    into a QImage or a QPixmap.
+
+    Almost everything has been taken from here : https://stackoverflow.com/a/35857856
+    """
+    height, width, channel = image.shape
+    bytes_per_line = 3 * width
+    q_img = QImage(image.data, width, height, bytes_per_line, QImage.Format_RGB888)
+
+    if swap_rgb:
+        q_img = q_img.rgbSwapped()
+
+    return q_img if not as_qpixmap else QPixmap(q_img)

@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QLabel
 
 import numpy as np
 
+from pattern_tracking.proper import utils
 from pattern_tracking.proper.TrackerManager import TrackerManager
 from pattern_tracking.proper.qt_gui.UserRegionPlacer import UserRegionPlacer
 
@@ -20,7 +21,7 @@ class FrameDisplayWidget(QLabel):
     Updates to the region of interest or trackers is done in the UserRegionPlacer object
     """
 
-    def __init__(self, tracker_manager: TrackerManager):
+    def __init__(self, tracker_manager: TrackerManager, frames_shape: tuple):
         super().__init__()
 
         self._USER_REGION_PLACER = UserRegionPlacer(self)
@@ -34,7 +35,7 @@ class FrameDisplayWidget(QLabel):
         self._tracker_manager = tracker_manager
         """Contains all the trackers, and the current active one"""
 
-        self._frame_pixmap = QPixmap("cat-sample_1313.jpg")
+        self._frame_pixmap = utils.ndarray_to_qimage(np.zeros(frames_shape), as_qpixmap=True)
         self.setPixmap(self._frame_pixmap)
 
     def get_current_frame(self):
@@ -44,22 +45,14 @@ class FrameDisplayWidget(QLabel):
         """
         Updates the current image displayed by this QLabel,
         by converting the passed NumPy frame as a QPixmap
-        Everything is taken from https://stackoverflow.com/a/35857856
-        Why do it again if someone did it already ?
 
         :param frame: The frame to be displayed
         :param swap_rgb: True if we have to swap the RGB order of the image
                          Often necessary when working with OpenCV for example
         """
         self._current_frame = frame
-        start = time.time()
-        height, width, channel = frame.shape
-        bytes_per_line = 3 * width
-        q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888)
-        self.setPixmap(QPixmap(
-            q_img.rgbSwapped() if swap_rgb else q_img
-        ))
-        print(f"Elapsed : {time.time() - start} s")
+        q_img = utils.ndarray_to_qimage(frame, swap_rgb, as_qpixmap=True)
+        self.setPixmap(q_img)
 
     # -- Mouse events binding
     # We override Qt's mouse interaction methods to do our stuff

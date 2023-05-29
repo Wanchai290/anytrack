@@ -27,10 +27,10 @@ class Main:
         self._tracker_manager.set_active_tracker("Default")
         # <<<
         """Contains all curren trackers used"""
-        self._main_window = AppMainWindow(self._tracker_manager)
-        """QT Main window object"""
         self._live_feed = VideoReader(0, False, self._halt_event)
         """Continuously reads the current video stream"""
+        self._main_window = AppMainWindow(self._tracker_manager, self._live_feed.get_shape())
+        """QT Main window object"""
         self._app.aboutToQuit.connect(self._stop_children_operations)
         """Allows us to do properly stop children threads before the Qt interface exits"""
         self._background_computation_worker = BackgroundComputation(
