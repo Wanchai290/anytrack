@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QMainWindow
 
-from pattern_tracking.proper.TrackerManager import TrackerManager
+from pattern_tracking.proper.tracker.TrackerManager import TrackerManager
 from pattern_tracking.proper.qt_gui.FrameDisplayWidget import FrameDisplayWidget
 
 

@@ -2,7 +2,7 @@ from enum import Enum
 
 import numpy as np
 
-from pattern_tracking.proper import utils
+from pattern_tracking.proper.shared import utils
 
 
 class RegionOfInterest:

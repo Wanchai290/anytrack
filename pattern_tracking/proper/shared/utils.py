@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 from PySide6.QtGui import QImage, QPixmap
 
-from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
+from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
 
 
 def get_roi(image: np.ndarray, x: int, w: int, y: int, h: int) -> np.ndarray:

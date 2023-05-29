@@ -1,14 +1,12 @@
-import time
-
 import PySide6.QtCore
-from PySide6.QtGui import QMouseEvent, QPixmap, QImage
+from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QLabel
 
 import numpy as np
 
-from pattern_tracking.proper import utils
-from pattern_tracking.proper.TrackerManager import TrackerManager
-from pattern_tracking.proper.qt_gui.UserRegionPlacer import UserRegionPlacer
+from pattern_tracking.proper.shared import utils
+from pattern_tracking.proper.tracker.TrackerManager import TrackerManager
+from pattern_tracking.proper.qt_gui.logic.UserRegionPlacer import UserRegionPlacer
 
 
 class FrameDisplayWidget(QLabel):

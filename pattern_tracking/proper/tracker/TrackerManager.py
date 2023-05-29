@@ -1,6 +1,6 @@
 import numpy as np
 
-from pattern_tracking.proper.AbstractTracker import AbstractTracker
+from pattern_tracking.proper.tracker.AbstractTracker import AbstractTracker
 
 
 class TrackerManager:

@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import numpy as np
 
-from pattern_tracking.proper.AbstractTracker import AbstractTracker
-from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
-from pattern_tracking.proper.TrackerManager import TrackerManager
-from pattern_tracking.proper.constants import POI_WIDTH, POI_HEIGHT
+from pattern_tracking.proper.tracker.AbstractTracker import AbstractTracker
+from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
+from pattern_tracking.proper.shared.constants import POI_WIDTH, POI_HEIGHT
 
 # used to avoid circular imports because of type hinting
 # see https://adamj.eu/tech/2021/05/13/python-type-hints-how-to-fix-circular-imports/

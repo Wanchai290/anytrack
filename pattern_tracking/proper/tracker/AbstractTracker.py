@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 import cv2 as cv
 import numpy as np
 
-from pattern_tracking.proper import utils
-from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
+from pattern_tracking.proper.shared import utils
+from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
 
 
 class AbstractTracker(ABC):

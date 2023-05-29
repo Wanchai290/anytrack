@@ -1,9 +1,9 @@
 import cv2 as cv
 import numpy as np
 
-from pattern_tracking.proper import utils, constants
-from pattern_tracking.proper.AbstractTracker import AbstractTracker
-from pattern_tracking.proper.RegionOfInterest import RegionOfInterest
+from pattern_tracking.proper.shared import utils, constants
+from pattern_tracking.proper.tracker.AbstractTracker import AbstractTracker
+from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
 
 
 class TemplateTracker(AbstractTracker):

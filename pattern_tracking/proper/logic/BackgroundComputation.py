@@ -1,7 +1,7 @@
 from threading import Event, Thread
 
-from pattern_tracking.proper.TrackerManager import TrackerManager
-from pattern_tracking.proper.VideoReader import VideoReader
+from pattern_tracking.proper.tracker.TrackerManager import TrackerManager
+from pattern_tracking.proper.logic.VideoReader import VideoReader
 from pattern_tracking.proper.qt_gui.FrameDisplayWidget import FrameDisplayWidget
 
 
