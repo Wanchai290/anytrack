@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Iterable
 
 import numpy as np
 from PySide6.QtGui import QAction
@@ -101,6 +100,8 @@ class TrackerManager(RemoteQActionsInterface):
         or None if there are no trackers available
         :return: The current selected tracker or None
         """
+        if self._active_tracker is None:
+            raise ValueError("No active tracker set !")
         return self._active_tracker
 
     def alive_trackers_names(self) -> list[str]:

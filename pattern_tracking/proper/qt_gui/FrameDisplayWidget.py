@@ -1,6 +1,6 @@
 import PySide6.QtCore
 from PySide6.QtGui import QMouseEvent
-from PySide6.QtWidgets import QLabel
+from PySide6.QtWidgets import QLabel, QMessageBox
 
 import numpy as np
 
@@ -59,9 +59,13 @@ class FrameDisplayWidget(QLabel):
     # We override Qt's mouse interaction methods to do our stuff
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
+        if not self._check_current_active_tracker_valid():
+            return
+
         if event.button() == PySide6.QtCore.Qt.MouseButton.LeftButton:
+
             self._USER_REGION_PLACER.create_new_poi(
-                self._tracker_manager.get_active_selected_tracker(),
+                self.get_active_selected_tracker(),
                 event.x(),
                 event.y()
             )
@@ -69,12 +73,41 @@ class FrameDisplayWidget(QLabel):
             self._USER_REGION_PLACER.create_new_detection_region(event.x(), event.y())
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        if not self._check_current_active_tracker_valid():
+            return
+
         if self._USER_REGION_PLACER.drawing():
             self._USER_REGION_PLACER.update_detection_region_end(event.x(), event.y())
 
     def mouseReleaseEvent(self, ev: PySide6.QtGui.QMouseEvent) -> None:
+        if not self._check_current_active_tracker_valid():
+            return
+
         self._USER_REGION_PLACER.end_detection_region_creation()
 
     def get_active_selected_tracker(self):
-        return self._tracker_manager.get_active_selected_tracker()
+        if self._check_current_active_tracker_valid():
+            return self._tracker_manager.get_active_selected_tracker()
+        else:
+            return None
 
+    def _check_current_active_tracker_valid(self):
+        """
+        Checks whether a currently active tracker exists,
+        displays a warning message box if there is None available
+
+        dev note: it was necessary to duplicate the call to this method multiple times
+        because of the way we redefine mouse events with PySide6
+        """
+        try:
+            self._tracker_manager.get_active_selected_tracker()
+        except ValueError:
+            alert = QMessageBox(self)
+            alert.setWindowTitle("No trackers defined !")
+            alert.setText("You need to create at least one tracker to start "
+                          "tracking on the current video feed !\n"
+                          "Click on the \"Trackers\" tab in the top-left"
+                          "to create a new one")
+            alert.exec()
+            return False
+        return True

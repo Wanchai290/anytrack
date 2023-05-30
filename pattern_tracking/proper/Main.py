@@ -22,10 +22,6 @@ class Main:
         self._halt_event = Event()
         """Event used to halt operations on separate threads. Should only be modified by the Qt aboutToQuit() signal"""
         self._tracker_manager = TrackerManager()
-        # >>> required before I make the menus to create them
-        self._tracker_manager.add_tracker(TemplateTracker("Default"))
-        self._tracker_manager.set_active_tracker("Default")
-        # <<<
         """Contains all curren trackers used"""
         self._live_feed = VideoReader(0, False, self._halt_event)
         """Continuously reads the current video stream"""
