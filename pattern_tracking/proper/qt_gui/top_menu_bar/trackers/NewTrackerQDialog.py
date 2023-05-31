@@ -74,11 +74,11 @@ class NewTrackerQDialog(QDialog):
         # TODO: improve GUI
         alert = QMessageBox(parent=self)
         if not valid:
-            icon_pixmap = QStyle.StandardPixmap.SP_MessageBoxWarning
-            alert.setWindowIcon(self.style().standardIcon(icon_pixmap))
+            alert.addButton(QMessageBox.Close)
+        else:
+            alert.addButton(QMessageBox.Ok)
         alert.setWindowTitle(title)
         alert.setText(message)
-        alert.addButton(QMessageBox.Ok)
         alert.exec()
 
         if valid:

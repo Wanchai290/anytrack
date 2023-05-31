@@ -105,7 +105,7 @@ class FrameDisplayWidget(QLabel):
             alert = QMessageBox(self)
             alert.setWindowTitle("No trackers defined !")
             alert.setText("You need to create at least one tracker to start "
-                          "tracking on the current video feed !\n"
+                          "tracking on the current video feed !\n\n"
                           "Click on the \"Trackers\" tab in the top-left "
                           "to create a new one")
             alert.exec()

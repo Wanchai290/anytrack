@@ -50,8 +50,10 @@ class TrackerManager(RemoteQActionsInterface):
         if len(name) == 0:
             raise ValueError("The tracker's name cannot be empty !")
 
-        if name in self._collection.keys():
-            raise KeyError("All trackers must have different names. \n" +
+        name = name.strip()
+
+        if name in [t.get_name() for t in self._collection.values()]:
+            raise KeyError("All trackers must have different names." +
                            "Please input a different name for the new tracker")
 
         if tracker_type == TrackerManager.TrackerType.TEMPLATE_TRACKER:
