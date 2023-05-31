@@ -1,6 +1,5 @@
 from typing import Callable
 
-from PySide6.QtCore import Signal, QObject
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication
 
@@ -25,12 +24,12 @@ class CreateTrackerAction(QAction):
         dlg = NewTrackerQDialog(self._tracker_manager)
 
         if dlg.exec():
-            self._callback(dlg.get_created_tracker())
             if set_new_as_default:
                 self._tracker_manager.set_active_tracker(dlg.get_created_tracker().get_id())
+            self._callback(dlg.get_created_tracker())
 
 
 if __name__ == "__main__":
     app = QApplication()
-    o = CreateTrackerAction(TrackerManager())
+    o = CreateTrackerAction(TrackerManager(), print)
     o._new_tracker_dialog()
