@@ -1,3 +1,4 @@
+import uuid
 from abc import ABC, abstractmethod
 
 import cv2 as cv
@@ -10,6 +11,8 @@ from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
 class AbstractTracker(ABC):
 
     def __init__(self, name: str):
+        self._id = uuid.uuid4()
+        """Unique identifier"""
         self._name = name
         """Name of the tracker. Cannot (and shouldn't) be modified"""
         self._detection_region = RegionOfInterest.new_empty()
@@ -26,6 +29,9 @@ class AbstractTracker(ABC):
     def get_edited_frame(self) -> cv.Mat | np.ndarray:
         """:return: The frame that has been edited by this highlighter"""
         return self._drawing_frame
+
+    def get_id(self) -> uuid.UUID:
+        return self._id
 
     def get_name(self) -> str:
         return self._name
