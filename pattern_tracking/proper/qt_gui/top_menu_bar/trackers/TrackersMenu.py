@@ -1,5 +1,5 @@
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QMenu
+from PySide6.QtWidgets import QMenu, QWidget
 
 from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.CreateTrackerAction import CreateTrackerAction
 from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.SwitchTrackersSubMenu import SwitchTrackersSubMenu
@@ -15,8 +15,8 @@ class TrackersMenu(QMenu):
     DEFAULT_NAME = "Trackers"
     """Default text displayed that represents this menu's clickable in the GUI"""
 
-    def __init__(self, tracker_manager: TrackerManager, name: str = None):
-        super().__init__()
+    def __init__(self, tracker_manager: TrackerManager, name: str = None, parent: QWidget = None):
+        super().__init__(parent)
         self._TRACKER_MANAGER = tracker_manager
 
         self._SWITCH_TRACKERS_SUBMENU = SwitchTrackersSubMenu(tracker_manager)
@@ -25,7 +25,8 @@ class TrackersMenu(QMenu):
         self._CREATE_TRACKER_ACTION = \
             CreateTrackerAction(
                 self._TRACKER_MANAGER,
-                self._SWITCH_TRACKERS_SUBMENU.on_tracker_added_callback
+                self._SWITCH_TRACKERS_SUBMENU.on_tracker_added_callback,
+                top_level_parent=self.parent()
             )
         """Button that opens a popup dialog to create a new tracker"""
 

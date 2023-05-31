@@ -19,7 +19,7 @@ class AppMainWindow(QMainWindow):
         self._TRACKER_MANAGER = tracker_manager
         self._FRAME_DISPLAY = FrameDisplayWidget(tracker_manager, frame_shape)
         # self._live_dist_plot: QWidget =
-        self._TRACKERS_MENU = TrackersMenu(tracker_manager)
+        self._TRACKERS_MENU = TrackersMenu(tracker_manager, parent=self)
 
         self.menuBar().addMenu(self._TRACKERS_MENU)
 

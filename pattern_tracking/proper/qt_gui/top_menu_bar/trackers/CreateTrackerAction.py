@@ -1,7 +1,7 @@
 from typing import Callable
 
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QWidget
 
 from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.NewTrackerQDialog import NewTrackerQDialog
 from pattern_tracking.proper.tracker.AbstractTracker import AbstractTracker
@@ -20,8 +20,11 @@ class CreateTrackerAction(QAction):
     the currently selected tracker.
     """
 
-    def __init__(self, tracker_manager: TrackerManager, gui_callback: Callable[[AbstractTracker], None]):
+    def __init__(self, tracker_manager: TrackerManager,
+                 gui_callback: Callable[[AbstractTracker], None],
+                 top_level_parent: QWidget = None):
         super().__init__()
+        self._TOP_LEVEL_PARENT = top_level_parent
         self._tracker_manager = tracker_manager
         """The manager to which the new tracker will be added to"""
         self._on_creation_complete_callback = gui_callback
@@ -37,7 +40,7 @@ class CreateTrackerAction(QAction):
         """
         set_new_as_default = len(self._tracker_manager.alive_trackers()) == 0
 
-        dlg = NewTrackerQDialog(self._tracker_manager)
+        dlg = NewTrackerQDialog(self._tracker_manager, parent_widget=self._TOP_LEVEL_PARENT)
 
         if dlg.exec():
             if set_new_as_default:
