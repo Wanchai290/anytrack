@@ -14,7 +14,7 @@ class AbstractTracker(ABC):
         self._id = uuid.uuid4()
         """Unique identifier"""
         self._name = name
-        """Name of the tracker. Cannot (and shouldn't) be modified"""
+        """Name of the tracker. Recommended to be unique among all trackers"""
         self._detection_region = RegionOfInterest.new_empty()
         """The region in which we limit ourselves to find the POI"""
         self._template_poi = RegionOfInterest.new_empty()
@@ -31,9 +31,11 @@ class AbstractTracker(ABC):
         return self._drawing_frame
 
     def get_id(self) -> uuid.UUID:
+        """:return The unique identifier of this tracker"""
         return self._id
 
     def get_name(self) -> str:
+        """:return The name of this tracker"""
         return self._name
 
     def get_detection_region(self) -> RegionOfInterest:
@@ -56,12 +58,30 @@ class AbstractTracker(ABC):
 
     @abstractmethod
     def update(self, base_frame: np.ndarray, drawing_frame: np.ndarray):
+        """
+        Locate the POI to find in the given image, by limiting the search
+        to a specific detection region.
+        Draws the result onto the drawing_frame parameter, that must be of the
+        same shape as the given image
+        :param base_frame: The given image in which to find the POI
+        :param drawing_frame: The image to highlight the POI's location on
+        """
         pass
 
     @abstractmethod
-    def _draw_poi(self, rect: np.ndarray):
+    def _draw_poi(self, rect: RegionOfInterest | np.ndarray):
+        """
+        Draws a rectangle highlighting the point of interest
+        on the frame of this object.
+        :param rect: The rectangle to draw on the object's frame
+        """
         pass
 
     @abstractmethod
-    def _draw_detection_region(self, rect: RegionOfInterest):
+    def _draw_detection_region(self, rect: RegionOfInterest | np.ndarray):
+        """
+        Draw the region in which to find the POI
+        on the frame of this object.
+        :param rect: The rectangle to draw on the object's frame
+        """
         pass

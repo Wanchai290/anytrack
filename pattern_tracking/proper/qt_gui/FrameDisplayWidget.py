@@ -15,6 +15,10 @@ class FrameDisplayWidget(QLabel):
     on which is highlighted the current region of interests
     being tracked.
 
+    This widget only displays given frames, and does not compute which
+    areas to highlight to locate the tracked objects. The latter computation
+    is done in the BackgroundComputation class.
+
     The logic to know whether to call the bindings or not is performed in this object
     Updates to the region of interest or trackers is done in the UserRegionPlacer object
     """
@@ -23,7 +27,7 @@ class FrameDisplayWidget(QLabel):
         super().__init__()
 
         # Disable resize of this widget
-        self.setFixedSize(*frames_shape[1::-1])
+        self.setFixedSize(*frames_shape[1::-1])  # In OpenCV, shape is as follows : (height, width, depth)
 
         self._USER_REGION_PLACER = UserRegionPlacer(self)
         """
@@ -37,55 +41,16 @@ class FrameDisplayWidget(QLabel):
         """Contains all the trackers, and the current active one"""
 
         self._frame_pixmap = utils.ndarray_to_qimage(np.zeros(frames_shape), as_qpixmap=True)
+        """The QPixmap variant of the current frame displayed. This is the object that Qt displays"""
+
         self.setPixmap(self._frame_pixmap)
 
     def get_current_frame(self):
+        """Returns the backing NumPy array image displayed to the user"""
         return self._current_frame
 
-    def change_frame_to_display(self, frame: np.ndarray, swap_rgb: bool = False):
-        """
-        Updates the current image displayed by this QLabel,
-        by converting the passed NumPy frame as a QPixmap
-
-        :param frame: The frame to be displayed
-        :param swap_rgb: True if we have to swap the RGB order of the image
-                         Often necessary when working with OpenCV for example
-        """
-        self._current_frame = frame
-        q_img = utils.ndarray_to_qimage(frame, swap_rgb, as_qpixmap=True)
-        self.setPixmap(q_img)
-
-    # -- Mouse events binding
-    # We override Qt's mouse interaction methods to do our stuff
-
-    def mousePressEvent(self, event: QMouseEvent) -> None:
-        if not self._check_current_active_tracker_valid():
-            return
-
-        if event.button() == PySide6.QtCore.Qt.MouseButton.LeftButton:
-
-            self._USER_REGION_PLACER.create_new_poi(
-                self.get_active_selected_tracker(),
-                event.x(),
-                event.y()
-            )
-        elif event.button() == PySide6.QtCore.Qt.MouseButton.RightButton:
-            self._USER_REGION_PLACER.create_new_detection_region(event.x(), event.y())
-
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        if not self._check_current_active_tracker_valid():
-            return
-
-        if self._USER_REGION_PLACER.drawing():
-            self._USER_REGION_PLACER.update_detection_region_end(event.x(), event.y())
-
-    def mouseReleaseEvent(self, ev: PySide6.QtGui.QMouseEvent) -> None:
-        if not self._check_current_active_tracker_valid():
-            return
-
-        self._USER_REGION_PLACER.end_detection_region_creation()
-
     def get_active_selected_tracker(self):
+        """Returns the current active selected tracker, or None if there isn't any selected"""
         if self._check_current_active_tracker_valid():
             return self._tracker_manager.get_active_selected_tracker()
         else:
@@ -111,3 +76,46 @@ class FrameDisplayWidget(QLabel):
             alert.exec()
             return False
         return True
+
+    # -- Mouse events binding
+    # We override Qt's mouse interaction methods to manage our events
+
+    def change_frame_to_display(self, frame: np.ndarray, swap_rgb: bool = False):
+        """
+        Updates the current image displayed by this QLabel,
+        by converting the passed NumPy frame as a QPixmap
+
+        :param frame: The frame to be displayed
+        :param swap_rgb: True if we have to swap the RGB order of the image
+                         Often necessary when working with OpenCV for example
+        """
+        self._current_frame = frame
+        q_img = utils.ndarray_to_qimage(frame, swap_rgb, as_qpixmap=True)
+        self.setPixmap(q_img)
+
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        if not self._check_current_active_tracker_valid():
+            return
+
+        if event.button() == PySide6.QtCore.Qt.MouseButton.LeftButton:
+            self._USER_REGION_PLACER.create_new_poi(
+                self.get_active_selected_tracker(),
+                event.x(),
+                event.y()
+            )
+
+        elif event.button() == PySide6.QtCore.Qt.MouseButton.RightButton:
+            self._USER_REGION_PLACER.create_new_detection_region(event.x(), event.y())
+
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        if not self._check_current_active_tracker_valid():
+            return
+
+        if self._USER_REGION_PLACER.drawing():
+            self._USER_REGION_PLACER.update_detection_region_end(event.x(), event.y())
+
+    def mouseReleaseEvent(self, ev: PySide6.QtGui.QMouseEvent) -> None:
+        if not self._check_current_active_tracker_valid():
+            return
+
+        self._USER_REGION_PLACER.end_detection_region_creation()

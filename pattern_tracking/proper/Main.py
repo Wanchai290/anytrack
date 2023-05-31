@@ -38,8 +38,8 @@ class Main:
         """Connects the widgets and the children threads together"""
 
     def run(self):
-        self._live_feed.run_threaded()
-        self._background_computation_worker.run_threaded()
+        self._live_feed.start()
+        self._background_computation_worker.start()
         self._main_window.show()
         self._app.exec()
 

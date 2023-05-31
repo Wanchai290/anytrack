@@ -18,12 +18,17 @@ class BackgroundComputation:
         self._halt = halt_event
         self._thread: Thread | None = None
 
-    def run(self):
+    def _run(self):
+        """
+        Continuously processes data to be displayed
+        This method shouldn't be launched as is, but from a separate thread only
+        """
         while not self._halt.is_set():
             live_frame = self._LIVE_FEED.grab_frame(block=True)[1]
             edited_frame = self._TRACKER_MANAGER.update_trackers(live_frame, drawing_sheet=live_frame.copy())
             self._frame_display_widget.change_frame_to_display(edited_frame, swap_rgb=True)
 
-    def run_threaded(self):
-        self._thread = Thread(target=self.run, args=())
+    def start(self):
+        """Starts this class' job in the background"""
+        self._thread = Thread(target=self._run, args=())
         self._thread.start()

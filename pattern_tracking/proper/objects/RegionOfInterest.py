@@ -44,10 +44,7 @@ class RegionOfInterest:
 
     @staticmethod
     def new_empty():
-        """
-        Returns a new invalid region of interest
-        :return: A invalid region of interest object
-        """
+        """Returns a new invalid region of interest. To be used as a placeholder"""
         return RegionOfInterest(np.zeros((0, 0)), (0, 0, 0, 0))
 
     def __init__(self, parent_image: np.ndarray, xwyh: tuple[int, int, int, int] | np.ndarray):
@@ -89,6 +86,7 @@ class RegionOfInterest:
     # -- Methods
 
     def _update_image(self, xwyh: np.ndarray):
+        """Refreshes the image region to track, and its coordinates, using the current parent image"""
         self._xwyh = xwyh
         self._x, self._width, self._y, self._height = xwyh
         self._image = utils.get_roi(self._parent_image, *xwyh)
@@ -112,32 +110,19 @@ class RegionOfInterest:
             and self._y <= other.get_y() <= sum(self._xwyh[2:4])
 
     def get_x(self) -> int:
-        """
-        Returns the y coordinate of the top-left point of this region of interest
-        :return: The y coordinate of the top-left point of the ROI
-        """
-
+        """Returns the y coordinate of the top-left point of this region of interest"""
         return self._x
 
     def get_width(self) -> int:
-        """
-        Returns the width of this region of interest
-        :return: The width of the ROI
-        """
+        """Returns the width of this region of interest"""
         return self._width
 
     def get_y(self) -> int:
-        """
-        Returns the y coordinate of the top-left point of this region of interest
-        :return: The y coordinate of the top-left point of the ROI
-        """
+        """Returns the y coordinate of the top-left point of this region of interest"""
         return self._y
 
     def get_height(self) -> int:
-        """
-        Returns the height of this region of interest
-        :return: The height of the ROI
-        """
+        """Returns the height of this region of interest"""
         return self._height
 
     def get_xwyh(self) -> np.ndarray:

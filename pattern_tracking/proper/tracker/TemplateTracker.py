@@ -15,16 +15,8 @@ class TemplateTracker(AbstractTracker):
     def __init__(self, name: str):
         super().__init__(name)
 
-    # -- Getters
-
     # -- Methods
     def update(self, base_frame: np.ndarray, drawing_frame: np.ndarray):
-        """
-        Updates the tracking of the current POI in the given
-        detection region
-        :param base_frame: The current new frame that came from a video feed
-        :param drawing_frame: The frame on which the highlighter will draw on
-        """
         # dev note: This isn't the most performant logic structure, there are some checks that are done multiple times
         # but could have been done only once.
         # Doing the latter would have led to less readable code, so I took the first option
@@ -57,12 +49,7 @@ class TemplateTracker(AbstractTracker):
                 if self._detection_region.intersects(self._template_poi):
                     self._draw_poi(self._found_poi.get_coords())
 
-    def _draw_poi(self, rect: np.ndarray):
-        """
-        Draws a rectangle highlighting the point of interest
-        on the frame of this object.
-        :param rect: The rectangle to draw on the object's frame
-        """
+    def _draw_poi(self, rect):
         cv.rectangle(
             self._drawing_frame,
             *rect,
@@ -70,12 +57,7 @@ class TemplateTracker(AbstractTracker):
             2
         )
 
-    def _draw_detection_region(self, rect: RegionOfInterest):
-        """
-        Draw the region in which to find the POI
-        on the frame of this object.
-        :param rect: The rectangle to draw on the object's frame
-        """
+    def _draw_detection_region(self, rect):
         cv.rectangle(
             self._drawing_frame,
             *rect,

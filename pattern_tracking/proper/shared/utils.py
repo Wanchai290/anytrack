@@ -141,6 +141,9 @@ def ndarray_to_qimage(image: np.ndarray,
     into a QImage or a QPixmap.
 
     Almost everything has been taken from here : https://stackoverflow.com/a/35857856
+    :param image The image to convert
+    :param swap_rgb If True, swaps the order of colors
+    :param as_qpixmap If True, converts the result into a QPixmap object
     """
     height, width, channel = image.shape
     bytes_per_line = 3 * width

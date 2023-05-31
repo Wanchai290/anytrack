@@ -1,24 +1,36 @@
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QDialog, QWidget, QLineEdit, QApplication, QVBoxLayout, QLabel, QComboBox, \
-    QDialogButtonBox, QMessageBox, QStyle
+    QDialogButtonBox, QMessageBox
 
 from pattern_tracking.proper.tracker.AbstractTracker import AbstractTracker
 from pattern_tracking.proper.tracker.TrackerManager import TrackerManager
 
 
 class NewTrackerQDialog(QDialog):
+    """
+    Dialog popup used to create a new AbstractTracker
+    and assign it to a given TrackerManager
+    Will display additional warnings or errors if the specified
+    parameters are not valid
+    """
+
     dialog_size = QSize(240, 160)
+    """Fixed size of the dialog window"""
     window_title = "Create a new tracker"
+    """Title of the popup window"""
 
     def __init__(self, tracker_manager: TrackerManager, parent_widget: QWidget = None):
         super().__init__(parent_widget)
 
         self._TRACKER_MANAGER = tracker_manager
         self._created_tracker: AbstractTracker | None = None
+        """The tracker created upon closing this dialog"""
 
+        # -- Dialog window parameters
         self.setModal(True)
         self.setWindowTitle(NewTrackerQDialog.window_title)
 
+        # -- Window layout
         self.layout = QVBoxLayout()
         self.layout.addWidget(QLabel("Tracker name"))
         self._input_name = QLineEdit(self)
@@ -43,6 +55,13 @@ class NewTrackerQDialog(QDialog):
         self.setFixedSize(NewTrackerQDialog.dialog_size)
 
     def validate(self):
+        """
+        Checks whether the parameters specified by the user allow
+        to create a valid AbstractTracker child object.
+
+        If a parameter causes an error, displays a popup window
+        to warn the user
+        """
         new_tracker_name = self._input_name.displayText()
         new_tracker_type = self._trackers_combobox.currentData()
 
@@ -86,6 +105,7 @@ class NewTrackerQDialog(QDialog):
             self.accept()
 
     def get_created_tracker(self):
+        """Returns the created tracker after closing this dialog"""
         return self._created_tracker
 
 

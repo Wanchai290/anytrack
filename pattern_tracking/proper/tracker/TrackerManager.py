@@ -5,12 +5,11 @@ from threading import Lock
 import numpy as np
 from PySide6.QtGui import QAction
 
-from pattern_tracking.proper.interfaces.RemoteQActionsInterface import RemoteQActionsInterface
 from pattern_tracking.proper.tracker.AbstractTracker import AbstractTracker
 from pattern_tracking.proper.tracker.TemplateTracker import TemplateTracker
 
 
-class TrackerManager(RemoteQActionsInterface):
+class TrackerManager:
     """
     Contains a collection of trackers, and links them
     together so that they all draw their results
@@ -18,20 +17,24 @@ class TrackerManager(RemoteQActionsInterface):
     """
 
     class TrackerType(Enum):
+        """
+        Describes the different types of tracker that are available in the app
+        """
         TEMPLATE_TRACKER = "Template tracker"
         KCF_TRACKER = "KCF Tracker"
 
     def __init__(self):
         self._active_tracker: AbstractTracker | None = None
+        """The tracker that the user is currently editing"""
         self._collection: dict[uuid.UUID, AbstractTracker] = {}
+        """Collection of trackers of this manager"""
         self._collection_mutex = Lock()
         """
         Any modification operation MUST get the lock before modifying the collection of this manager
-        Otherwise, the program might run into a RuntimeError because the collection would change while it's being read into
+        Otherwise, the program might run into a RuntimeError because the collection would change while it's being read
         """
 
         self._qt_actions: dict[str, QAction] = {}
-        self.init_qt_actions()
 
     def get_tracker(self, tracker_id: uuid.UUID) -> AbstractTracker | None:
         """
@@ -125,14 +128,6 @@ class TrackerManager(RemoteQActionsInterface):
     def alive_trackers(self) -> dict[uuid.UUID, str]:
         """Returns the UUIDs and names of all trackers currently in this manager"""
         return {identifier: tracker.get_name() for (identifier, tracker) in self._collection.items()}
-
-    # - Overriding methods
-
-    def init_qt_actions(self):
-        pass
-
-    def get_qt_actions(self) -> dict[str, QAction]:
-        return self._qt_actions
 
     @staticmethod
     def available_tracker_types() -> list[TrackerType]:

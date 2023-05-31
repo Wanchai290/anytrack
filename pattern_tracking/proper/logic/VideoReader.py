@@ -31,35 +31,25 @@ class VideoReader:
 
         if not self._video_feed.isOpened():
             raise IOError("Couldn't open video feed !")
-
         self._frames_shape = self._video_feed.read()[1].shape
+        """The shape of the frames taken from the video feed"""
 
-    def run_threaded(self):
-        """
-        Reads & places all grabbed frames in a queue of the object
-        """
-        self._thread = Thread(target=self.async_process,
+    def start(self):
+        """Start a thread, reads & places all grabbed frames in the self._frames_queue attribute"""
+        self._thread = Thread(target=self._run,
                               args=(self._video_feed, self._frames_queue, self._stop_event))
         self._thread.start()
 
-    def join_process(self, timeout: int = None):
-        """
-        Waits for the background processing thread to finish
-        :param timeout: Maximum time out to wait for
-        """
-        if self._thread.is_alive():
-            self._thread.join(timeout if timeout is not None else 0)
-
     @staticmethod
-    def async_process(video: cv.VideoCapture, w_read_frames_q: Queue[tuple[int, cv.Mat]],
-                      halt_event: Event):
+    def _run(video: cv.VideoCapture, w_read_frames_q: Queue[tuple[int, cv.Mat | np.ndarray]],
+             halt_event: Event):
         """
         Thread-safe video reader method
         Opens a video file (or video capture device feed),
         then continuously reads the frames of the video and stores them in a queue
 
         Data format of the items that are written to the queue are as follows :
-        tuple[int, cv.Mat]|None
+        tuple[int, cv.Mat | np.ndarray] | None
         """
         frame_id = 0
         while video.isOpened() and not halt_event.is_set():
@@ -69,16 +59,6 @@ class VideoReader:
 
             w_read_frames_q.put((frame_id, frame))
             frame_id += 1
-
-        # halt_event.set()  # TODO: remove, only Qt will be allowed to set the halt flag
-
-    def force_halt(self):
-        """
-        Forcefully sets the stop Event object to halt
-        any work being done. This will affect other processes
-        using the same Event object as well
-        """
-        self._stop_event.set()  # TODO: remove, only Qt will be allowed to set the halt flag
 
     def grab_frame(self,
                    block: bool | None = None,
