@@ -1,3 +1,4 @@
+import uuid
 from enum import Enum
 
 import numpy as np
@@ -21,17 +22,17 @@ class TrackerManager(RemoteQActionsInterface):
 
     def __init__(self):
         self._active_tracker: AbstractTracker | None = None
-        self._collection: dict[str, AbstractTracker] = {}
+        self._collection: dict[uuid.UUID, AbstractTracker] = {}
 
         self._qt_actions: dict[str, QAction] = {}
         self.init_qt_actions()
 
-    def get_tracker(self, tracker_name: str) -> AbstractTracker | None:
+    def get_tracker(self, tracker_id: uuid.UUID) -> AbstractTracker | None:
         """
-        Get the tracker with the given name
-        :param tracker_name: The name of the tracker object to retrieve
+        Get the tracker with the given UUID
+        :param tracker_id: The UUID of the tracker object to retrieve
         """
-        return self._collection[tracker_name]
+        return self._collection[tracker_id]
 
     def create_tracker(self, name: str, tracker_type: TrackerType) -> AbstractTracker:
         """
@@ -48,29 +49,30 @@ class TrackerManager(RemoteQActionsInterface):
                            "Please input a different name for the new tracker")
 
         if tracker_type == TrackerManager.TrackerType.TEMPLATE_TRACKER:
-            self._collection[name] = TemplateTracker(name)
+            tracker = TemplateTracker(name)
+            self._collection[tracker.get_id()] = tracker
         else:
             raise NotImplementedError("This tracker type is not yet implemented !")
 
-        return self._collection[name]
+        return self._collection[tracker.get_id()]
 
     def add_tracker(self, tracker: AbstractTracker):
         """
         Add a tracker to this manager
         :param tracker: The tracker to add
         """
-        self._collection[tracker.get_name()] = tracker
+        self._collection[tracker.get_id()] = tracker
 
-    def remove_tracker(self, tracker_name: str) -> bool:
+    def remove_tracker(self, tracker_id: uuid.UUID) -> bool:
         """
         Removes the tracker that has the same name as the given one
-        :param tracker_name:
+        :param tracker_id: The UUID of the tracker
         :return: True if the tracker could be removed, false if wasn't here in the first place
                  or if the specified tracker wasn't in this manager's collection
         """
-        has_tracker = tracker_name in self._collection.keys()
+        has_tracker = tracker_id in self._collection.keys()
         if has_tracker:
-            self._collection.pop(tracker_name)
+            self._collection.pop(tracker_id)
         return has_tracker
 
     def update_trackers(self, live_frame: np.ndarray, drawing_sheet: np.ndarray) -> np.ndarray:
@@ -88,10 +90,10 @@ class TrackerManager(RemoteQActionsInterface):
 
         return drawing_sheet
 
-    def set_active_tracker(self, tracker_name: str):
-        tracker = self._collection.get(tracker_name)
+    def set_active_tracker(self, tracker_id: uuid.UUID):
+        tracker = self._collection.get(tracker_id)
         if tracker is None:
-            raise ValueError(f"No tracker with the name {tracker_name} is part of this tracker manager")
+            raise ValueError(f"No tracker with the UUID \"{tracker_id}\" is part of this tracker manager")
         self._active_tracker = tracker
 
     def get_active_selected_tracker(self) -> AbstractTracker | None:
@@ -104,9 +106,9 @@ class TrackerManager(RemoteQActionsInterface):
             raise ValueError("No active tracker set !")
         return self._active_tracker
 
-    def alive_trackers_names(self) -> list[str]:
-        """Returns the names of all trackers currently in this manager"""
-        return list(self._collection.keys())
+    def alive_trackers(self) -> dict[uuid.UUID, str]:
+        """Returns the UUIDs and names of all trackers currently in this manager"""
+        return {identifier: tracker.get_name() for (identifier, tracker) in self._collection.items()}
 
     # - Overriding methods
 
@@ -117,9 +119,9 @@ class TrackerManager(RemoteQActionsInterface):
         return self._qt_actions
 
     @staticmethod
-    def available_trackers() -> list[TrackerType]:
+    def available_tracker_types() -> list[TrackerType]:
         return [v[1] for v in enumerate(TrackerManager.TrackerType)]
 
 
 if __name__ == '__main__':
-    print(TrackerManager.available_trackers())
+    print(TrackerManager.available_tracker_types())

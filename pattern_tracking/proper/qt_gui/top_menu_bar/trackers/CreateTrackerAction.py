@@ -14,12 +14,12 @@ class CreateTrackerAction(QAction):
         self.triggered.connect(self._new_tracker_dialog)
 
     def _new_tracker_dialog(self):
-        set_new_as_default = len(self._tracker_manager.alive_trackers_names()) == 0
+        set_new_as_default = len(self._tracker_manager.alive_trackers()) == 0
 
         dlg = NewTrackerQDialog(self._tracker_manager)
 
         if dlg.exec() and set_new_as_default:
-            self._tracker_manager.set_active_tracker(dlg.get_created_tracker().get_name())
+            self._tracker_manager.set_active_tracker(dlg.get_created_tracker().get_id())
 
 
 if __name__ == "__main__":
