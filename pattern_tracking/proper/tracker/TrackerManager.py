@@ -1,5 +1,6 @@
 import uuid
 from enum import Enum
+from threading import Lock
 
 import numpy as np
 from PySide6.QtGui import QAction
@@ -23,6 +24,11 @@ class TrackerManager(RemoteQActionsInterface):
     def __init__(self):
         self._active_tracker: AbstractTracker | None = None
         self._collection: dict[uuid.UUID, AbstractTracker] = {}
+        self._collection_mutex = Lock()
+        """
+        Any modification operation MUST get the lock before modifying the collection of this manager
+        Otherwise, the program might run into a RuntimeError because the collection would change while it's being read into
+        """
 
         self._qt_actions: dict[str, QAction] = {}
         self.init_qt_actions()
@@ -50,7 +56,9 @@ class TrackerManager(RemoteQActionsInterface):
 
         if tracker_type == TrackerManager.TrackerType.TEMPLATE_TRACKER:
             tracker = TemplateTracker(name)
+            self._collection_mutex.acquire(blocking=True)
             self._collection[tracker.get_id()] = tracker
+            self._collection_mutex.release()
         else:
             raise NotImplementedError("This tracker type is not yet implemented !")
 
@@ -72,7 +80,9 @@ class TrackerManager(RemoteQActionsInterface):
         """
         has_tracker = tracker_id in self._collection.keys()
         if has_tracker:
+            self._collection_mutex.acquire(blocking=True)
             self._collection.pop(tracker_id)
+            self._collection_mutex.release()
         return has_tracker
 
     def update_trackers(self, live_frame: np.ndarray, drawing_sheet: np.ndarray) -> np.ndarray:
@@ -84,6 +94,10 @@ class TrackerManager(RemoteQActionsInterface):
         :param drawing_sheet: The image on which the trackers should draw
         :return: The frame edited by all trackers, that highlights regions tracked
         """
+        # Wait for any modification operation to end
+        while self._collection_mutex.locked():
+            continue
+
         for tr in self._collection.values():
             tr.update(live_frame, drawing_sheet)
             drawing_sheet = tr.get_edited_frame()
