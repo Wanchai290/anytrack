@@ -100,13 +100,12 @@ class TrackerManager:
         :return: The frame edited by all trackers, that highlights regions tracked
         """
         # Wait for any modification operation to end
-        while self._collection_mutex.locked():
-            continue
-
+        self._collection_mutex.acquire(blocking=True)
         for tr in self._collection.values():
             tr.update(live_frame, drawing_sheet)
             drawing_sheet = tr.get_edited_frame()
 
+        self._collection_mutex.release()
         return drawing_sheet
 
     def set_active_tracker(self, tracker_id: uuid.UUID):
