@@ -26,6 +26,8 @@ class BackgroundComputation:
         while not self._halt.is_set():
             live_frame = self._LIVE_FEED.grab_frame(block=True)[1]
             edited_frame = self._TRACKER_MANAGER.update_trackers(live_frame, drawing_sheet=live_frame.copy())
+            # TODO: add computation of distance for all plots
+            # and update all plots as well
             self._frame_display_widget.change_frame_to_display(edited_frame, swap_rgb=True)
 
     def start(self):

@@ -1,7 +1,7 @@
-from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QDialog, QWidget, QComboBox, QVBoxLayout, QDialogButtonBox, QLabel, QHBoxLayout, \
-    QApplication, QMessageBox, QStyle
+    QApplication, QLineEdit
 
+from pattern_tracking.proper.logic.DistanceObserver import DistanceObserver
 from pattern_tracking.proper.qt_gui.generic.GenericAssets import GenericAssets
 from pattern_tracking.proper.tracker.AbstractTracker import AbstractTracker
 from pattern_tracking.proper.tracker.TemplateTracker import TemplateTracker
@@ -15,8 +15,13 @@ class NewPlotQDialog(QDialog):
 
     def __init__(self, available_trackers: list[AbstractTracker], parent: QWidget = None):
         super().__init__(parent)
+
+        self._dist_observer_result: DistanceObserver | None = None
+        """The resulting object created when the user closes the dialog"""
         self._tracker_one: AbstractTracker | None = None
+        """Some tracker to be linked to Other"""
         self._tracker_two: AbstractTracker | None = None
+        """The other tracker to be linked to Some"""
 
         # -- Window layout
         self._layout = QVBoxLayout()
@@ -25,6 +30,12 @@ class NewPlotQDialog(QDialog):
         for t in available_trackers:
             self._tracker_choice_one.addItem(t.get_name(), t.get_id())
             self._tracker_choice_two.addItem(t.get_name(), t.get_id())
+
+        layout_plot_name = QHBoxLayout()
+        layout_plot_name.addWidget(QLabel("Name of the plot window"))
+        self._plot_name_line_edit = QLineEdit()
+        layout_plot_name.addWidget(self._plot_name_line_edit)
+        self._layout.addWidget(layout_plot_name)
 
         self._layout.addWidget(QLabel("Select the two trackers to link"))
         layout_choice_one = QHBoxLayout()
@@ -55,30 +66,32 @@ class NewPlotQDialog(QDialog):
         """
         selected_tracker_one = self._tracker_choice_one.currentData()
         selected_tracker_two = self._tracker_choice_two.currentData()
+        plot_name = self._plot_name_line_edit.text().strip()
 
         popup_title = "Success"
         popup_message = "A new plot has been created"
         valid = False
 
-        if selected_tracker_one == selected_tracker_two:
-            popup_title = "Error : Same tracker"
-            popup_message = "The two trackers must be different"
-
-        else:
+        try:
+            dist_observer = DistanceObserver(
+                plot_name,
+                selected_tracker_one,
+                selected_tracker_two
+            )
             valid = True
+        except ValueError as err:
+            popup_title = "Error : Same tracker"
+            popup_message = str(err)
 
         GenericAssets.popup_message(popup_title, popup_message, is_error=not valid)
 
         if valid:
+            self._dist_observer_result = dist_observer
             self.accept()
 
-    def get_trackers_to_link(self) -> tuple[AbstractTracker, AbstractTracker]:
-        """
-        Get the trackers chosen by the user
-        Should not be called until the choices have been validated
-        :return: the two trackers that we want to link together, to plot the distance between their tracked POIs
-        """
-        return self._tracker_choice_one.currentData(), self._tracker_choice_two.currentData()
+    def get_resulting_dist_observer(self):
+        """:return: The DistanceObserver linking two trackers together"""
+        return self._dist_observer_result
 
 
 if __name__ == '__main__':

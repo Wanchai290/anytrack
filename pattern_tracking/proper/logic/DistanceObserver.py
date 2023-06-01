@@ -11,6 +11,8 @@ class DistanceObserver:
 
     def __init__(self, name: str, t1: AbstractTracker, t2: AbstractTracker):
         self._name = name
+        if t1.get_id() == t2.get_id():
+            raise ValueError("The two trackers must be different")
         self._t1 = t1
         self._t2 = t2
 
