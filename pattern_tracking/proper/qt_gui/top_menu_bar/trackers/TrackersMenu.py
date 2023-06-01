@@ -31,9 +31,5 @@ class TrackersMenu(QMenu):
 
         # menu parameters
         self.setTitle(TrackersMenu.DEFAULT_NAME if name is None else name)
-        self._initialize_items()
-
-    def _initialize_items(self):
-        """Instantiates all the items of this menu"""
         self.addAction(self._CREATE_TRACKER_ACTION)
         self.addMenu(self._SWITCH_TRACKERS_SUBMENU)

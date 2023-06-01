@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QDialog, QWidget, QComboBox, QVBoxLayout, QDialogButtonBox, QLabel, QHBoxLayout, \
     QApplication, QLineEdit
 
-from pattern_tracking.proper.logic.DistanceObserver import DistanceObserver
+from pattern_tracking.proper.logic.DistanceComputer import DistanceComputer
 from pattern_tracking.proper.qt_gui.generic.GenericAssets import GenericAssets
 from pattern_tracking.proper.logic.tracker import AbstractTracker
 from pattern_tracking.proper.logic.tracker import TemplateTracker
@@ -16,7 +16,7 @@ class NewPlotQDialog(QDialog):
     def __init__(self, available_trackers: list[AbstractTracker], parent: QWidget = None):
         super().__init__(parent)
 
-        self._dist_observer_result: DistanceObserver | None = None
+        self._dist_observer_result: DistanceComputer | None = None
         """The resulting object created when the user closes the dialog"""
         self._tracker_one: AbstractTracker | None = None
         """Some tracker to be linked to Other"""
@@ -28,14 +28,14 @@ class NewPlotQDialog(QDialog):
         self._tracker_choice_one = QComboBox()
         self._tracker_choice_two = QComboBox()
         for t in available_trackers:
-            self._tracker_choice_one.addItem(t.get_name(), t.get_id())
-            self._tracker_choice_two.addItem(t.get_name(), t.get_id())
+            self._tracker_choice_one.addItem(t.get_name(), t)
+            self._tracker_choice_two.addItem(t.get_name(), t)
 
         layout_plot_name = QHBoxLayout()
         layout_plot_name.addWidget(QLabel("Name of the plot window"))
         self._plot_name_line_edit = QLineEdit()
         layout_plot_name.addWidget(self._plot_name_line_edit)
-        self._layout.addWidget(layout_plot_name)
+        self._layout.addLayout(layout_plot_name)
 
         self._layout.addWidget(QLabel("Select the two trackers to link"))
         layout_choice_one = QHBoxLayout()
@@ -73,14 +73,14 @@ class NewPlotQDialog(QDialog):
         valid = False
 
         try:
-            dist_observer = DistanceObserver(
+            dist_observer = DistanceComputer(
                 plot_name,
                 selected_tracker_one,
                 selected_tracker_two
             )
             valid = True
         except ValueError as err:
-            popup_title = "Error : Same tracker"
+            popup_title = "Error: Invalid parameters"
             popup_message = str(err)
 
         GenericAssets.popup_message(popup_title, popup_message, is_error=not valid)

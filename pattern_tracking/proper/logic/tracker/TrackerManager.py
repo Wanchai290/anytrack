@@ -116,9 +116,9 @@ class TrackerManager:
             raise ValueError("No active tracker set !")
         return self._active_tracker
 
-    def alive_trackers(self) -> dict[uuid.UUID, str]:
+    def alive_trackers(self) -> dict[uuid.UUID, AbstractTracker]:
         """Returns the UUIDs and names of all trackers currently in this manager"""
-        return {identifier: tracker.get_name() for (identifier, tracker) in self._collection.items()}
+        return {identifier: tracker for (identifier, tracker) in self._collection.items()}
 
     @staticmethod
     def available_tracker_types() -> list[AbstractTracker.TrackerType]:

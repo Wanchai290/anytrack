@@ -3,6 +3,7 @@ from threading import Event, Thread
 from pattern_tracking.proper.logic.tracker.TrackerManager import TrackerManager
 from pattern_tracking.proper.logic.VideoReader import VideoReader
 from pattern_tracking.proper.qt_gui.FrameDisplayWidget import FrameDisplayWidget
+from pattern_tracking.proper.qt_gui.dock_widgets.LivePlotterDockWidget import LivePlotterDockWidget
 
 
 class BackgroundComputation:
@@ -11,10 +12,12 @@ class BackgroundComputation:
                  tracker_manager: TrackerManager,
                  live_feed: VideoReader,
                  frame_display_widget: FrameDisplayWidget,
+                 plots_container: LivePlotterDockWidget,
                  halt_event: Event):
         self._TRACKER_MANAGER = tracker_manager
         self._LIVE_FEED = live_feed
-        self._frame_display_widget = frame_display_widget
+        self._FRAME_DISPLAY_WIDGET = frame_display_widget
+        self._PLOTS_CONTAINER_WIDGET = plots_container
         self._halt = halt_event
         self._thread: Thread | None = None
 
@@ -26,9 +29,8 @@ class BackgroundComputation:
         while not self._halt.is_set():
             live_frame = self._LIVE_FEED.grab_frame(block=True)[1]
             edited_frame = self._TRACKER_MANAGER.update_trackers(live_frame, drawing_sheet=live_frame.copy())
-            # TODO: add computation of distance for all plots
-            # and update all plots as well
-            self._frame_display_widget.change_frame_to_display(edited_frame, swap_rgb=True)
+            self._PLOTS_CONTAINER_WIDGET.update()
+            self._FRAME_DISPLAY_WIDGET.change_frame_to_display(edited_frame, swap_rgb=True)
 
     def start(self):
         """Starts this class' job in the background"""
