@@ -1,11 +1,10 @@
 import uuid
 
-from PySide6.QtCore import Slot
 from PySide6.QtGui import QAction, QPixmap
 from PySide6.QtWidgets import QMenu, QWidget, QStyle
 
-from pattern_tracking.proper.tracker.AbstractTracker import AbstractTracker
-from pattern_tracking.proper.tracker.TrackerManager import TrackerManager
+from pattern_tracking.proper.logic.tracker import AbstractTracker
+from pattern_tracking.proper.logic.tracker import TrackerManager
 
 
 class SwitchTrackersSubMenu(QMenu):

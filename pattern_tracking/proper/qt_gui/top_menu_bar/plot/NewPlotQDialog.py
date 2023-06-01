@@ -3,8 +3,8 @@ from PySide6.QtWidgets import QDialog, QWidget, QComboBox, QVBoxLayout, QDialogB
 
 from pattern_tracking.proper.logic.DistanceObserver import DistanceObserver
 from pattern_tracking.proper.qt_gui.generic.GenericAssets import GenericAssets
-from pattern_tracking.proper.tracker.AbstractTracker import AbstractTracker
-from pattern_tracking.proper.tracker.TemplateTracker import TemplateTracker
+from pattern_tracking.proper.logic.tracker import AbstractTracker
+from pattern_tracking.proper.logic.tracker import TemplateTracker
 
 
 class NewPlotQDialog(QDialog):

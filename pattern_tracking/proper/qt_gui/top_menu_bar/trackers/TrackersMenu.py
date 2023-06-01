@@ -1,9 +1,8 @@
-from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QWidget
 
 from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.CreateTrackerAction import CreateTrackerAction
 from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.SwitchTrackersSubMenu import SwitchTrackersSubMenu
-from pattern_tracking.proper.tracker.TrackerManager import TrackerManager
+from pattern_tracking.proper.logic.tracker import TrackerManager
 
 
 class TrackersMenu(QMenu):

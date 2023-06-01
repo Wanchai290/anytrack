@@ -4,8 +4,8 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QApplication, QWidget
 
 from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.NewTrackerQDialog import NewTrackerQDialog
-from pattern_tracking.proper.tracker.AbstractTracker import AbstractTracker
-from pattern_tracking.proper.tracker.TrackerManager import TrackerManager
+from pattern_tracking.proper.logic.tracker import AbstractTracker
+from pattern_tracking.proper.logic.tracker import TrackerManager
 
 
 class CreateTrackerAction(QAction):

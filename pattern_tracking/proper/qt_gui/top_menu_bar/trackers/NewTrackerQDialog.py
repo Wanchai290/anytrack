@@ -2,8 +2,8 @@ from PySide6.QtCore import QSize
 from PySide6.QtWidgets import QDialog, QWidget, QLineEdit, QApplication, QVBoxLayout, QLabel, QComboBox, \
     QDialogButtonBox, QMessageBox
 
-from pattern_tracking.proper.tracker.AbstractTracker import AbstractTracker
-from pattern_tracking.proper.tracker.TrackerManager import TrackerManager
+from pattern_tracking.proper.logic.tracker.AbstractTracker import AbstractTracker
+from pattern_tracking.proper.logic.tracker.TrackerManager import TrackerManager
 
 
 class NewTrackerQDialog(QDialog):

@@ -8,7 +8,7 @@ class LivePlotterDockWidget(QDockWidget):
 
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
-        self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetClosable)
+        self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetFloatable)
 
         self._plot_widgets: list[PlotWidget] = []
 

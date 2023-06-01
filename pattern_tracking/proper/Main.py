@@ -4,8 +4,7 @@ from threading import Event
 from PySide6.QtWidgets import QApplication
 
 from pattern_tracking.proper.logic.BackgroundComputation import BackgroundComputation
-from pattern_tracking.proper.tracker.TemplateTracker import TemplateTracker
-from pattern_tracking.proper.tracker.TrackerManager import TrackerManager
+from pattern_tracking.proper.logic.tracker.TrackerManager import TrackerManager
 from pattern_tracking.proper.logic.VideoReader import VideoReader
 from pattern_tracking.proper.qt_gui.AppMainWindow import AppMainWindow
 

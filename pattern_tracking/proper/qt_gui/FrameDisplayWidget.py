@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QLabel, QMessageBox
 import numpy as np
 
 from pattern_tracking.proper.shared import utils
-from pattern_tracking.proper.tracker.TrackerManager import TrackerManager
+from pattern_tracking.proper.logic.tracker import TrackerManager
 from pattern_tracking.proper.qt_gui.logic.UserRegionPlacer import UserRegionPlacer
 
 

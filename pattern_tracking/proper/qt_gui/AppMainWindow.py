@@ -1,11 +1,9 @@
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPixmap, QAction
-from PySide6.QtWidgets import QMainWindow, QMenu, QWidget
+from PySide6.QtWidgets import QMainWindow
 
 from pattern_tracking.proper.qt_gui.dock_widgets.LivePlotterDockWidget import LivePlotterDockWidget
-from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.CreateTrackerAction import CreateTrackerAction
 from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.TrackersMenu import TrackersMenu
-from pattern_tracking.proper.tracker.TrackerManager import TrackerManager
+from pattern_tracking.proper.logic.tracker import TrackerManager
 from pattern_tracking.proper.qt_gui.FrameDisplayWidget import FrameDisplayWidget
 
 
