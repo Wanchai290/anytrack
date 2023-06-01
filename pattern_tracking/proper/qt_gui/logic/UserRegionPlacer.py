@@ -55,7 +55,6 @@ class UserRegionPlacer:
         #  - the computed POI is in the detection region
         if tracker.get_detection_region().is_undefined() \
                 or tracker.get_detection_region().intersects(computed_poi):
-            # TODO: handle adding another point
             tracker.set_poi(computed_poi)
 
     def create_new_detection_region(self, mx: int, my: int):

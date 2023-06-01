@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QLabel, QMessageBox
 
 import numpy as np
 
+from pattern_tracking.proper.qt_gui.generic.GenericAssets import GenericAssets
 from pattern_tracking.proper.shared import utils
 from pattern_tracking.proper.logic.tracker import TrackerManager
 from pattern_tracking.proper.qt_gui.logic.UserRegionPlacer import UserRegionPlacer
@@ -67,14 +68,14 @@ class FrameDisplayWidget(QLabel):
         try:
             self._tracker_manager.get_active_selected_tracker()
         except ValueError:
-            # TODO: use GeneralAssets method instead
-            alert = QMessageBox(self)
-            alert.setWindowTitle("No trackers defined !")
-            alert.setText("You need to create at least one tracker to start "
-                          "tracking on the current video feed !\n\n"
-                          "Click on the \"Trackers\" tab in the top-left "
-                          "to create a new one")
-            alert.exec()
+            GenericAssets.popup_message(
+                title="No trackers defined !",
+                message="You need to create at least one tracker to start "
+                        "tracking on the current video feed !\n\n"
+                        "Click on the \"Trackers\" tab in the top-left "
+                        "to create a new one",
+                is_error=True
+            )
             return False
         return True
 

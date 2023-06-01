@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QDialog, QWidget, QLineEdit, QApplication, QVBoxLa
 
 from pattern_tracking.proper.logic.tracker.AbstractTracker import AbstractTracker
 from pattern_tracking.proper.logic.tracker.TrackerManager import TrackerManager
+from pattern_tracking.proper.qt_gui.generic.GenericAssets import GenericAssets
 
 
 class NewTrackerQDialog(QDialog):
@@ -90,15 +91,7 @@ class NewTrackerQDialog(QDialog):
             message = str(err)
 
         # display alert dialog
-        # TODO: improve GUI
-        alert = QMessageBox(parent=self)
-        if not valid:
-            alert.addButton(QMessageBox.Close)
-        else:
-            alert.addButton(QMessageBox.Ok)
-        alert.setWindowTitle(title)
-        alert.setText(message)
-        alert.exec()
+        GenericAssets.popup_message(title, message, is_error=not valid)
 
         if valid:
             self._created_tracker = new_tracker
