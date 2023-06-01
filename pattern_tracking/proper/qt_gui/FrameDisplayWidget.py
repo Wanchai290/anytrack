@@ -67,6 +67,7 @@ class FrameDisplayWidget(QLabel):
         try:
             self._tracker_manager.get_active_selected_tracker()
         except ValueError:
+            # TODO: use GeneralAssets method instead
             alert = QMessageBox(self)
             alert.setWindowTitle("No trackers defined !")
             alert.setText("You need to create at least one tracker to start "
@@ -99,7 +100,6 @@ class FrameDisplayWidget(QLabel):
 
         if event.button() == PySide6.QtCore.Qt.MouseButton.LeftButton:
             self._USER_REGION_PLACER.create_new_poi(
-                self.get_active_selected_tracker(),
                 event.x(),
                 event.y()
             )
@@ -117,5 +117,5 @@ class FrameDisplayWidget(QLabel):
     def mouseReleaseEvent(self, ev: PySide6.QtGui.QMouseEvent) -> None:
         if not self._check_current_active_tracker_valid():
             return
-
-        self._USER_REGION_PLACER.end_detection_region_creation()
+        if self._USER_REGION_PLACER.drawing():
+            self._USER_REGION_PLACER.end_detection_region_creation()

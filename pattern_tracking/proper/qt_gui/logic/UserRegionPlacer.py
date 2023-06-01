@@ -32,18 +32,17 @@ class UserRegionPlacer:
     def drawing(self) -> bool:
         return self._drawing
 
-    def create_new_poi(self, tracker: AbstractTracker, mx: int, my: int):
+    def create_new_poi(self, mx: int, my: int):
         """
         Tries to create a new point of interest in the image.
-        Will assign it to the highlighter in two cases :
+        Will assign it to the tracker in two cases :
             - The detection region is unspecified
             - The selected POI is inside the detection region
-        :param tracker: The highlighter objects
         :param mx: X coordinate of the click of the user
         :param my: Y coordinate of the click of the user
         """
         # TODO: be able to place POI on edges properly
-
+        tracker = self._FRAME_DISPLAY_WIDGET.get_active_selected_tracker()
         # Create the point of interest using the user's selection as
         # the center of the point of interest
         computed_poi = RegionOfInterest.new(
