@@ -1,5 +1,6 @@
 import uuid
 from abc import ABC, abstractmethod
+from enum import Enum
 
 import cv2 as cv
 import numpy as np
@@ -9,6 +10,13 @@ from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
 
 
 class AbstractTracker(ABC):
+
+    class TrackerType(Enum):
+        """
+        Describes the different types of tracker that are available in the app
+        """
+        TEMPLATE_TRACKER = "Template tracker"
+        KCF_TRACKER = "KCF Tracker"
 
     def __init__(self, name: str):
         self._id = uuid.uuid4()
@@ -35,7 +43,7 @@ class AbstractTracker(ABC):
         return self._id
 
     def get_name(self) -> str:
-        """:return The name of this tracker"""
+        """:return: The name of this tracker"""
         return self._name
 
     def get_detection_region(self) -> RegionOfInterest:
