@@ -33,7 +33,7 @@ class LivePlotterDockWidget(QDockWidget):
         """Create a new PlotWidget to be displayed, and updated in real-time"""
         set_new_as_active = len(self._plot_widgets) == 0
         plot_widget = PlotWidget()
-        plot_widget.plotItem.plot([0], [0])
+        plot_widget.plotItem.plot([dist_computer.distance()])
         self._plot_widgets[dist_computer] = plot_widget
 
         if set_new_as_active:
