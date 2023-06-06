@@ -1,4 +1,5 @@
 from threading import Event, Thread
+import cv2 as cv
 
 from pattern_tracking.proper.logic.tracker.TrackerManager import TrackerManager
 from pattern_tracking.proper.logic.VideoReader import VideoReader
