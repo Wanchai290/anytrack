@@ -5,6 +5,7 @@ import numpy as np
 from PySide6.QtGui import QAction
 
 from pattern_tracking.proper.logic.tracker.AbstractTracker import AbstractTracker
+from pattern_tracking.proper.logic.tracker.KCFTracker import KCFTracker
 from pattern_tracking.proper.logic.tracker.TemplateTracker import TemplateTracker
 
 
@@ -51,13 +52,19 @@ class TrackerManager:
             raise KeyError("All trackers must have different names." +
                            "Please input a different name for the new tracker")
 
+        self._collection_mutex.acquire(blocking=True)
         if tracker_type == AbstractTracker.TrackerType.TEMPLATE_TRACKER:
             tracker = TemplateTracker(name)
-            self._collection_mutex.acquire(blocking=True)
             self._collection[tracker.get_id()] = tracker
-            self._collection_mutex.release()
+        elif tracker_type == AbstractTracker.TrackerType.KCF_TRACKER:
+            tracker = KCFTracker(name)
+            self._collection[tracker.get_id()] = tracker
         else:
+            self._collection_mutex.release()
             raise NotImplementedError("This tracker type is not yet implemented !")
+
+        # release lock anyway
+        self._collection_mutex.release()
 
         return self._collection[tracker.get_id()]
 

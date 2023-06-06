@@ -17,16 +17,10 @@ class TemplateTracker(AbstractTracker):
 
     # -- Methods
     def update(self, base_frame: np.ndarray, drawing_frame: np.ndarray):
+        super().update(base_frame, drawing_frame)
         # dev note: This isn't the most performant logic structure, there are some checks that are done multiple times
         # but could have been done only once.
         # Doing the latter would have led to less readable code, so I took the first option
-        self._base_frame = base_frame
-        self._drawing_frame = drawing_frame
-
-        # Update the backing image of the detection region & draw it
-        if not self._detection_region.is_undefined():
-            self._detection_region.set_parent_image(self._base_frame)
-            self._draw_detection_region(self._detection_region.get_coords())
 
         # Find location of POI if it is defined,
         # and if POI is smaller than region

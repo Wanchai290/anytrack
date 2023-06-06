@@ -133,6 +133,14 @@ class RegionOfInterest:
         """
         return self._xwyh
 
+    def get_xywh(self) -> np.ndarray:
+        """
+        Similar to self.get_xwyh(), only the order of the items differ
+        :return: x, y, width and height of the region of interest
+        """
+        x, w, y, h = self._xwyh
+        return np.array((x, y, w, h))
+
     def is_undefined(self):
         """
         Checks whether this region of interest is valid or not

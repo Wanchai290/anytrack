@@ -33,6 +33,10 @@ class AbstractTracker(ABC):
         """The current frame to be displayed to the user, with the highlighted zones"""
         self._drawing_frame = np.zeros(self._base_frame.shape)
         """A copy of the base frame, that will be edited by the highlighter"""
+        self._initialized = False
+        """Whether this tracker has been initialized once
+           Only used by OpenCV's trackers, to avoid computing detection
+           if the tracker wasn't properly initialized"""
 
     def get_edited_frame(self) -> cv.Mat | np.ndarray:
         """:return: The frame that has been edited by this highlighter"""
@@ -74,7 +78,13 @@ class AbstractTracker(ABC):
         :param base_frame: The given image in which to find the POI
         :param drawing_frame: The image to highlight the POI's location on
         """
-        pass
+        self._base_frame = base_frame
+        self._drawing_frame = drawing_frame
+
+        # Update the backing image of the detection region & draw it
+        if not self._detection_region.is_undefined():
+            self._detection_region.set_parent_image(self._base_frame)
+            self._draw_detection_region(self._detection_region.get_coords())
 
     @abstractmethod
     def _draw_poi(self, rect: RegionOfInterest | np.ndarray):
