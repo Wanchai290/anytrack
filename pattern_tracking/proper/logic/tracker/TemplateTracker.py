@@ -22,8 +22,7 @@ class TemplateTracker(AbstractTracker):
         # but could have been done only once.
         # Doing the latter would have led to less readable code, so I took the first option
 
-        # Find location of POI if it is defined,
-        # and if POI is smaller than region
+        # Find location of POI if it is defined
         if not self._template_poi.is_undefined():
             try:
                 self._found_poi = utils.find_template_in_image(

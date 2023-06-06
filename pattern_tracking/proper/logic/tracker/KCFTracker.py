@@ -5,6 +5,7 @@ import numpy as np
 
 from pattern_tracking.proper.logic.tracker.AbstractTracker import AbstractTracker
 from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
+from pattern_tracking.proper.shared import utils
 
 
 class KCFTracker(AbstractTracker):
@@ -14,7 +15,7 @@ class KCFTracker(AbstractTracker):
     dev note: Everytime the POI and/or detection region changes, you need to call
     OpenCV's tracker init() method, and you need to keep track of which image to use when
     the method self.update() is getting called (either the full frame, or the image of the
-    detection region)
+    detection region). These two checks are done independently, but they are strongly linked !
     """
     def __init__(self, name: str):
         super().__init__(name)
@@ -26,15 +27,22 @@ class KCFTracker(AbstractTracker):
     def update(self, base_frame: np.ndarray, drawing_frame: np.ndarray):
         super().update(base_frame, drawing_frame)
         if self._initialized:
-            # use either the full image, or limit to detection region
-            frame = base_frame if self._detection_region.is_undefined() else self._detection_region.get_image()
-
+            # use either the full image, or limit to  detection region
+            try:
+                frame, offset = utils.compute_detection_offset(base_frame, self._template_poi.get_image(), self._detection_region)
+            except IndexError:
+                return
             # compute the location of the POI
             self._init_lock.acquire()
             found, bbox = self._base_tracker.update(frame)
             if found:
-                (x, y, w, h) = [int(v) for v in bbox]
-                self._draw_poi(RegionOfInterest.new(frame, x, w, y, h))
+                # convert OpenCV bounding box into something usable
+                xywh = np.array([int(v) for v in bbox])
+                # apply the offset (see utils.compute_detection_offset docs for explanations)
+                xywh[:2] += offset
+                x, y, w, h = xywh
+                self._found_poi = RegionOfInterest.new(frame, x, w, y, h)
+                self._draw_poi(self._found_poi)
             self._init_lock.release()
 
     def _draw_poi(self, rect):
@@ -75,8 +83,17 @@ class KCFTracker(AbstractTracker):
 
     def set_detection_region(self, region: RegionOfInterest):
         super().set_detection_region(region)
+
         # reset the base tracker
-        # TODO/
+        # only possible if a POI is set !
+        if not self._template_poi.is_undefined():
+            self._init_lock.acquire()
+            self._base_tracker = cv.TrackerKCF_create()
+            self._base_tracker.init(
+                self._template_poi.get_image(),
+                region.get_xywh()
+            )
+            self._init_lock.release()
 
 
 if __name__ == "__main__":

@@ -28,7 +28,9 @@ class AbstractTracker(ABC):
         self._template_poi = RegionOfInterest.new_empty()
         """The part of the image that we want to find in the current frame"""
         self._found_poi = RegionOfInterest.new_empty()
-        """The region in which the POI has been found in the given base frame"""
+        """The region in which the POI has been found in the given base frame
+           Must be updated by the child class !
+        """
         self._base_frame: cv.Mat | np.ndarray = np.zeros((1, 1))
         """The current frame to be displayed to the user, with the highlighted zones"""
         self._drawing_frame = np.zeros(self._base_frame.shape)
