@@ -82,15 +82,10 @@ def find_template_in_image(image: np.ndarray, roi: np.ndarray, detection_thresho
     :return: The xy location of the region in the image, or an empty result if no match has been found
     """
     region_matched_location = RegionOfInterest.new_empty()
-
-    if detection_bounds.is_undefined():
-        base: np.ndarray = image
-        offset: np.ndarray = np.zeros((1, 2), dtype=int)
-    else:
-        if (np.array(roi.shape[:2]) > np.array(detection_bounds.get_image().shape[:2])).any():
-            return region_matched_location
-        base: np.ndarray = detection_bounds.get_image()
-        offset: np.ndarray = detection_bounds.get_coords(RegionOfInterest.PointCoords.TOP_LEFT.value)
+    try:
+        base, offset = compute_detection_offset(image, roi, detection_bounds)
+    except IndexError:
+        return RegionOfInterest.new_empty()
 
     confidence_map = cv.matchTemplate(
         base, roi,
@@ -111,6 +106,40 @@ def find_template_in_image(image: np.ndarray, roi: np.ndarray, detection_thresho
         region_matched_location = RegionOfInterest.from_points(image, *matched_region)
 
     return region_matched_location
+
+
+def compute_detection_offset(base_image: np.ndarray, poi: np.ndarray, detection_bounds: RegionOfInterest) \
+        -> tuple[np.ndarray, np.ndarray]:
+    """
+    Returns the base image and the offset to apply to the computed POI.
+
+    This function is a bit hard to wrap up, but it essentially comes from the problem of limiting
+    the search to a specific region. If you use the full image, then the computed location of the POI
+    will be anchored to the full image. But to limit the search to a fraction of the image (this is what we call
+    "detection bounds" across this codebase), you have to use the image of the detection bounds.
+    And thus, the computed coordinates of the location of the POI will be anchored to the detection bounds'
+    image. But since we draw the location on the full image, we have to offset it.
+
+    It also handles the cases where the detection region is undefined.
+
+    This is the essence of this function, taking care of knowing what will be the offset to apply if there is one,
+    given the full frame, the POI to find and the detection bounds.
+    :param base_image: The full image, taken from the video feed
+    :param poi: The POI to detect
+    :param detection_bounds: Where to limit the search, if not undefined
+    :return: The base to use in image detection, and the offset to apply to the computed location of the tracked POI
+    :raises: IndexError if POI is bigger than detection region
+    """
+    if detection_bounds.is_undefined():
+        base: np.ndarray = base_image
+        offset: np.ndarray = np.zeros((1, 2), dtype=int)
+    else:
+        # return empty region if POI is bigger than detection bounds
+        if (np.array(poi.shape[:2]) > np.array(detection_bounds.get_image().shape[:2])).any():
+            raise IndexError("POI is bigger than detection bounds")
+        base: np.ndarray = detection_bounds.get_image()
+        offset: np.ndarray = detection_bounds.get_coords(RegionOfInterest.PointCoords.TOP_LEFT.value)
+    return base, offset
 
 
 def convert_points_to_xwyh(p1, p2) -> tuple[int, int, int, int]:
