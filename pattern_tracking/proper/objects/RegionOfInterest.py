@@ -135,7 +135,8 @@ class RegionOfInterest:
 
     def get_xywh(self) -> np.ndarray:
         """
-        Similar to self.get_xwyh(), only the order of the items differ
+        Similar to self.get_xwyh(), only the order of the items differ.
+        This is the order used for the creation of bounding boxes in OpenCV
         :return: x, y, width and height of the region of interest
         """
         x, w, y, h = self._xwyh
