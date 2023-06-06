@@ -132,7 +132,7 @@ def compute_detection_offset(base_image: np.ndarray, poi: np.ndarray, detection_
     """
     if detection_bounds.is_undefined():
         base: np.ndarray = base_image
-        offset: np.ndarray = np.zeros((1, 2), dtype=int)
+        offset: np.ndarray = np.zeros(2, dtype=int)
     else:
         # return empty region if POI is bigger than detection bounds
         if (np.array(poi.shape[:2]) > np.array(detection_bounds.get_image().shape[:2])).any():
