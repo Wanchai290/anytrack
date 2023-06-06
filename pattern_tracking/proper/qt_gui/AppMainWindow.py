@@ -14,10 +14,10 @@ class AppMainWindow(QMainWindow):
     with the different menus, sidebar menus and buttons
     """
 
-    def __init__(self, tracker_manager: TrackerManager, frame_shape: tuple[int, int, int]):
+    def __init__(self, tracker_manager: TrackerManager):
         super().__init__()
         self._TRACKER_MANAGER = tracker_manager
-        self._FRAME_DISPLAY = FrameDisplayWidget(tracker_manager, frame_shape)
+        self._FRAME_DISPLAY = FrameDisplayWidget(tracker_manager)
         self._PLOTS_CONTAINER_WIDGET = LivePlotterDockWidget(self)
         self._TRACKERS_MENU = TrackersMenu(tracker_manager, parent=self)
         self._PLOTS_MENU = PlotMenu(tracker_manager, self._PLOTS_CONTAINER_WIDGET)

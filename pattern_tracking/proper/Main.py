@@ -25,7 +25,7 @@ class Main:
         """Contains all current trackers used"""
         self._live_feed = VideoReader(0, False, self._halt_event)
         """Continuously reads the current video stream"""
-        self._main_window = AppMainWindow(self._tracker_manager, self._live_feed.get_shape())
+        self._main_window = AppMainWindow(self._tracker_manager)
         """QT Main window object"""
         self._app.aboutToQuit.connect(self._stop_children_operations)
         """Allows us to do properly stop children threads before the Qt interface exits"""

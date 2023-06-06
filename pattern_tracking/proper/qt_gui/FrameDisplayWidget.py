@@ -24,11 +24,13 @@ class FrameDisplayWidget(QLabel):
     Updates to the region of interest or trackers is done in the UserRegionPlacer object
     """
 
-    def __init__(self, tracker_manager: TrackerManager, frames_shape: tuple):
+    WIDGET_SIZE = (720, 480)
+
+    def __init__(self, tracker_manager: TrackerManager):
         super().__init__()
 
         # Disable resize of this widget
-        self.setFixedSize(*frames_shape[1::-1])  # In OpenCV, shape is as follows : (height, width, depth)
+        self.setFixedSize(*FrameDisplayWidget.WIDGET_SIZE)  # In OpenCV, shape is as follows : (height, width, depth)
 
         self._USER_REGION_PLACER = UserRegionPlacer(self)
         """
@@ -41,7 +43,11 @@ class FrameDisplayWidget(QLabel):
         self._tracker_manager = tracker_manager
         """Contains all the trackers, and the current active one"""
 
-        self._frame_pixmap = utils.ndarray_to_qimage(np.zeros(frames_shape), as_qpixmap=True)
+        self._frame_pixmap = utils.ndarray_to_qimage(
+            np.zeros(np.array((
+                *FrameDisplayWidget.WIDGET_SIZE, 3
+            ))),
+            as_qpixmap=True)
         """The QPixmap variant of the current frame displayed. This is the object that Qt displays"""
 
         self.setPixmap(self._frame_pixmap)

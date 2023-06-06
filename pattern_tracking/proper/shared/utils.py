@@ -174,7 +174,7 @@ def ndarray_to_qimage(image: np.ndarray,
     :param swap_rgb If True, swaps the order of colors
     :param as_qpixmap If True, converts the result into a QPixmap object
     """
-    height, width, channel = image.shape
+    height, width, _ = image.shape
     bytes_per_line = 3 * width
     q_img = QImage(image.data, width, height, bytes_per_line, QImage.Format_RGB888)
 

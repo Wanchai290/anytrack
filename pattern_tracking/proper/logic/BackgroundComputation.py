@@ -28,7 +28,8 @@ class BackgroundComputation:
         """
         while not self._halt.is_set():
             live_frame = self._LIVE_FEED.grab_frame(block=True)[1]
-            edited_frame = self._TRACKER_MANAGER.update_trackers(live_frame, drawing_sheet=live_frame.copy())
+            resized_frame = cv.resize(live_frame, FrameDisplayWidget.WIDGET_SIZE)
+            edited_frame = self._TRACKER_MANAGER.update_trackers(resized_frame, drawing_sheet=resized_frame.copy())
             self._PLOTS_CONTAINER_WIDGET.update()
             self._FRAME_DISPLAY_WIDGET.change_frame_to_display(edited_frame, swap_rgb=True)
 
