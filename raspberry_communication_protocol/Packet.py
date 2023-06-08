@@ -35,6 +35,26 @@ class Packet:
         # CRC is computed over packet's unique data
         self._payload_crc = Packet.compute_crc(self)
 
+    def frame_id(self):
+        return self._frame_id
+
+    def packet_type(self):
+        return self._packet_type
+
+    def payload(self):
+        return self._payload
+
+    def payload_crc(self):
+        return self._payload_crc
+
+    def __eq__(self, other):
+        if type(other) != Packet:
+            return False
+        return self._frame_id == other.frame_id() \
+            and self._packet_type == other.packet_type() \
+            and (self._payload == other.payload()).all() \
+            and self._payload_crc == other.payload_crc()
+
     def is_valid(self):
         """Returns True if the packet is correctly formatted. Does not check protocol version mismatch !"""
         if self._frame_id.bit_length() > 4 and type(self._packet_type) != PacketType:
