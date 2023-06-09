@@ -11,15 +11,15 @@ class VideoReader:
     or from a video feed, and puts them in a readable
     queue, alongside the frame number
     """
-    def __init__(self, camera_feed: str | int,
+    def __init__(self, feed_origin: str | int,
                  is_video: bool,
                  halt_work: Event,
                  max_frames_in_queue: int = 30,
                  loop_video: bool = False):
 
-        self._video_feed: cv.VideoCapture = cv.VideoCapture(camera_feed)
+        self._video_feed: cv.VideoCapture = cv.VideoCapture(feed_origin)
         """Video feed"""
-        self._feed_origin = camera_feed
+        self._feed_origin = feed_origin
         """Feed origin input"""
         self._loop = loop_video and is_video
         """Set to True if we want the video to serve forever"""
@@ -29,7 +29,8 @@ class VideoReader:
         """True if the feed is a static video, false if it is live"""
         self._halt_event = halt_work
         """Event used to check whether or not to continue working"""
-
+        self._reset_event = Event()
+        """Used to halt this object's work and change its parameters (like the video source)"""
         self._thread: Thread | None = None
         """The thread used to process frames in the background"""
 
@@ -55,7 +56,8 @@ class VideoReader:
         capturing = True
         while capturing:
             frame_id = 0
-            while self._video_feed.isOpened() and not self._halt_event.is_set():
+            while self._video_feed.isOpened() and not self._halt_event.is_set() \
+                    and not self._reset_event.is_set():
                 ret, frame = self._video_feed.read()
                 if not ret:
                     break
@@ -66,6 +68,9 @@ class VideoReader:
             if self._loop:
                 self._video_feed.set(cv.CAP_PROP_POS_MSEC, 0)
                 # TODO: check property set correctly with VideoCapture.get(), otherwise re-init VideoCapture object
+            else:
+                capturing = False
+        self._video_feed.release()
 
     def grab_frame(self,
                    block: bool | None = None,
@@ -78,3 +83,22 @@ class VideoReader:
 
     def get_halt_event(self):
         return self._halt_event
+
+    def change_feed(self, feed_origin: int | str, is_video: bool, loop_video: bool = False):
+        # Halt the running thread and wait for it to finish
+        self._reset_event.set()
+        self._thread.join()
+
+        # Change the parameters
+        self._feed_origin = feed_origin
+        self._video_feed = cv.VideoCapture(feed_origin)
+        self._is_video = is_video
+        self._loop = loop_video
+
+        # clear the reset event flag
+        self._reset_event.clear()
+
+        # start a new thread
+        self._thread = Thread(target=self._run)
+        self._thread.start()
+

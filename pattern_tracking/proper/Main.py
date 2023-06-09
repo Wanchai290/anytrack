@@ -1,5 +1,5 @@
 import sys
-from threading import Event
+from threading import Event, Lock
 
 from PySide6.QtWidgets import QApplication
 
@@ -25,7 +25,7 @@ class Main:
         """Contains all current trackers used"""
         self._live_feed = VideoReader(0, False, self._halt_event)
         """Continuously reads the current video stream"""
-        self._main_window = AppMainWindow(self._tracker_manager)
+        self._main_window = AppMainWindow(self._tracker_manager, self._live_feed)
         """QT Main window object"""
         self._app.aboutToQuit.connect(self._stop_children_operations)
         """Allows us to do properly stop children threads before the Qt interface exits"""
