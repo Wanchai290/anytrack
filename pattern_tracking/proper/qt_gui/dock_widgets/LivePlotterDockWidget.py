@@ -60,5 +60,5 @@ class LivePlotterDockWidget(QDockWidget):
         self._mutex.acquire()
         for (dist_computer, plot_widget) in self._plot_widgets.items():
             plot_data_item = plot_widget.plotItem.listDataItems()[0]
-            plot_data_item.setData([0], [0])  # TODO: use last data first
+            plot_data_item.setData([dist_computer.distance()])
         self._mutex.release()
