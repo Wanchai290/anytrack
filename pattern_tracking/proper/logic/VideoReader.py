@@ -14,16 +14,20 @@ class VideoReader:
     def __init__(self, camera_feed: str | int,
                  is_video: bool,
                  halt_work: Event,
-                 max_frames_in_queue: int = 30):
+                 max_frames_in_queue: int = 30,
+                 loop_video: bool = False):
 
         self._video_feed: cv.VideoCapture = cv.VideoCapture(camera_feed)
         """Video feed"""
-
+        self._feed_origin = camera_feed
+        """Feed origin input"""
+        self._loop = loop_video and is_video
+        """Set to True if we want the video to serve forever"""
         self._frames_queue: Queue[tuple[int, np.ndarray] | None] = Queue(max_frames_in_queue)
         """The queue containing all the frames grabbed by the video reader"""
         self._is_video = is_video
         """True if the feed is a static video, false if it is live"""
-        self._stop_event = halt_work
+        self._halt_event = halt_work
         """Event used to check whether or not to continue working"""
 
         self._thread: Thread | None = None
@@ -36,13 +40,10 @@ class VideoReader:
 
     def start(self):
         """Start a thread, reads & places all grabbed frames in the self._frames_queue attribute"""
-        self._thread = Thread(target=self._run,
-                              args=(self._video_feed, self._frames_queue, self._stop_event))
+        self._thread = Thread(target=self._run)
         self._thread.start()
 
-    @staticmethod
-    def _run(video: cv.VideoCapture, w_read_frames_q: Queue[tuple[int, cv.Mat | np.ndarray]],
-             halt_event: Event):
+    def _run(self):
         """
         Thread-safe video reader method
         Opens a video file (or video capture device feed),
@@ -51,14 +52,20 @@ class VideoReader:
         Data format of the items that are written to the queue are as follows :
         tuple[int, cv.Mat | np.ndarray] | None
         """
-        frame_id = 0
-        while video.isOpened() and not halt_event.is_set():
-            ret, frame = video.read()
-            if not ret:
-                break
+        capturing = True
+        while capturing:
+            frame_id = 0
+            while self._video_feed.isOpened() and not self._halt_event.is_set():
+                ret, frame = self._video_feed.read()
+                if not ret:
+                    break
 
-            w_read_frames_q.put((frame_id, frame))
-            frame_id += 1
+                self._frames_queue.put((frame_id, frame))
+                frame_id += 1
+
+            if self._loop:
+                self._video_feed.set(cv.CAP_PROP_POS_MSEC, 0)
+                # TODO: check property set correctly with VideoCapture.get(), otherwise re-init VideoCapture object
 
     def grab_frame(self,
                    block: bool | None = None,
@@ -68,3 +75,6 @@ class VideoReader:
 
     def get_shape(self):
         return self._frames_shape
+
+    def get_halt_event(self):
+        return self._halt_event
