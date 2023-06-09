@@ -69,7 +69,7 @@ class VideoReader:
                     time.sleep(0.05)
 
             # enable looping if requested, and if not tasked to stop work
-            if self._loop and not self._halt_event.is_set():
+            if self._loop and not self._halt_event.is_set() and not self._reset_event.is_set():
                 self._video_feed.set(cv.CAP_PROP_POS_MSEC, 0)
                 # TODO: check property set correctly with VideoCapture.get(), otherwise re-init VideoCapture object
                 # architecture-dependant, see OpenCV's docs about this
