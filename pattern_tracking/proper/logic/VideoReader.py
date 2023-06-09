@@ -1,3 +1,4 @@
+import time
 from queue import Queue
 from threading import Thread, Event
 
@@ -64,10 +65,13 @@ class VideoReader:
 
                 self._frames_queue.put((frame_id, frame))
                 frame_id += 1
+                if self._is_video:
+                    time.sleep(0.05)
 
             if self._loop:
                 self._video_feed.set(cv.CAP_PROP_POS_MSEC, 0)
                 # TODO: check property set correctly with VideoCapture.get(), otherwise re-init VideoCapture object
+                # architecture-dependant, see OpenCV's docs about this
             else:
                 capturing = False
         self._video_feed.release()
