@@ -1,3 +1,5 @@
+from threading import Lock
+
 import numpy as np
 
 from PySide6.QtCore import Qt
@@ -15,6 +17,7 @@ class LivePlotterDockWidget(QDockWidget):
 
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
+        self._mutex = Lock()
 
         self._plot_widgets: dict[DistanceComputer, PlotWidget] = {}
 
@@ -41,6 +44,7 @@ class LivePlotterDockWidget(QDockWidget):
 
     def update(self):
         """Updates all the current plots with new data from their trackers"""
+        self._mutex.acquire()
         for (dist_computer, plot_widget) in self._plot_widgets.items():
             d = dist_computer.distance()
             if d != DistanceComputer.ERR_DIST:
@@ -50,3 +54,11 @@ class LivePlotterDockWidget(QDockWidget):
                 _, data_y = plot_data_item.getData()
                 data_y = np.append(data_y, d)
                 plot_data_item.setData(data_y)
+        self._mutex.release()
+
+    def clear_all(self):
+        self._mutex.acquire()
+        for (dist_computer, plot_widget) in self._plot_widgets.items():
+            plot_data_item = plot_widget.plotItem.listDataItems()[0]
+            plot_data_item.setData([0], [0])  # TODO: use last data first
+        self._mutex.release()
