@@ -10,13 +10,21 @@ from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
 
 
 class AbstractTracker(ABC):
+    """
+    This class is used as a base for all trackers implemented in the software.
+    To create a new tracker, you must extend this base, and implement the
+    update() method. You also need to define a new TrackerType enum value below, and
+    modify the TrackerManager class to allow the creation of your new tracker in the GUI
+    """
 
     class TrackerType(Enum):
         """
         Describes the different types of tracker that are available in the app
+        TODO: find something better than having the crawl the whole code to implement a tracker
         """
         TEMPLATE_TRACKER = "Template tracker"
         KCF_TRACKER = "KCF Tracker"
+        FIXED_POINT_TRACKER = "Fixed Point tracker"
 
     def __init__(self, name: str):
         self._id = uuid.uuid4()
@@ -73,10 +81,14 @@ class AbstractTracker(ABC):
     @abstractmethod
     def update(self, base_frame: np.ndarray, drawing_frame: np.ndarray):
         """
-        Locate the POI to find in the given image, by limiting the search
-        to a specific detection region.
-        Draws the result onto the drawing_frame parameter, that must be of the
-        same shape as the given image
+        This method is the core of any tracker. It must locate the POI to find in the given image,
+        by limiting the search to a specific detection region (if it is defined).
+
+        If the POI has been found, you must update the self._found_poi attribute.
+
+        TODO: why the hell should a logic item draw something for the GUI ? refac this
+        It should draw the result onto the drawing_frame parameter, that must be of the
+        same shape as the given image.
         :param base_frame: The given image in which to find the POI
         :param drawing_frame: The image to highlight the POI's location on
         """
