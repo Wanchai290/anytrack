@@ -33,4 +33,4 @@ class CreatePlotAction(QAction):
             dlg = NewPlotQDialog(list(self._TRACKER_MANAGER.alive_trackers().values()))
 
             if dlg.exec():
-                self._PLOTS_CONTAINER.new_plot(dlg.get_resulting_dist_observer())
+                self._PLOTS_CONTAINER.new_plot(dlg.get_resulting_dist_observer(), dlg.get_resulting_fps())

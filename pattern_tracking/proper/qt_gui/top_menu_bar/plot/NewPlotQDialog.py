@@ -1,3 +1,4 @@
+from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QDialog, QWidget, QComboBox, QVBoxLayout, QDialogButtonBox, QLabel, QHBoxLayout, \
     QApplication, QLineEdit
 
@@ -22,6 +23,8 @@ class NewPlotQDialog(QDialog):
         """Some tracker to be linked to Other"""
         self._tracker_two: AbstractTracker | None = None
         """The other tracker to be linked to Some"""
+        self._feed_fps_result: int | None = None
+        """The camera feed FPS"""
 
         # -- Window layout
         self._layout = QVBoxLayout()
@@ -36,6 +39,14 @@ class NewPlotQDialog(QDialog):
         self._plot_name_line_edit = QLineEdit()
         layout_plot_name.addWidget(self._plot_name_line_edit)
         self._layout.addLayout(layout_plot_name)
+
+        layout_feed_fps = QHBoxLayout()
+        layout_feed_fps.addWidget(QLabel("FPS (Frames Per Second) of the camera"))
+        self._feed_fps_line_edit = QLineEdit()
+        self._feed_fps_validator = QIntValidator(0, 2**15, self)
+        self._feed_fps_line_edit.setValidator(self._feed_fps_validator)
+        layout_feed_fps.addWidget(self._feed_fps_line_edit)
+        self._layout.addLayout(layout_feed_fps)
 
         self._layout.addWidget(QLabel("Select the two trackers to link"))
         layout_choice_one = QHBoxLayout()
@@ -73,6 +84,7 @@ class NewPlotQDialog(QDialog):
         valid = False
 
         try:
+            feed_fps = int(self._feed_fps_line_edit.text())
             dist_observer = DistanceComputer(
                 plot_name,
                 selected_tracker_one,
@@ -87,11 +99,15 @@ class NewPlotQDialog(QDialog):
 
         if valid:
             self._dist_observer_result = dist_observer
+            self._feed_fps_result = feed_fps
             self.accept()
 
     def get_resulting_dist_observer(self):
         """:return: The DistanceObserver linking two trackers together"""
         return self._dist_observer_result
+
+    def get_resulting_fps(self):
+        return self._feed_fps_result
 
 
 if __name__ == '__main__':
