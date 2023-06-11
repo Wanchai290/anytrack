@@ -102,13 +102,13 @@ class Packet:
         return len(self.payload.tobytes())
 
     def __eq__(self, other):
-        # todo: update
         if type(other) != Packet:
             return False
         return self.frame_number == other.frame_number \
             and self.packet_type == other.packet_type \
-            and (self.payload == other.payload).all() \
-            and self.payload_crc == other.payload_crc
+            and self.payload_crc == other.payload_crc \
+            and self.payload.shape == other.payload.shape \
+            and (self.payload == other.payload).all()
 
     def serialize(self) -> bytes:
         """Serialize this packet's content and returns the binary string"""
