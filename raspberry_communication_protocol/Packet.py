@@ -32,7 +32,10 @@ class Packet:
     LEN_START_MAGIC_WORD = len(START_MAGIC_WORD)
     LEN_PROVER_PTYPE_CCOUNT = 1  # Protocol version, PacketType, Channel count and padding
     LEN_FRAME_NUMBER = 4
-    LEN_FRAME_SHAPE = 2
+    """Number of bytes used for the number that specifies what is
+    the current number of the frame"""
+    LEN_FRAME_XY_SHAPE = 4
+    """Number of bytes for the x and y shape of the video frame (2 bytes each)"""
     LEN_PAYLOAD_LENGTH = 4
     # actual payload's length is computed during runtime
     LEN_PAYLOAD_CRC = 2  # because we use Crc16

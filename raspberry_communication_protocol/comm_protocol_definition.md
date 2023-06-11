@@ -9,7 +9,7 @@
     - 2 bits : Number of channels in the frame
     - 2 bits : Padding
 - 4 bytes : Frame number
-- 2 bytes : Frame shape (same order as np.array().shape)
+- 4 bytes : Frame shape (same order as np.array().shape)
 - 4 bytes : Payload length
 - / bytes : Payload (length is never fixed, depends on output video frame)
 - 2 bytes : Payload CRC
