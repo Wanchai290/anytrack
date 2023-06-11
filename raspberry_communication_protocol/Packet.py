@@ -200,7 +200,7 @@ class Packet:
         # reshape payload
         payload = np.frombuffer(payload_bin, dtype=int)
         shape = (frame_x_shape, frame_y_shape, frame_channel_count)
-        payload.reshape(shape)
+        payload = payload.reshape(shape)
 
         # check if payload crc is valid
         if payload_crc == cls.CRC_COMPUTER.checksum(payload_bin):
@@ -219,11 +219,10 @@ class Packet:
 
 if __name__ == '__main__':
     # TODO: if filled with 0s, crashes
-    p = Packet(0xFA, PacketType.FRAME, np.full((2, 2, 3), 4, dtype=int))
+    og_payload = np.full((2, 2, 3), 4, dtype=int)
+    print(og_payload)
+    p = Packet(0xFA, PacketType.FRAME, og_payload)
     s = p.serialize()
     print(s)
     pds = Packet.deserialize(s)
-    print(pds.payload)
-    print(pds.frame_shape)
-    pds.payload.reshape(pds.frame_shape)
     print(pds.payload)
