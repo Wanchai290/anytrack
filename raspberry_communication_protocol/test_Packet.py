@@ -30,5 +30,5 @@ class Test(TestCase):
     def test_invalid_if_crc_changed(self):
         p_ser = self._p.serialize()
         p_deser = Packet.deserialize(p_ser)
-        p_deser._payload_crc = 0
+        p_deser.payload_crc = 0
         self.assertFalse(p_deser.is_valid())
