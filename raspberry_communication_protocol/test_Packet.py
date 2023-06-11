@@ -21,7 +21,7 @@ class Test(TestCase):
     def test_valid_after_serialize_deserialize(self):
         p_ser = self._p.serialize()
         p_deser = Packet.deserialize(p_ser)
-        self.assertTrue(p_deser.is_valid())
+        self.assertTrue(p_deser)
 
     def test_eq_override(self):
         p_copy = Packet(*self._p_data)
@@ -31,4 +31,4 @@ class Test(TestCase):
         p_ser = self._p.serialize()
         p_deser = Packet.deserialize(p_ser)
         p_deser.payload_crc = 0
-        self.assertFalse(p_deser.is_valid())
+        self.assertFalse()

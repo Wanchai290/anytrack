@@ -110,14 +110,6 @@ class Packet:
             and (self.payload == other.payload).all() \
             and self.payload_crc == other.payload_crc
 
-    def is_valid(self):
-        """Returns True if the packet is correctly formatted. Does not check protocol version mismatch !"""
-        if self.frame_number.bit_length() > 4 and type(self.packet_type) != PacketType:
-            return False
-
-        # Can't compute the payload of the NumPy array directly, we need its binary representation
-        return Packet.compute_crc(self) == self.payload_crc
-
     def serialize(self) -> bytes:
         """Serialize this packet's content and returns the binary string"""
         # We concat ProtocolVer and PacketType to save some space and use only a single byte for their storage
@@ -273,4 +265,3 @@ if __name__ == '__main__':
     s = p.serialize()
     print(s)
     pds = Packet.deserialize(s)
-    print(pds.is_valid())
