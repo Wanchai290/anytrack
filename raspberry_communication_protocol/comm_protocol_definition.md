@@ -12,7 +12,7 @@
 - 2 bytes : Frame shape (same order as np.array().shape)
 - 4 bytes : Payload length
 - / bytes : Payload (length is never fixed, depends on output video frame)
-- 1 byte  : Payload CRC
+- 2 bytes : Payload CRC
 - 4 bytes : Packet end magic word
 
 ## Additional information

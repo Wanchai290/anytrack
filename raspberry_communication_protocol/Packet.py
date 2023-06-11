@@ -23,7 +23,7 @@ class Packet:
     # A 16-bit CRC should cover enough unique values for integrity checks
     CRC_COMPUTER = crc.Calculator(crc.Crc16.CCITT.value)
 
-    # Defining the protocol's values here. Sizes are defined in number of **bytes**
+    # Defining the protocol's values here. Sizes are defined in number of **bytes** unless mentioned otherwise
     PROTOCOL_VER = 0b10
 
     START_MAGIC_WORD = b"inu"
