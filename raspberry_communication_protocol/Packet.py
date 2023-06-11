@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import io
-import pickle
-from typing import Any
+import struct
 
 import crc
 import numpy as np
@@ -22,22 +20,15 @@ class Packet:
         - self._payload_crc: CRC checksum of the payload
     """
     # note: there was no proper choice when choosing the polynomial here, it's just to have a CRC to check for
-    CRC_COMPUTER = crc.Calculator(crc.Crc16.CCITT.value)
+    CRC_COMPUTER = crc.Calculator(crc.Crc8.CCITT.value)
 
     # Defining the protocol's values here.
-    PROTOCOL_VER = b"01"
-    LEN_PROTOCOL_VER = 2  # bits (binary)
+    PROTOCOL_VER = 0b10
 
     START_MAGIC_WORD = b"inu"
-    LEN_START_MAGIC_WORD = len(START_MAGIC_WORD)
     END_MAGIC_WORD = b"neko"
-    LEN_END_MAGIC_WORD = len(END_MAGIC_WORD)
-    LEN_HEADER = LEN_START_MAGIC_WORD + LEN_PROTOCOL_VER
 
-    LEN_FRAME_ID = 16  # Numb
-    LEN_PACKET_TYPE = 2
-    LEN_PAYLOAD_LENGTH = 24
-    LEN_PAYLOAD_CRC = 16  # because we use Crc16
+    LEN_PAYLOAD_CRC = 8  # because we use Crc8
 
     def __init__(self, frame_id: int, packet_type: PacketType, payload: np.ndarray):
         self.frame_id = frame_id
@@ -45,6 +36,9 @@ class Packet:
         self.payload = payload
         # CRC is computed over packet's unique data
         self.payload_crc = Packet.compute_crc(self)
+
+    def payload_length(self):
+        return len(self.payload.tobytes())
 
     def __eq__(self, other):
         if type(other) != Packet:
@@ -64,19 +58,26 @@ class Packet:
 
     def serialize(self) -> bytes:
         """Serialize this packet's content and returns the binary string"""
-        data = Packet.START_MAGIC_WORD
-        data += Packet.PROTOCOL_VER
-        data += hex(self.frame_id).zfill(Packet.LEN_FRAME_ID)
-        data += bytes(self.packet_type.value).zfill(Packet.LEN_PACKET_TYPE)
+        # We concat ProtocolVer and PacketType to save some space and use only a single byte for their storage
+        # Please check `comm_protocol_definition.md` for more details
+        proto_and_ptype = (Packet.PROTOCOL_VER << 2 | self.packet_type.value) << 4
+        proto_and_ptype_bytes = proto_and_ptype.to_bytes(1, "big")
 
-        bytes_payload = self.payload.tobytes()  # C order for the NumPy array by default
-        payload_length = len(bytes_payload)
-        data += bytes(payload_length).zfill(24)
-        data += bytes_payload
-
-        data += bytes(self.payload_crc)
-        data += Packet.END_MAGIC_WORD
-
+        # Compute payload length to find the shape of the format
+        # to use with struct.pack()
+        payload_length = self.payload_length()
+        payload_length_format = f"{payload_length}s"
+        data = struct.pack(
+            "!3sciI" + payload_length_format + f"{Packet.LEN_PAYLOAD_CRC}s" + "4s",
+            Packet.START_MAGIC_WORD,
+            proto_and_ptype_bytes,
+            self.frame_id,
+            self.payload_length(),
+            self.payload.tobytes(),
+            self.payload_crc.to_bytes(Packet.LEN_PAYLOAD_CRC, byteorder="little"),
+            Packet.END_MAGIC_WORD
+        )
+        print(data)
         return data
 
     @staticmethod
@@ -91,33 +92,34 @@ class Packet:
     @staticmethod
     def deserialize(packet: bytes) -> Packet | None:
         """Deserializes a packet, and returns a Packet object"""
-        deserialized = Packet.new_empty()
-        # check for magic word and protocol ver
-        if packet[:Packet.LEN_START_MAGIC_WORD] != Packet.START_MAGIC_WORD \
-                or packet[
-                   Packet.LEN_START_MAGIC_WORD:
-                   Packet.LEN_START_MAGIC_WORD+Packet.LEN_PROTOCOL_VER
-                   ] != Packet.PROTOCOL_VER:
-            return
-        packet = packet[Packet.LEN_HEADER:]  # truncate for a bit more readability
+        # deserialized = Packet.new_empty()
+        # # check for magic word and protocol ver
+        # if packet[:Packet.LEN_START_MAGIC_WORD] != Packet.START_MAGIC_WORD \
+        #         or packet[
+        #            Packet.LEN_START_MAGIC_WORD:
+        #            Packet.LEN_START_MAGIC_WORD+Packet.LEN_PROTOCOL_VER
+        #            ] != Packet.PROTOCOL_VER:
+        #     return
+        # packet = packet[Packet.LEN_HEADER:]  # truncate for a bit more readability
+        #
+        # # I am pretty sure you can create a weird loop with a dict
+        # # to automate that kind of things
+        # # this looks disgusting, but IDK how to make it better
+        # deserialized.frame_id = int(packet[:Packet.LEN_FRAME_ID])
+        # packet = packet[Packet.LEN_FRAME_ID:]
+        #
+        # deserialized.packet_type = int(packet[:Packet.LEN_PACKET_TYPE])
+        # packet = packet[Packet.LEN_PACKET_TYPE:]
+        #
+        # payload_length = int(packet[:Packet.LEN_PAYLOAD_LENGTH - 1])
+        # deserialized.payload = packet[Packet.LEN_PAYLOAD_LENGTH: payload_length - 1]
+        # packet = packet[Packet.LEN_PAYLOAD_LENGTH + payload_length:]
+        #
+        # if packet[:Packet.LEN_END_MAGIC_WORD - 1] != Packet.END_MAGIC_WORD:
+        #     return
+        #
+        # return deserialized
 
-        # I am pretty sure you can create a weird loop with a dict
-        # to automate that kind of things
-        # this looks disgusting, but IDK how to make it better
-        deserialized.frame_id = int(packet[:Packet.LEN_FRAME_ID])
-        packet = packet[Packet.LEN_FRAME_ID:]
-
-        deserialized.packet_type = int(packet[:Packet.LEN_PACKET_TYPE])
-        packet = packet[Packet.LEN_PACKET_TYPE:]
-
-        payload_length = int(packet[:Packet.LEN_PAYLOAD_LENGTH - 1])
-        deserialized.payload = packet[Packet.LEN_PAYLOAD_LENGTH: payload_length - 1]
-        packet = packet[Packet.LEN_PAYLOAD_LENGTH + payload_length:]
-
-        if packet[:Packet.LEN_END_MAGIC_WORD - 1] != Packet.END_MAGIC_WORD:
-            return
-
-        return deserialized
 
 if __name__ == '__main__':
     p = Packet(0xFA, PacketType.FRAME, np.array((5, 6)))
