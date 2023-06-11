@@ -37,7 +37,6 @@ class DistancePlotWidget(PlotWidget):
         """Plots a new point with the given data to this plot"""
         new_x, new_y = DistancePlotWidget.new_point_data(feed_fps, distance, current_frame_number)
 
-        self._mutex.acquire()
         # the only way to create a PlotDataItem for a PlotItem
         # is calling PlotItem.plot()
         # we need to know whether we have to update the plot
@@ -62,16 +61,13 @@ class DistancePlotWidget(PlotWidget):
             else:
                 self.plotItem.plot([new_x], [new_y])
                 self._initialized = True
-        self._mutex.release()
 
     def clear_data(self):
         """Removes the only PlotDataItem used in this PlotWidget"""
-        self._mutex.acquire()
         self.plotItem.clear()
         self._initialized = False
         self._stop_plotting = False
         self._data_idx = 0
-        self._mutex.release()
 
     def resume_plotting(self):
         self._stop_plotting = False
