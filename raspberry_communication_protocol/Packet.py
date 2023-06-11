@@ -27,13 +27,35 @@ class Packet:
     PROTOCOL_VER = 0b10
 
     START_MAGIC_WORD = b"inu"
-    LEN_START_MAGIC_WORD = 3
     END_MAGIC_WORD = b"neko"
 
-    LEN_PAYLOAD_CRC = 2  # because we use Crc8
+    LEN_START_MAGIC_WORD = len(START_MAGIC_WORD)
+    LEN_PROVER_PTYPE_CCOUNT = 1  # Protocol version, PacketType, Channel count and padding
+    LEN_FRAME_NUMBER = 4
+    LEN_FRAME_SHAPE = 2
+    LEN_PAYLOAD_LENGTH = 4
+    # actual payload's length is computed during runtime
+    LEN_PAYLOAD_CRC = 2  # because we use Crc16
+    LEN_END_MAGIC_WORD = len(END_MAGIC_WORD)
 
-    def __init__(self, frame_id: int, packet_type: PacketType, payload: np.ndarray):
-        self.frame_id = frame_id
+    # Format string used during serialization
+    # Specifies the type of the objects sent, the first character defines the endianness
+    # Read the official documentation of struct.pack() for more details
+    # You need to update it according to the above ! Otherwise, tests will fail !
+    PACKING_FORMAT_START = \
+        "!" \
+        f"{LEN_START_MAGIC_WORD}s" \
+        f"{LEN_PROVER_PTYPE_CCOUNT}c" \
+        "I" \
+        f"{LEN_FRAME_SHAPE}H" \
+        "I"
+
+    PACKING_FORMAT_END = \
+        f"{LEN_PAYLOAD_CRC}s" \
+        f"{LEN_END_MAGIC_WORD}s"
+
+    def __init__(self, frame_number: int, packet_type: PacketType, payload: np.ndarray):
+        self.frame_number = frame_number
         self.packet_type = packet_type
         self.frame_shape = payload.shape[:2]
         if len(payload) <= 2:
@@ -52,14 +74,14 @@ class Packet:
         # todo: update
         if type(other) != Packet:
             return False
-        return self.frame_id == other.frame_id \
+        return self.frame_number == other.frame_number \
             and self.packet_type == other.packet_type \
             and (self.payload == other.payload).all() \
             and self.payload_crc == other.payload_crc
 
     def is_valid(self):
         """Returns True if the packet is correctly formatted. Does not check protocol version mismatch !"""
-        if self.frame_id.bit_length() > 4 and type(self.packet_type) != PacketType:
+        if self.frame_number.bit_length() > 4 and type(self.packet_type) != PacketType:
             return False
 
         # Can't compute the payload of the NumPy array directly, we need its binary representation
@@ -76,20 +98,19 @@ class Packet:
 
         # Compute payload length to find the shape of the format
         # to use with struct.pack()
-        payload_length = self.payload_length()
-        payload_length_format = f"{payload_length}s"
+        actual_payload_length = self.payload_length()
+        actual_payload_length_format = f"{actual_payload_length}s"
         data = struct.pack(
-            "!3scI2HI" + payload_length_format + f"{Packet.LEN_PAYLOAD_CRC}s" + "4s",
+            Packet.PACKING_FORMAT_START + actual_payload_length_format + Packet.PACKING_FORMAT_END,
             Packet.START_MAGIC_WORD,
             proto_ptype_channelcount_bytes,
-            self.frame_id,
+            self.frame_number,
             *self.frame_shape[:2],
             self.payload_length(),
             self.payload.tobytes(),
             self.payload_crc.to_bytes(Packet.LEN_PAYLOAD_CRC, byteorder="little"),
             Packet.END_MAGIC_WORD
         )
-        print(data)
         return data
 
     @staticmethod
