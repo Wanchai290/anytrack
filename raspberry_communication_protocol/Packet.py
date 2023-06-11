@@ -115,8 +115,8 @@ class Packet:
 
     @staticmethod
     def compute_crc(packet: Packet):
-        """Computes and returns the payload's CRC when saved using np.save()"""
-        return Packet.CRC_COMPUTER.checksum(bytes(packet.payload))
+        """Computes and returns the payload's CRC when converted to bytes using NumPy's tobytes() method"""
+        return Packet.CRC_COMPUTER.checksum(packet.payload.tobytes())
 
     @classmethod
     def new_empty(cls) -> Packet:
