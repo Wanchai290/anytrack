@@ -20,6 +20,8 @@ class DistancePlotWidget(PlotWidget):
         super().__init__(parent, background, plotItem, **kargs)
         self._feed_fps = feed_fps
         self._initialized = False
+        self._data_idx = 0
+        self._stop_plotting = False
 
     def get_feed_fps(self):
         return self._feed_fps
@@ -35,23 +37,36 @@ class DistancePlotWidget(PlotWidget):
         # or to initialize the PlotDataItem behind
         # we check whether there is one PlotDataItem in this PlotItem
         # below line is similar to `if self.plotItem.listDataItems() != []`
-        if self.plotItem.listDataItems():
-            # a PlotItem can contain multiple PlotDataItem objects
-            # we only put 1 unique PlotDataItem in each plot
-            plot_data_item = self.plotItem.listDataItems()[0]
-            data_x, data_y = plot_data_item.getData()
-            data_x = np.append(data_x, new_x)
-            data_y = np.append(data_y, int(new_y))
-            plot_data_item.setData(data_x, data_y)
+        if not self._stop_plotting:
+            if self.plotItem.listDataItems():
+                # a PlotItem can contain multiple PlotDataItem objects
+                # we only put 1 unique PlotDataItem in each plot
+                plot_data_item = self.plotItem.listDataItems()[0]
+                data_x, data_y = plot_data_item.getData()
+                if new_x < data_x[len(data_x) - 1]:
+                    self._stop_plotting = True
+                    return
 
-        else:
-            self.plotItem.plot([new_x], [new_y])
-            self._initialized = True
+                self._data_idx = 0 if new_x < data_x[len(data_x) - 1] else self._data_idx + 1
+                data_x = np.insert(data_x, self._data_idx, new_x)
+                data_y = np.insert(data_y, self._data_idx, new_y)
+                plot_data_item.setData(data_x, data_y)
+
+            else:
+                self.plotItem.plot([new_x], [new_y])
+                self._initialized = True
 
     def clear(self):
         """Removes the only PlotDataItem used in this PlotWidget"""
         self.plotItem.clear()
         self._initialized = False
+        self._stop_plotting = False
+
+    def resume_plotting(self):
+        self._stop_plotting = False
+
+    def stop_plotting(self):
+        self._stop_plotting = True
 
     @classmethod
     def new_point_data(cls, feed_fps: int, distance: float, current_frame_number: int):
