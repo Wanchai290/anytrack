@@ -79,7 +79,7 @@ class Packet:
         payload_length = self.payload_length()
         payload_length_format = f"{payload_length}s"
         data = struct.pack(
-            "!3scII2H" + payload_length_format + f"{Packet.LEN_PAYLOAD_CRC}s" + "4s",
+            "!3scI2HI" + payload_length_format + f"{Packet.LEN_PAYLOAD_CRC}s" + "4s",
             Packet.START_MAGIC_WORD,
             proto_ptype_channelcount_bytes,
             self.frame_id,
