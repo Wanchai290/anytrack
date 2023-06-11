@@ -88,7 +88,7 @@ class Packet:
         self.frame_number = frame_number
         self.packet_type = packet_type
         self.frame_shape = payload.shape[:2]
-        if len(payload) <= 2:
+        if len(payload.shape) <= 2:
             self.frame_channel_count = 1
         else:
             self.frame_channel_count = payload.shape[2]
@@ -158,10 +158,7 @@ class Packet:
 
     @classmethod
     def deserialize(cls, raw_packet: bytes) -> Packet | None:
-        """Deserializes a packet, and returns a Packet object. Returns None in case of protocol mismatch"""
-        # dev note: This isn't terrible to read, I've tried a few things to make it a bit easier to read
-        # trust me, it was way worse before
-        deserialized = cls.placeholder()
+        """Deserializes a packet, and returns a Packet object. Returns None in case of protocol or CRC mismatch"""
 
         # find payload's format in the raw packet
         payload_length = raw_packet[cls.PAYLOAD_LEN_IDX: cls.PAYLOAD_LEN_IDX + cls.LEN_PAYLOAD_LENGTH]
@@ -181,17 +178,22 @@ class Packet:
         # extract data from the special byte containing
         # protocol ver, packet type and num of channels in video frame
         prover_ptype_ccount_bin = bin(prover_ptype_ccount)[2:]
+
+        proto_ver = prover_ptype_ccount_bin[:cls.BIT_LEN_PROTOCOL_VER]
+        if int(proto_ver, 2) != cls.PROTOCOL_VER:
+            return
+
         packet_type_bin = prover_ptype_ccount_bin[
-                Packet.BIT_LEN_PROTOCOL_VER
+                cls.BIT_LEN_PROTOCOL_VER
                 :
-                Packet.BIT_LEN_PROTOCOL_VER + Packet.BIT_LEN_PACKET_TYPE
+                cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE
         ]
         packet_type = PacketType(int(packet_type_bin, 2)).name
 
         frame_channel_count = prover_ptype_ccount_bin[
-            Packet.BIT_LEN_PROTOCOL_VER + Packet.BIT_LEN_PACKET_TYPE
+            cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE
             :
-            Packet.BIT_LEN_PROTOCOL_VER + Packet.BIT_LEN_PACKET_TYPE + Packet.BIT_LEN_CHANNEL_COUNT
+            cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE + cls.BIT_LEN_CHANNEL_COUNT
         ]
         frame_channel_count = int(frame_channel_count, 2)
 
@@ -205,63 +207,23 @@ class Packet:
             return
 
         # assign to packet object
+        deserialized = cls.placeholder()
         deserialized.packet_type = packet_type
         deserialized.frame_channel_count = frame_channel_count
         deserialized.frame_number = frame_number
         deserialized.frame_shape = shape
-        deserialized.payload = payload_bin
-
-        # grab packet type and num of channels in frame
-        # data = struct.unpack(, raw_packet)
-        # stream = io.BytesIO(raw_packet)
-        #
-        # # check start magic word
-        # start_magic_word = stream.read(Packet.LEN_START_MAGIC_WORD)
-        # if start_magic_word != Packet.START_MAGIC_WORD:
-        #     return
-        #
-        # compacted_data = int.from_bytes(stream.read(Packet.LEN_PROVER_PTYPE_CCOUNT), Packet.BYTE_ORDER)
-        # compacted_data = bin(compacted_data)[2:]
-        #
-        # # check if protocol version matches
-        # proto_ver = compacted_data[:Packet.BIT_LEN_PROTOCOL_VER]
-        # proto_ver = int(proto_ver, 2)
-        # if proto_ver != Packet.PROTOCOL_VER:
-        #     return
-
-        #
-        # # read frame number & xy shape
-        # frame_number = int.from_bytes(stream.read(Packet.LEN_FRAME_NUMBER), Packet.BYTE_ORDER)
-        # xy_shape = int.from_bytes(stream.read(Packet.LEN_FRAME_XY_SHAPE), Packet.BYTE_ORDER)
-        # xy_shape = bin(xy_shape)[2:]
-        # frame_xy_shape = int(xy_shape[:4], 2), int(xy_shape[4:], 2)
-        #
-        # # read payload
-        # payload_length = int.from_bytes(stream.read(Packet.LEN_PAYLOAD_LENGTH), Packet.BYTE_ORDER)
-        # payload_bytes = stream.read(payload_length)
-        # payload = np.frombuffer(payload_bytes)
-        #
-        # # read & check payload crc
-        # payload_crc = int.from_bytes(stream.read(Packet.LEN_PAYLOAD_CRC), Packet.BYTE_ORDER)
-        # if payload_crc != Packet.CRC_COMPUTER.checksum(payload):
-        #     return
-        #
-        # # reshape the payload
-        # shape = (*frame_xy_shape, frame_channel_count)
-        # payload.reshape(shape)
-        #
-        # # check end word
-        # end_word = stream.read(Packet.LEN_END_MAGIC_WORD)
-        # if end_word != Packet.END_MAGIC_WORD:
-        #     print("sus")
-        #
-        # # fill the packet object
+        deserialized.payload = payload
 
         return deserialized
 
 
 if __name__ == '__main__':
-    p = Packet(0xFA, PacketType.FRAME, np.array(((5, 6), (4, 3)), dtype=int))
+    # TODO: if filled with 0s, crashes
+    p = Packet(0xFA, PacketType.FRAME, np.full((2, 2, 3), 4, dtype=int))
     s = p.serialize()
     print(s)
     pds = Packet.deserialize(s)
+    print(pds.payload)
+    print(pds.frame_shape)
+    pds.payload.reshape(pds.frame_shape)
+    print(pds.payload)
