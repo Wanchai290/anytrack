@@ -1,3 +1,4 @@
+from threading import Lock
 from typing import Any
 
 from pyqtgraph import PlotWidget
@@ -9,6 +10,9 @@ class DistancePlotWidget(PlotWidget):
     This custom widget displays a live distance graph.
     Note that we assume that we only use ONE PlotDataItem
     in this widget's PlotData.
+
+    TODO: make abstraction of this base class, with methods like clear(), plot_new_point(),
+    resume_plotting() and stop_plotting()
     """
 
     def __init__(self,
@@ -22,6 +26,8 @@ class DistancePlotWidget(PlotWidget):
         self._initialized = False
         self._data_idx = 0
         self._stop_plotting = False
+        self._mutex = Lock()
+        """Mutex used when the plot's data gets cleared, to block any update operation while clearing the plot"""
 
     def get_feed_fps(self):
         return self._feed_fps
@@ -31,6 +37,7 @@ class DistancePlotWidget(PlotWidget):
         """Plots a new point with the given data to this plot"""
         new_x, new_y = DistancePlotWidget.new_point_data(feed_fps, distance, current_frame_number)
 
+        self._mutex.acquire()
         # the only way to create a PlotDataItem for a PlotItem
         # is calling PlotItem.plot()
         # we need to know whether we have to update the plot
@@ -55,12 +62,16 @@ class DistancePlotWidget(PlotWidget):
             else:
                 self.plotItem.plot([new_x], [new_y])
                 self._initialized = True
+        self._mutex.release()
 
-    def clear(self):
+    def clear_data(self):
         """Removes the only PlotDataItem used in this PlotWidget"""
+        self._mutex.acquire()
         self.plotItem.clear()
         self._initialized = False
         self._stop_plotting = False
+        self._data_idx = 0
+        self._mutex.release()
 
     def resume_plotting(self):
         self._stop_plotting = False

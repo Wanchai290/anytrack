@@ -23,6 +23,7 @@ class LivePlotterDockWidget(QDockWidget):
         self._mutex = Lock()
 
         self._plot_widgets: dict[DistanceComputer, DistancePlotWidget] = {}
+        self._active_plot = None
         self._current_frame_number = 0
         # Empty widget displayed when there is no plot available
         tmp_widget = QWidget()
@@ -39,21 +40,16 @@ class LivePlotterDockWidget(QDockWidget):
         """Create a new PlotWidget to be displayed, and updated in real-time"""
         set_new_as_active = len(self._plot_widgets) == 0
         plot_widget = DistancePlotWidget(feed_fps)
-
-        # Here, this mutex was required because of the self._current_frame_number attribute
-        # it only changes when called by the update_plots() method.
-        self._mutex.acquire()
-        LivePlotterDockWidget.plot_new_point(plot_widget, dist_computer.distance(), self._current_frame_number,
-                                             update=False)
-        self._mutex.release()
         self._plot_widgets[dist_computer] = plot_widget
-
         if set_new_as_active:
             self.setWidget(self._plot_widgets[dist_computer])
+            self._active_plot = self._plot_widgets[dist_computer]
 
     def update_plots(self, frame_number: int):
         """Updates all the current plots with new data from their trackers"""
         super().update()
+        # Here, this mutex was required because of the self._current_frame_number attribute
+        # it only changes when called by the update_plots() method.
         self._mutex.acquire()
         self._current_frame_number = frame_number
         for (dist_computer, plot_widget) in self._plot_widgets.items():
@@ -64,25 +60,11 @@ class LivePlotterDockWidget(QDockWidget):
 
     def clear_all(self):
         self._mutex.acquire()
-        for (dist_computer, plot_widget) in self._plot_widgets.items():
-            plot_widget.clear()
+        for (dist_computer, dist_plot_widget) in self._plot_widgets.items():
+            dist_plot_widget.clear_data()
         self._mutex.release()
 
-    @classmethod
-    def plot_new_point(cls, plot_widget: DistancePlotWidget, distance: float, current_frame_number: int,
-                       update: bool = False):
-        """Plots a new point for a PlotWidget object"""
-        # plot_widget.plot_new_point(plot_widget.get_fps(), distance, current_frame_number)
-        # new_x, new_y = LivePlotterDockWidget.new_point_data(feed_fps, distance, current_frame_number)
-        # if update:
-        #     # a PlotItem can contain multiple PlotDataItem objects
-        #     # we only put 1 unique PlotDataItem in each plot
-        #     plot_data_item = plot_widget.plotItem.listDataItems()[0]
-        #     data_x, data_y = plot_data_item.getData()
-        #     data_x = np.append(data_x, new_x)
-        #     data_y = np.append(data_y, int(new_y))
-        #     plot_data_item.setData(data_x, data_y)
-        #
-        # else:
-        #     plot_widget.plotItem.plot([new_x], [new_y])
+    def clear_active_plot(self):
+        if self._active_plot is not None:
+            self._active_plot.clear_data()
 
