@@ -80,7 +80,7 @@ class Packet:
     """Start of the formatting used by struct.pack(), to serialize the packet."""
 
     PACKING_FORMAT_END = \
-        f"{LEN_PAYLOAD_CRC}s" \
+        f"h" \
         f"{LEN_END_MAGIC_WORD}s"
     """End of the formatting used by struct.pack(), to serialize the packet."""
 
@@ -131,7 +131,7 @@ class Packet:
             *self.frame_shape[:2],
             self.payload_length(),
             self.payload.tobytes(),
-            self.payload_crc.to_bytes(Packet.LEN_PAYLOAD_CRC, byteorder="little"),
+            self.payload_crc,
             Packet.END_MAGIC_WORD
         )
         return data
@@ -173,7 +173,6 @@ class Packet:
         # unpack into variables, and convert into ints
         _, prover_ptype_ccount, frame_number, frame_x_shape, frame_y_shape, _, payload_bin, payload_crc, _ = packed_data
         prover_ptype_ccount = cls.bytes_to_int(prover_ptype_ccount)
-        payload_crc = cls.bytes_to_int(payload_crc)
 
         # extract data from the special byte containing
         # protocol ver, packet type and num of channels in video frame
@@ -203,7 +202,7 @@ class Packet:
         payload = payload.reshape(shape)
 
         # check if payload crc is valid
-        if payload_crc == cls.CRC_COMPUTER.checksum(payload_bin):
+        if payload_crc != cls.CRC_COMPUTER.checksum(payload_bin):
             return
 
         # assign to packet object
@@ -220,6 +219,7 @@ class Packet:
 if __name__ == '__main__':
     # TODO: if filled with 0s, crashes
     og_payload = np.full((2, 2, 3), 4, dtype=int)
+    # og_payload = np.zeros((2, 2, 3), dtype=int)
     print(og_payload)
     p = Packet(0xFA, PacketType.FRAME, og_payload)
     s = p.serialize()
