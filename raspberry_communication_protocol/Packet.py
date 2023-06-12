@@ -94,7 +94,7 @@ class Packet:
             self.frame_channel_count = payload.shape[2]
         self.payload = payload
         """Big warning: payload must have int as its data type, otherwise NumPy will fail to convert the bytes
-           Also note that a packet can only serialize a 2D array"""
+           Also note that a packet can only serialize a 2D or 3D array"""
         # CRC is computed over packet's unique data
         self.payload_crc = Packet.compute_crc(self)
 
@@ -200,6 +200,8 @@ class Packet:
         # reshape payload
         payload = np.frombuffer(payload_bin, dtype=int)
         shape = (frame_x_shape, frame_y_shape, frame_channel_count)
+        if frame_channel_count == 1:
+            shape = shape[:2]
         payload = payload.reshape(shape)
 
         # check if payload crc is valid
