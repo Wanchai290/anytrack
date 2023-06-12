@@ -13,4 +13,4 @@ class PacketType(Enum):
     OK = 0b00
     FRAME = 0b01
     HALT = 0b10
-    REQUEST_AGAIN = 0b11
+    REQUEST = 0b11
