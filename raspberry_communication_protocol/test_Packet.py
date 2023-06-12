@@ -10,13 +10,13 @@ class Test(TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self._p_data = (1, PacketType.OK, np.array((5, 5)))
+        self._p_data = (1, PacketType.OK, np.array(((5, 5), (4, 4))))
         self._p = Packet(*self._p_data)
 
     def test_no_change_after_transfer(self):
         p_ser = self._p.serialize()
         p_deser = Packet.deserialize(p_ser)
-        self.assertEquals(self._p, p_deser)
+        self.assertEqual(self._p, p_deser)
 
     def test_valid_after_serialize_deserialize(self):
         p_ser = self._p.serialize()

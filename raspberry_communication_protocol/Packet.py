@@ -93,7 +93,8 @@ class Packet:
         else:
             self.frame_channel_count = payload.shape[2]
         self.payload = payload
-        """Big warning: payload must have int as its data type, otherwise NumPy will fail to convert the bytes"""
+        """Big warning: payload must have int as its data type, otherwise NumPy will fail to convert the bytes
+           Also note that a packet can only serialize a 2D array"""
         # CRC is computed over packet's unique data
         self.payload_crc = Packet.compute_crc(self)
 
@@ -187,7 +188,7 @@ class Packet:
                 :
                 cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE
         ]
-        packet_type = PacketType(int(packet_type_bin, 2)).name
+        packet_type = PacketType(int(packet_type_bin, 2))
 
         frame_channel_count = prover_ptype_ccount_bin[
             cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE
@@ -218,8 +219,8 @@ class Packet:
 
 if __name__ == '__main__':
     # TODO: if filled with 0s, crashes
-    og_payload = np.full((2, 2, 3), 4, dtype=int)
-    # og_payload = np.zeros((2, 2, 3), dtype=int)
+    # og_payload = np.full((2, 2, 3), 4, dtype=int)
+    og_payload = np.zeros((2, 2, 3), dtype=int)
     print(og_payload)
     p = Packet(0xFA, PacketType.FRAME, og_payload)
     s = p.serialize()
