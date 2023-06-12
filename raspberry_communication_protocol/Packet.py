@@ -213,14 +213,15 @@ class Packet:
         deserialized.frame_number = frame_number
         deserialized.frame_shape = shape
         deserialized.payload = payload
+        deserialized.payload_crc = payload_crc
 
         return deserialized
 
 
 if __name__ == '__main__':
     # TODO: if filled with 0s, crashes
-    # og_payload = np.full((2, 2, 3), 4, dtype=int)
-    og_payload = np.zeros((2, 2, 3), dtype=int)
+    og_payload = np.full((2, 2, 3), 4, dtype=int)
+    # og_payload = np.zeros((2, 2, 3), dtype=int)
     print(og_payload)
     p = Packet(0xFA, PacketType.FRAME, og_payload)
     s = p.serialize()
