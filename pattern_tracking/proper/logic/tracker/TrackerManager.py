@@ -8,6 +8,7 @@ from pattern_tracking.proper.logic.tracker.AbstractTracker import AbstractTracke
 from pattern_tracking.proper.logic.tracker.FixedPointTracker import FixedPointTracker
 from pattern_tracking.proper.logic.tracker.KCFTracker import KCFTracker
 from pattern_tracking.proper.logic.tracker.TemplateTracker import TemplateTracker
+from pattern_tracking.proper.logic.tracker.TrackerType import TrackerType
 
 
 class TrackerManager:
@@ -37,7 +38,7 @@ class TrackerManager:
         """
         return self._collection[tracker_id]
 
-    def create_tracker(self, name: str, tracker_type: AbstractTracker.TrackerType) -> AbstractTracker:
+    def create_tracker(self, name: str, tracker_type: TrackerType) -> AbstractTracker:
         """
         Factory method for creating a new Tracker object
         :param name: The name for the new tracker. Cannot be empty
@@ -54,19 +55,9 @@ class TrackerManager:
                            "Please input a different name for the new tracker")
 
         self._collection_mutex.acquire(blocking=True)
-        if tracker_type == AbstractTracker.TrackerType.TEMPLATE_TRACKER:
-            tracker = TemplateTracker(name)
-        elif tracker_type == AbstractTracker.TrackerType.KCF_TRACKER:
-            tracker = KCFTracker(name)
-        elif tracker_type == AbstractTracker.TrackerType.FIXED_POINT_TRACKER:
-            tracker = FixedPointTracker(name)
-        else:
-            self._collection_mutex.release()
-            raise NotImplementedError("This tracker type is not yet implemented !")
+        tracker = tracker_type.value.constructor(name)
 
         self._collection[tracker.get_id()] = tracker
-
-        # release lock anyway
         self._collection_mutex.release()
 
         return self._collection[tracker.get_id()]
@@ -131,8 +122,8 @@ class TrackerManager:
         return {identifier: tracker for (identifier, tracker) in self._collection.items()}
 
     @staticmethod
-    def available_tracker_types() -> list[AbstractTracker.TrackerType]:
-        return [v[1] for v in enumerate(AbstractTracker.TrackerType)]
+    def available_tracker_types() -> list[TrackerType]:
+        return [v[1] for v in enumerate(TrackerType)]
 
 
 if __name__ == '__main__':

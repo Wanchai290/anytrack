@@ -1,5 +1,6 @@
 import uuid
 from abc import ABC, abstractmethod
+from collections import namedtuple
 from enum import Enum
 
 import cv2 as cv
@@ -16,15 +17,6 @@ class AbstractTracker(ABC):
     update() method. You also need to define a new TrackerType enum value below, and
     modify the TrackerManager class to allow the creation of your new tracker in the GUI
     """
-
-    class TrackerType(Enum):
-        """
-        Describes the different types of tracker that are available in the app
-        TODO: find something better than having the crawl the whole code to implement a tracker
-        """
-        TEMPLATE_TRACKER = "Template tracker"
-        KCF_TRACKER = "KCF Tracker"
-        FIXED_POINT_TRACKER = "Fixed Point tracker"
 
     def __init__(self, name: str):
         self._id = uuid.uuid4()

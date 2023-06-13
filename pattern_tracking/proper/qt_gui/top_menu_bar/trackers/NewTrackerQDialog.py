@@ -40,7 +40,7 @@ class NewTrackerQDialog(QDialog):
 
         self._trackers_combobox = QComboBox(self)
         for t in TrackerManager.available_tracker_types():
-            self._trackers_combobox.addItem(t.value, t)
+            self._trackers_combobox.addItem(t.value.name, t)
 
         self.layout.addWidget(self._trackers_combobox)
 
