@@ -27,9 +27,9 @@ class Packet:
     # Defining the protocol's values here. Sizes are defined in number of **bytes** unless mentioned otherwise
     PROTOCOL_VER = 0b10
 
-    START_MAGIC_WORD = b"inu"
+    START_MAGIC_WORD = b"INU"
     """Magic start word in buffer"""
-    END_MAGIC_WORD = b"neko"
+    END_MAGIC_WORD = b"NEKO"
     """Magic end word in buffer"""
 
     # -- definition of sizes in the protocol
