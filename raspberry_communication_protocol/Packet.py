@@ -6,6 +6,7 @@ import struct
 import crc
 import numpy as np
 
+from raspberry_communication_protocol.PacketDataType import PacketDataType
 from raspberry_communication_protocol.PacketType import PacketType
 
 
@@ -35,7 +36,7 @@ class Packet:
     # -- definition of sizes in the protocol
     LEN_START_MAGIC_WORD = len(START_MAGIC_WORD)
     """Number of bytes of the magic start word"""
-    LEN_PROVER_PTYPE_CCOUNT = 1  # Protocol version, PacketType, Channel count and padding
+    LEN_PROVER_PTYPE_CCOUNT_DTYPE = 1  # Protocol version, PacketType, Channel count, data type of the payload
     """Number of byte that singlehandedly contains protocol version, packet type and frame channel count"""
 
     # -- The 3 following sizes describe numbers of **bits**
@@ -45,6 +46,8 @@ class Packet:
     """Number of bits for the type of packet sent"""
     BIT_LEN_CHANNEL_COUNT = 2
     """Number of bits for the number of channels of the video frame"""
+    BIT_LEN_PAYLOAD_DTYPE = 2
+    """Number of bits for the type of the data stored in the payload"""
     # --
 
     # The following are now number of **bytes**
@@ -63,7 +66,7 @@ class Packet:
     LEN_END_MAGIC_WORD = len(END_MAGIC_WORD)
     """Number of bytes of the magic start word"""
 
-    PAYLOAD_LEN_IDX = sum((LEN_START_MAGIC_WORD, LEN_PROVER_PTYPE_CCOUNT,
+    PAYLOAD_LEN_IDX = sum((LEN_START_MAGIC_WORD, LEN_PROVER_PTYPE_CCOUNT_DTYPE,
                            LEN_FRAME_NUMBER, LEN_FRAME_XY_SHAPE))
     """Start index of the bytes describing the payload's length"""
     # Format string used during serialization
@@ -73,7 +76,7 @@ class Packet:
     PACKING_FORMAT_START = \
         "!" \
         f"{LEN_START_MAGIC_WORD}s" \
-        f"{LEN_PROVER_PTYPE_CCOUNT}c" \
+        f"{LEN_PROVER_PTYPE_CCOUNT_DTYPE}c" \
         "I" \
         f"{LEN_FRAME_XY_SHAPE//2}H" \
         "I"
@@ -88,20 +91,25 @@ class Packet:
         self.frame_number = frame_number
         self.packet_type = packet_type
 
+        self.payload_dtype = PacketDataType.from_dtype(payload.dtype)
+
+        # Re-arrange the shape to be easily deserialized after
         if payload.shape == (0,):
             self.frame_shape = (0, 0)
             self.frame_channel_count = 0
         else:
-
             self.frame_shape = payload.shape[:2]
 
+        # same thing but for channel count
         if len(payload.shape) <= 2:
             self.frame_channel_count = 1
         else:
             self.frame_channel_count = payload.shape[2]
+
         self.payload = payload
         """Big warning: payload must have int as its data type, otherwise NumPy will fail to convert the bytes
            Also note that a packet can only serialize a 2D or 3D array"""
+
         # CRC is computed over packet's unique data
         self.payload_crc = Packet.compute_crc(self)
 
@@ -124,8 +132,9 @@ class Packet:
         # Please check `comm_protocol_definition.md` for more details
         proto_ptype_channelcount = (Packet.PROTOCOL_VER << 6
                                     | self.packet_type.value << 4
-                                    | self.frame_channel_count << 2)
-        proto_ptype_channelcount_bytes = proto_ptype_channelcount.to_bytes(1, "big")
+                                    | self.frame_channel_count << 2
+                                    | self.payload_dtype)
+        proto_ptype_channelcount_bytes = proto_ptype_channelcount.to_bytes(1, Packet.BYTE_ORDER)
 
         # Compute payload length to find the shape of the format
         # to use with struct.pack()
@@ -162,7 +171,7 @@ class Packet:
     @classmethod
     def placeholder(cls) -> Packet:
         """Returns a placeholder Packet object, its values are meant to be replaced, not used. Convenience method"""
-        return Packet(0, PacketType.OK, np.array(()))
+        return Packet(0, PacketType.OK, np.array((), dtype=PacketDataType.U8_INT.value.type_))
 
     @classmethod
     def deserialize(cls, raw_packet: bytes) -> Packet | None:
@@ -184,31 +193,38 @@ class Packet:
 
         # extract data from the special byte containing
         # protocol ver, packet type and num of channels in video frame
-        prover_ptype_ccount_bin = bin(prover_ptype_ccount)[2:]
+        prover_ptype_ccount_pldtype_bin = bin(prover_ptype_ccount)[2:]
 
-        proto_ver = prover_ptype_ccount_bin[:cls.BIT_LEN_PROTOCOL_VER]
+        proto_ver = prover_ptype_ccount_pldtype_bin[:cls.BIT_LEN_PROTOCOL_VER]
         if int(proto_ver, 2) != cls.PROTOCOL_VER:
             return
 
-        packet_type_bin = prover_ptype_ccount_bin[
+        packet_type_bin = prover_ptype_ccount_pldtype_bin[
                 cls.BIT_LEN_PROTOCOL_VER
                 :
                 cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE
         ]
         packet_type = PacketType(int(packet_type_bin, 2))
 
-        frame_channel_count = prover_ptype_ccount_bin[
+        frame_channel_count = prover_ptype_ccount_pldtype_bin[
             cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE
             :
             cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE + cls.BIT_LEN_CHANNEL_COUNT
         ]
         frame_channel_count = int(frame_channel_count, 2)
 
+        payload_dtype = prover_ptype_ccount_pldtype_bin[
+                        cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE + cls.BIT_LEN_CHANNEL_COUNT
+                        :
+        ]
+        payload_dtype = PacketDataType.from_bin_form(int(payload_dtype, 2))
+
         # reshape payload
-        payload = np.frombuffer(payload_bin, dtype=np.uint8)
+        payload = np.frombuffer(payload_bin, dtype=payload_dtype)
         shape = (frame_x_shape, frame_y_shape, frame_channel_count)
         if frame_channel_count == 1:
             shape = shape[:2]
+        print(payload)
         payload = payload.reshape(shape)
 
         # check if payload crc is valid
@@ -222,16 +238,15 @@ class Packet:
         deserialized.frame_number = frame_number
         deserialized.frame_shape = shape
         deserialized.payload = payload
+        deserialized.payload_dtype = payload_dtype
         deserialized.payload_crc = payload_crc
 
         return deserialized
 
 
 if __name__ == '__main__':
-    # TODO: if filled with 0s, crashes
-    og_payload = np.full((2, 2, 3), 4, dtype=int)
-    # og_payload = np.zeros((2, 2, 3), dtype=int)
-    print(og_payload)
+    # og_payload = np.full((2, 2, 3), 4, dtype=np.uint8)
+    og_payload = np.zeros((2, 2, 3), dtype=np.uint8)
     p = Packet(0xFA, PacketType.FRAME, og_payload)
     s = p.serialize()
     print(s)

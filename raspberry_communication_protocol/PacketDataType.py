@@ -88,5 +88,5 @@ class PacketDataType(Enum):
 
 
 if __name__ == '__main__':
-    a = np.array((1, 2), dtype=np.int32)
+    a = np.array((1, 2), dtype=int)
     print(PacketDataType.from_dtype(a.dtype))

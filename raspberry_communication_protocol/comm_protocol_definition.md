@@ -7,7 +7,7 @@
     - 2 bits : Protocol version
     - 2 bits : PacketType
     - 2 bits : Number of channels in the frame
-    - 2 bits : Padding
+    - 2 bits : dtype of the NumPy array representing the video frame
 - 4 bytes : Frame number
 - 4 bytes : Frame shape (same order as np.array().shape)
 - 4 bytes : Payload length
