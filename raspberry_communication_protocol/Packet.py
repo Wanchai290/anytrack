@@ -205,7 +205,7 @@ class Packet:
         frame_channel_count = int(frame_channel_count, 2)
 
         # reshape payload
-        payload = np.frombuffer(payload_bin, dtype=int)
+        payload = np.frombuffer(payload_bin, dtype=np.uint8)
         shape = (frame_x_shape, frame_y_shape, frame_channel_count)
         if frame_channel_count == 1:
             shape = shape[:2]
