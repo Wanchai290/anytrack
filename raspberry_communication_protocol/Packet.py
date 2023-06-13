@@ -22,7 +22,7 @@ class Packet:
     """
     # Frames can get corrupted during transport because of their size.
     # A 16-bit CRC should cover enough unique values for integrity checks
-    CRC_COMPUTER = crc.Calculator(crc.Crc16.CCITT.value)
+    CRC_COMPUTER = crc.Calculator(crc.Crc16.CCITT.value, optimized=True)
     BYTE_ORDER = "big"
     # Defining the protocol's values here. Sizes are defined in number of **bytes** unless mentioned otherwise
     PROTOCOL_VER = 0b10
@@ -87,7 +87,14 @@ class Packet:
     def __init__(self, frame_number: int, packet_type: PacketType, payload: np.ndarray):
         self.frame_number = frame_number
         self.packet_type = packet_type
-        self.frame_shape = payload.shape[:2]
+
+        if payload.shape == (0,):
+            self.frame_shape = (0, 0)
+            self.frame_channel_count = 0
+        else:
+
+            self.frame_shape = payload.shape[:2]
+
         if len(payload.shape) <= 2:
             self.frame_channel_count = 1
         else:
@@ -155,7 +162,7 @@ class Packet:
     @classmethod
     def placeholder(cls) -> Packet:
         """Returns a placeholder Packet object, its values are meant to be replaced, not used. Convenience method"""
-        return Packet(-1, PacketType.OK, np.array(()))
+        return Packet(0, PacketType.OK, np.array(()))
 
     @classmethod
     def deserialize(cls, raw_packet: bytes) -> Packet | None:
