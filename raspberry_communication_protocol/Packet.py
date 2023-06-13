@@ -80,7 +80,7 @@ class Packet:
     """Start of the formatting used by struct.pack(), to serialize the packet."""
 
     PACKING_FORMAT_END = \
-        f"h" \
+        f"H" \
         f"{LEN_END_MAGIC_WORD}s"
     """End of the formatting used by struct.pack(), to serialize the packet."""
 
