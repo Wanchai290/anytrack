@@ -5,9 +5,9 @@ from threading import Thread, Event
 
 from PIL import Image
 
-from raspberry_communication_protocol.FrameTCPClient import FrameTCPClient
-from raspberry_communication_protocol.server.FrameTCPServer import FrameTCPServer
-from raspberry_communication_protocol.server.FrameTCPServerRequestHandler import FrameTCPServerRequestHandler
+from comm_protocol.FrameTCPClient import FrameTCPClient
+from comm_protocol.server.FrameTCPServer import FrameTCPServer
+from comm_protocol.server.FrameTCPServerRequestHandler import FrameTCPServerRequestHandler
 
 
 class Main:

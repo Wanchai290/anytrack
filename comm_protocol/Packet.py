@@ -6,8 +6,8 @@ import struct
 import crc
 import numpy as np
 
-from raspberry_communication_protocol.PacketDataType import PacketDataType
-from raspberry_communication_protocol.PacketType import PacketType
+from comm_protocol.PacketDataType import PacketDataType
+from comm_protocol.PacketType import PacketType
 
 
 class Packet:

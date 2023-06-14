@@ -2,8 +2,8 @@ import numpy as np
 
 from unittest import TestCase
 
-from raspberry_communication_protocol.Packet import Packet
-from raspberry_communication_protocol.PacketType import PacketType
+from comm_protocol.Packet import Packet
+from comm_protocol.PacketType import PacketType
 
 
 class Test(TestCase):

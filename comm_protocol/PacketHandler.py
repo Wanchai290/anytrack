@@ -1,6 +1,6 @@
 import time
 
-from raspberry_communication_protocol.Packet import Packet
+from comm_protocol.Packet import Packet
 
 
 class PacketHandler:

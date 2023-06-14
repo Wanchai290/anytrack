@@ -3,9 +3,9 @@ from numpy import ndarray
 from queue import Queue
 from socketserver import BaseRequestHandler
 
-from raspberry_communication_protocol.Packet import Packet
-from raspberry_communication_protocol.PacketHandler import PacketHandler
-from raspberry_communication_protocol.PacketType import PacketType
+from comm_protocol.Packet import Packet
+from comm_protocol.PacketHandler import PacketHandler
+from comm_protocol.PacketType import PacketType
 
 
 class FrameTCPServerRequestHandler(BaseRequestHandler):
