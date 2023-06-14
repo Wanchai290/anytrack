@@ -189,7 +189,6 @@ class Packet:
         # extract data from bytes
         format = cls.PACKING_FORMAT_START + payload_length_format + cls.PACKING_FORMAT_END
         packed_data = struct.unpack(format, raw_packet)
-        print(packed_data)
 
         # unpack into variables, and convert into ints
         _, prover_ptype_ccount, frame_number, frame_x_shape, frame_y_shape, _, payload_bin, payload_crc, _ = packed_data
@@ -228,7 +227,6 @@ class Packet:
         shape = (frame_x_shape, frame_y_shape, frame_channel_count)
         if frame_channel_count == 1:
             shape = shape[:2]
-        print(payload)
         payload = payload.reshape(shape)
 
         # check if payload crc is valid

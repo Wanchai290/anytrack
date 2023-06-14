@@ -2,7 +2,7 @@ import logging
 import socket
 import time
 from queue import Queue
-from threading import Event, Thread, Lock
+from threading import Event, Thread
 from typing import Callable
 
 from numpy import ndarray
