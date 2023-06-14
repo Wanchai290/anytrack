@@ -26,21 +26,3 @@ class FixedPointTracker(AbstractTracker):
     def set_poi(self, poi: RegionOfInterest):
         super().set_poi(poi)
         self._found_poi = poi
-
-    def _draw_poi(self, rect):
-        cv.rectangle(
-            self._drawing_frame,
-            *rect,
-            (255, 255, 255),
-            2
-        )
-
-    # TODO: currently a copy/paste from TemplateTracker, but lets itself be customizable
-    def _draw_detection_region(self, rect):
-        cv.rectangle(
-            self._drawing_frame,
-            *rect,
-            (0, 255, 0),  # green
-            2  # thickness
-        )
-

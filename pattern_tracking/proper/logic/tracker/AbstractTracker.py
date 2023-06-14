@@ -78,7 +78,6 @@ class AbstractTracker(ABC):
 
         If the POI has been found, you must update the self._found_poi attribute.
 
-        TODO: why the hell should a logic item draw something for the GUI ? refac this
         It should draw the result onto the drawing_frame parameter, that must be of the
         same shape as the given image.
         :param base_frame: The given image in which to find the POI
@@ -92,20 +91,28 @@ class AbstractTracker(ABC):
             self._detection_region.set_parent_image(self._base_frame)
             self._draw_detection_region(self._detection_region.get_coords())
 
-    @abstractmethod
     def _draw_poi(self, rect: RegionOfInterest | np.ndarray):
         """
         Draws a rectangle highlighting the point of interest
         on the frame of this object.
         :param rect: The rectangle to draw on the object's frame
         """
-        pass
+        cv.rectangle(
+            self._drawing_frame,
+            *rect,
+            (255, 255, 255),
+            2
+        )
 
-    @abstractmethod
     def _draw_detection_region(self, rect: RegionOfInterest | np.ndarray):
         """
         Draw the region in which to find the POI
         on the frame of this object.
         :param rect: The rectangle to draw on the object's frame
         """
-        pass
+        cv.rectangle(
+            self._drawing_frame,
+            *rect,
+            (0, 255, 0),  # green
+            2  # thickness
+        )

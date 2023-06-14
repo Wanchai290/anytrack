@@ -41,19 +41,3 @@ class TemplateTracker(AbstractTracker):
             else:
                 if self._detection_region.intersects(self._template_poi):
                     self._draw_poi(self._found_poi.get_coords())
-
-    def _draw_poi(self, rect):
-        cv.rectangle(
-            self._drawing_frame,
-            *rect,
-            (255, 255, 255),
-            2
-        )
-
-    def _draw_detection_region(self, rect):
-        cv.rectangle(
-            self._drawing_frame,
-            *rect,
-            (0, 255, 0),  # green
-            2  # thickness
-        )
