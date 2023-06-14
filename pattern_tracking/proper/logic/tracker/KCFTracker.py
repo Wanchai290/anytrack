@@ -41,27 +41,17 @@ class KCFTracker(AbstractTracker):
                 # apply the offset (see utils.compute_detection_offset docs for explanations)
                 xywh[:2] += offset
                 x, y, w, h = xywh
-                self._found_poi = RegionOfInterest.new(frame, x, w, y, h)
+                # Important note :
+                # Since we applied the offset, the given coordinates are now attached to the base frame's plane
+                # This is why it becomes the parent image in this RegionOfInterest object
+                self._found_poi = RegionOfInterest.new(self._base_frame, x, w, y, h)
                 self._draw_poi(self._found_poi)
             self._init_lock.release()
 
     # -- Overrides
     def set_poi(self, poi: RegionOfInterest):
         super().set_poi(poi)
-        being_reset = False
-        if self._initialized:
-            self._init_lock.acquire(blocking=True)
-            self._base_tracker = cv.TrackerKCF_create()
-            being_reset = True
-
-        self._base_tracker.init(
-            poi.get_parent_image(),
-            poi.get_xywh()
-        )
-
-        if being_reset:
-            self._init_lock.release()
-
+        self._reset_base_tracker()
         self._initialized = True
 
     def set_detection_region(self, region: RegionOfInterest):
@@ -69,14 +59,35 @@ class KCFTracker(AbstractTracker):
 
         # reset the base tracker
         # only possible if a POI is set !
-        if not self._template_poi.is_undefined():
+        if not self._template_poi.is_undefined() and not (region.get_xywh()[2:] <= 0).any():
             self._init_lock.acquire()
-            self._base_tracker = cv.TrackerKCF_create()
-            self._base_tracker.init(
-                self._template_poi.get_image(),
-                region.get_xywh()
-            )
+            poi_w, poi_h = self._template_poi.get_xywh()[2:]
+
+            if sum((poi_w, poi_h)) <= sum(region.get_xywh()[2:]):
+                self._reset_base_tracker()
             self._init_lock.release()
+
+    def _reset_base_tracker(self):
+        self._init_lock.acquire()
+        self._base_tracker = cv.TrackerKCF_create()
+
+        if self._detection_region.is_undefined():
+            self._base_tracker.init(
+                self._base_frame,
+                self._template_poi.get_xywh()
+            )
+
+        else:
+            poi_w, poi_h = self._template_poi.get_xywh()[2:]
+            poi_offset_x, poi_offset_y = self._template_poi.offset(self._detection_region.get_xywh()[:2], reverse=True)
+            self._base_tracker.init(
+                self._detection_region.get_image(),
+                (poi_offset_x, poi_offset_y, poi_w, poi_h)
+            )
+        self._init_lock.release()
+
+    def _draw_poi(self, rect: RegionOfInterest | np.ndarray):
+        super()._draw_poi(rect)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from enum import Enum
 
 import numpy as np
@@ -252,6 +253,14 @@ class RegionOfInterest:
 
     def __iter__(self):
         return self._coords.__iter__()
+
+    def offset(self, offset: tuple[int, int], reverse: bool = False) -> tuple[int, int]:
+        """Offsets the coordinates of this region, and returns the resulting coordinates
+           of the top-left corner after offset"""
+        origin = self._coords[self.PointCoords.TOP_LEFT.value]
+        if reverse:
+            return tuple(origin - offset)
+        return tuple(origin + offset)
 
     @staticmethod
     def _limit_to_image(parent_shape: tuple[int, int], xwyh: np.ndarray) -> np.ndarray:
