@@ -33,14 +33,14 @@ class FrameTCPServerRequestHandler(BaseRequestHandler):
         deserialized = Packet.deserialize(data + rest_data)
         if deserialized.packet_type == PacketType.OK:
             # Actualize the data we have to send, then send it right away
-            self.server.current_data_to_send = self.server.frames_queue.get()
+            self.server.current_data_to_send = self.server.frames_queue.get(block=True)
             self._send_current_data()
         elif deserialized.packet_type == PacketType.REQUEST:
             # The other end didn't receive the packet correctly, re-sending the data
             self._send_current_data()
         elif deserialized.packet_type == PacketType.HALT:
             # Sever the connection
-            self.server.socket.close()
+            # self.server.socket.close()
             self.server.shutdown()
 
     def _send_current_data(self):

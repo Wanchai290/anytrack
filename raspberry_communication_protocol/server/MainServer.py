@@ -42,26 +42,11 @@ if __name__ == "__main__":
     t.start()
 
     halt = Event()
-    client = FrameTCPClient("localhost", Main.SERVER_PORT, halt)
+    client = FrameTCPClient("localhost", Main.SERVER_PORT, halt, Event())
     client.run_forever()
     _, received_img = client.received_frames_queue.get()
+    halt.set()
+    # client.force_stop()
     cv.imshow("nice cat", received_img)
-    cv.waitKey(0)
-    m.halt()
-
-    # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-    #     sock.connect(("localhost", Main.SERVER_PORT))
-    #     p = Packet.placeholder()
-    #     p.packet_type = PacketType.OK
-    #     sock.send(p.serialize())
-    #
-    #     response = PacketHandler.read_start_word(sock)
-    #     if response is not None:
-    #         response += PacketHandler.read_until_end_word(sock, time.time(), 999)
-    #
-    #     packet_response = Packet.deserialize(response)
-    #     print(packet_response.packet_type)
-    #     print(packet_response.payload.shape)
-    #     print(cv.imshow("nice cat", packet_response.payload))
-    #     cv.waitKey(0)
-    #     m.halt()
+    cv.waitKey(0)  # press a key when window opens so that the code below gets run anyway
+    exit(0)
