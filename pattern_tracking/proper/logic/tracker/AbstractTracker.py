@@ -1,7 +1,5 @@
 import uuid
 from abc import ABC, abstractmethod
-from collections import namedtuple
-from enum import Enum
 
 import cv2 as cv
 import numpy as np
@@ -17,8 +15,12 @@ class AbstractTracker(ABC):
     update() method. You also need to define a new TrackerType enum value below, and
     modify the TrackerManager class to allow the creation of your new tracker in the GUI
     """
+    DEFAULT_POI_COLOR = (255, 255, 255)
+    DEFAULT_BOUNDS_COLOR = (0, 255, 0)
 
-    def __init__(self, name: str):
+    def __init__(self, name: str,
+                 poi_rgb: tuple[int, int, int] = DEFAULT_POI_COLOR,
+                 detection_bounds_rgb: tuple[int, int, int] = DEFAULT_BOUNDS_COLOR):
         self._id = uuid.uuid4()
         """Unique identifier"""
         self._name = name
@@ -39,6 +41,11 @@ class AbstractTracker(ABC):
         """Whether this tracker has been initialized once
            Only used by OpenCV's trackers, to avoid computing detection
            if the tracker wasn't properly initialized"""
+
+        self._poi_color = poi_rgb
+        """Color used to highlight the POI"""
+        self._detection_region_color = detection_bounds_rgb
+        """Color used to highlight the detection region"""
 
     def get_edited_frame(self) -> cv.Mat | np.ndarray:
         """:return: The frame that has been edited by this highlighter"""
@@ -100,7 +107,7 @@ class AbstractTracker(ABC):
         cv.rectangle(
             self._drawing_frame,
             *rect,
-            (255, 255, 255),
+            self._poi_color,
             2
         )
 
@@ -113,6 +120,6 @@ class AbstractTracker(ABC):
         cv.rectangle(
             self._drawing_frame,
             *rect,
-            (0, 255, 0),  # green
-            2  # thickness
+            self._detection_region_color,
+            2
         )
