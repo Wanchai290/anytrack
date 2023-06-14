@@ -32,6 +32,11 @@ class KCFTracker(AbstractTracker):
                 frame, offset = utils.compute_detection_offset(base_frame, self._template_poi.get_image(), self._detection_region)
             except IndexError:
                 return
+
+            # don't do anything if detection bounds is defined, but not valid
+            if not self._detection_region.is_undefined() and (self._detection_region.get_xywh()[2:] <= self._template_poi.get_xywh()[2:]).any():
+                return
+
             # compute the location of the POI
             self._init_lock.acquire()
             found, bbox = self._base_tracker.update(frame)
@@ -55,17 +60,13 @@ class KCFTracker(AbstractTracker):
         self._initialized = True
 
     def set_detection_region(self, region: RegionOfInterest):
-        super().set_detection_region(region)
-
         # reset the base tracker
         # only possible if a POI is set !
-        if not self._template_poi.is_undefined() and not (region.get_xywh()[2:] <= 0).any():
-            self._init_lock.acquire()
+        if not self._template_poi.is_undefined() and not (region.get_xywh()[2:] <= self._template_poi.get_xywh()[2:]).any():
             poi_w, poi_h = self._template_poi.get_xywh()[2:]
-
             if sum((poi_w, poi_h)) <= sum(region.get_xywh()[2:]):
+                self._detection_region = region
                 self._reset_base_tracker()
-            self._init_lock.release()
 
     def _reset_base_tracker(self):
         self._init_lock.acquire()
