@@ -17,6 +17,8 @@ class NewPlotQDialog(QDialog):
     def __init__(self, available_trackers: list[AbstractTracker], parent: QWidget = None):
         super().__init__(parent)
 
+        self._plot_title_result: str | None = None
+        """The resulting plot title given by the user"""
         self._dist_observer_result: DistanceComputer | None = None
         """The resulting object created when the user closes the dialog"""
         self._tracker_one: AbstractTracker | None = None
@@ -90,6 +92,7 @@ class NewPlotQDialog(QDialog):
                 selected_tracker_one,
                 selected_tracker_two
             )
+            plot_title = self._plot_name_line_edit.text().strip()
             valid = True
         except ValueError as err:
             popup_title = "Error: Invalid parameters"
@@ -100,6 +103,7 @@ class NewPlotQDialog(QDialog):
         if valid:
             self._dist_observer_result = dist_observer
             self._feed_fps_result = feed_fps
+            self._plot_title_result = plot_title
             self.accept()
 
     def get_resulting_dist_observer(self):
@@ -108,6 +112,9 @@ class NewPlotQDialog(QDialog):
 
     def get_resulting_fps(self):
         return self._feed_fps_result
+
+    def get_resulting_title(self):
+        return self._plot_title_result
 
 
 if __name__ == '__main__':

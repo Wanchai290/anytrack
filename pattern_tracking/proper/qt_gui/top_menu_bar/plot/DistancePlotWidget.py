@@ -17,11 +17,13 @@ class DistancePlotWidget(PlotWidget):
 
     def __init__(self,
                  feed_fps: int,
+                 plot_title: str,
                  parent: Any = None,
                  background: str = 'default',
                  plotItem: Any = None,
                  **kargs: Any) -> None :
         super().__init__(parent, background, plotItem, **kargs)
+        self.plotItem.setTitle(plot_title)
         self._feed_fps = feed_fps
         self._initialized = False
         self._data_idx = 0

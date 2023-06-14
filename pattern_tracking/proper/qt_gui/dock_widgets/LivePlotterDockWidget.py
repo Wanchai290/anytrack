@@ -35,10 +35,10 @@ class LivePlotterDockWidget(QDockWidget):
 
         self._init_control_bar_sublayout()
 
-    def new_plot(self, dist_computer: DistanceComputer, feed_fps: int):
+    def new_plot(self, dist_computer: DistanceComputer, feed_fps: int, title: str):
         """Create a new PlotWidget to be displayed, and updated in real-time"""
         set_new_as_active = len(self._plots) == 0
-        plot_widget = DistancePlotWidget(feed_fps)
+        plot_widget = DistancePlotWidget(feed_fps, plot_title=title)
         self._plots[dist_computer] = plot_widget
         if set_new_as_active:
             self.change_active_plot(self._plots[dist_computer])
