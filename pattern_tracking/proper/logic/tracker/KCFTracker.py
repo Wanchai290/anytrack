@@ -34,7 +34,7 @@ class KCFTracker(AbstractTracker):
                 return
             # compute the location of the POI
             self._init_lock.acquire()
-            found, bbox = self._base_tracker.update_plots(frame)
+            found, bbox = self._base_tracker.update(frame)
             if found:
                 # convert OpenCV bounding box into something usable
                 xywh = np.array([int(v) for v in bbox])
