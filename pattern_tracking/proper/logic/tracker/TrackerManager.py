@@ -9,6 +9,7 @@ from pattern_tracking.proper.logic.tracker.FixedPointTracker import FixedPointTr
 from pattern_tracking.proper.logic.tracker.KCFTracker import KCFTracker
 from pattern_tracking.proper.logic.tracker.TemplateTracker import TemplateTracker
 from pattern_tracking.proper.logic.tracker.TrackerType import TrackerType
+from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
 
 
 class TrackerManager:
@@ -116,6 +117,9 @@ class TrackerManager:
         if self._active_tracker is None:
             raise ValueError("No active tracker set !")
         return self._active_tracker
+
+    def clear_active_tracker_detection_region(self):
+        self._active_tracker.set_detection_region(RegionOfInterest.new_empty())
 
     def alive_trackers(self) -> dict[uuid.UUID, AbstractTracker]:
         """Returns the UUIDs and names of all trackers currently in this manager"""

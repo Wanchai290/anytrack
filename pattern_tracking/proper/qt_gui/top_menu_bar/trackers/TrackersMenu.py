@@ -1,5 +1,7 @@
 from PySide6.QtWidgets import QMenu, QWidget
 
+from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.ClearActiveTrackerDetectionRegion import \
+    ClearActiveTrackerDetectionRegion
 from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.CreateTrackerAction import CreateTrackerAction
 from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.SwitchTrackersSubMenu import SwitchTrackersSubMenu
 from pattern_tracking.proper.logic.tracker import TrackerManager
@@ -29,7 +31,10 @@ class TrackersMenu(QMenu):
             )
         """Button that opens a popup dialog to create a new tracker"""
 
+        self._CLEAR_ACTIVE_TRACKER_DETREG = ClearActiveTrackerDetectionRegion(tracker_manager)
+
         # menu parameters
         self.setTitle(TrackersMenu.DEFAULT_NAME if name is None else name)
         self.addAction(self._CREATE_TRACKER_ACTION)
+        self.addAction(self._CLEAR_ACTIVE_TRACKER_DETREG)
         self.addMenu(self._SWITCH_TRACKERS_SUBMENU)
