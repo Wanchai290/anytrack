@@ -117,6 +117,10 @@ class Packet:
         """Returns the number of **bytes** required to store this payload."""
         return len(self.payload.tobytes())
 
+    def is_valid(self):
+        return self.payload_crc == Packet.CRC_COMPUTER.checksum(self.payload) \
+            and self.frame_number >= 0
+
     def __eq__(self, other):
         if type(other) != Packet:
             return False
