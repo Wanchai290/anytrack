@@ -66,7 +66,6 @@ class DistancePlotWidget(PlotWidget):
         """Removes the only PlotDataItem used in this PlotWidget"""
         self.plotItem.clear()
         self._initialized = False
-        self._stop_plotting = False
         self._data_idx = 0
 
     def resume_plotting(self):
