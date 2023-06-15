@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import io
 import struct
 
-import crc
 import numpy as np
+import fastcrc
 
 from comm_protocol.PacketDataType import PacketDataType
 from comm_protocol.PacketType import PacketType
@@ -23,7 +22,8 @@ class Packet:
     """
     # Frames can get corrupted during transport because of their size.
     # A 16-bit CRC should cover enough unique values for integrity checks
-    CRC_COMPUTER = crc.Calculator(crc.Crc16.CCITT.value, optimized=True)
+    # We use the fastcrc module because it is like 10x better over a 100 runs speed test with timeit
+    CRC_COMPUTER = fastcrc.crc16
     BYTE_ORDER = "big"
     # Defining the protocol's values here. Sizes are defined in number of **bytes** unless mentioned otherwise
     PROTOCOL_VER = 0b10
@@ -107,8 +107,7 @@ class Packet:
             self.frame_channel_count = payload.shape[2]
 
         self.payload = payload
-        """Big warning: payload must have int as its data type, otherwise NumPy will fail to convert the bytes
-           Also note that a packet can only serialize a 2D or 3D array"""
+        """NumPy array representing an image. Its datatype must be the same during serialization and deserialization"""
 
         # CRC is computed over packet's unique data
         self.payload_crc = Packet.compute_crc(self)
@@ -118,7 +117,7 @@ class Packet:
         return len(self.payload.tobytes())
 
     def is_valid(self):
-        return self.payload_crc == Packet.CRC_COMPUTER.checksum(self.payload) \
+        return self.payload_crc == Packet.CRC_COMPUTER.arc(self.payload.tobytes()) \
             and self.frame_number >= 0
 
     def __eq__(self, other):
@@ -160,7 +159,7 @@ class Packet:
     @staticmethod
     def compute_crc(packet: Packet):
         """Computes and returns the payload's CRC when converted to bytes using NumPy's tobytes() method"""
-        return Packet.CRC_COMPUTER.checksum(packet.payload.tobytes())
+        return Packet.CRC_COMPUTER.arc(packet.payload.tobytes())
 
     @staticmethod
     def compute_payload_ser_format(payload_length: int) -> str:
@@ -230,7 +229,7 @@ class Packet:
         payload = payload.reshape(shape)
 
         # check if payload crc is valid
-        if payload_crc != cls.CRC_COMPUTER.checksum(payload_bin):
+        if payload_crc != cls.CRC_COMPUTER.arc(payload_bin):
             return
 
         # assign to packet object
@@ -247,8 +246,8 @@ class Packet:
 
 
 if __name__ == '__main__':
-    # og_payload = np.full((2, 2, 3), 4, dtype=np.uint8)
-    og_payload = np.zeros((2, 2, 3), dtype=np.uint8)
+    og_payload = np.full((2, 2, 3), 4, dtype=np.uint8)
+    # og_payload = np.zeros((2, 2, 3), dtype=np.uint8)
     p = Packet(0xFA, PacketType.FRAME, og_payload)
     s = p.serialize()
     print(s)
