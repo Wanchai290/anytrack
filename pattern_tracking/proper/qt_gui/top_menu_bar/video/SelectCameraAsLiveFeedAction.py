@@ -1,6 +1,6 @@
 from PySide6.QtGui import QAction
 
-from pattern_tracking.proper.logic.VideoReader import VideoReader
+from pattern_tracking.proper.logic.video.VideoReader import VideoReader
 
 
 class SelectCameraAsLiveFeedAction(QAction):

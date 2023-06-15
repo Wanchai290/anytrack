@@ -5,8 +5,10 @@ from threading import Thread, Event
 import cv2 as cv
 import numpy as np
 
+from pattern_tracking.proper.logic.video.AbstractFrameProvider import AbstractFrameProvider
 
-class VideoReader:
+
+class VideoReader(AbstractFrameProvider):
     """
     Continuously reads frames from a video file
     or from a video feed, and puts them in a readable
@@ -17,6 +19,7 @@ class VideoReader:
                  halt_work: Event,
                  max_frames_in_queue: int = 30,
                  loop_video: bool = False):
+        super().__init__(halt_work, max_frames_in_queue)
 
         self._video_feed: cv.VideoCapture = None
         """Video feed"""
@@ -26,12 +29,6 @@ class VideoReader:
         """Feed origin input"""
         self._loop = loop_video and is_video
         """Set to True if we want the video to serve forever"""
-        self._frames_queue: Queue[tuple[int, np.ndarray] | None] = Queue(max_frames_in_queue)
-        """The queue containing all the frames grabbed by the video reader"""
-        self._is_video = is_video
-        """True if the feed is a static video, false if it is live"""
-        self._halt_event = halt_work
-        """Event used to check whether or not to continue working"""
         self._reset_event = Event()
         """Used to halt this object's work and change its parameters (like the video source)"""
         self._thread: Thread | None = None
@@ -79,17 +76,8 @@ class VideoReader:
                 capturing = False
         self._video_feed.release()
 
-    def grab_frame(self,
-                   block: bool | None = None,
-                   timeout: float | None = None) -> tuple[int, np.ndarray]:
-        """Returns the oldest frame obtained from the video feed"""
-        return self._frames_queue.get(block, timeout)
-
     def get_shape(self):
         return self._frames_shape
-
-    def get_halt_event(self):
-        return self._halt_event
 
     def change_feed(self, feed_origin: int | str, is_video: bool, loop_video: bool = False):
         """

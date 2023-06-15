@@ -1,7 +1,7 @@
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QFileDialog, QWidget, QApplication
 
-from pattern_tracking.proper.logic.VideoReader import VideoReader
+from pattern_tracking.proper.logic.video.VideoReader import VideoReader
 
 
 class SelectVideoAction(QAction):

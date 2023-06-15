@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QMenu, QWidget
 
-from pattern_tracking.proper.logic.VideoReader import VideoReader
+from pattern_tracking.proper.logic.video.VideoReader import VideoReader
 from pattern_tracking.proper.qt_gui.top_menu_bar.video.SelectCameraAsLiveFeedAction import SelectCameraAsLiveFeedAction
 from pattern_tracking.proper.qt_gui.top_menu_bar.video.SelectVideoAction import SelectVideoAction
 

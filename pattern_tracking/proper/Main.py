@@ -1,12 +1,11 @@
 import sys
-from threading import Event, Lock
+from threading import Event
 
 from PySide6.QtWidgets import QApplication
 
 from pattern_tracking.proper.logic.BackgroundComputation import BackgroundComputation
-from pattern_tracking.proper.logic.tracker.TemplateTracker import TemplateTracker
 from pattern_tracking.proper.logic.tracker.TrackerManager import TrackerManager
-from pattern_tracking.proper.logic.VideoReader import VideoReader
+from pattern_tracking.proper.logic.video.VideoReader import VideoReader
 from pattern_tracking.proper.qt_gui.AppMainWindow import AppMainWindow
 from pattern_tracking.proper.shared import utils
 
