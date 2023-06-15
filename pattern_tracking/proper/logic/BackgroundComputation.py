@@ -2,6 +2,7 @@ from threading import Event, Thread
 import cv2 as cv
 
 from pattern_tracking.proper.logic.tracker.TrackerManager import TrackerManager
+from pattern_tracking.proper.logic.video.LiveFeedWrapper import LiveFeedWrapper
 from pattern_tracking.proper.logic.video.VideoReader import VideoReader
 from pattern_tracking.proper.qt_gui.FrameDisplayWidget import FrameDisplayWidget
 from pattern_tracking.proper.qt_gui.dock_widgets.LivePlotterDockWidget import LivePlotterDockWidget
@@ -11,7 +12,7 @@ class BackgroundComputation:
 
     def __init__(self,
                  tracker_manager: TrackerManager,
-                 live_feed: VideoReader,
+                 live_feed: LiveFeedWrapper,
                  frame_display_widget: FrameDisplayWidget,
                  plots_container: LivePlotterDockWidget,
                  halt_event: Event):

@@ -1,6 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMainWindow
 
+from pattern_tracking.proper.logic.video.AbstractFrameProvider import AbstractFrameProvider
+from pattern_tracking.proper.logic.video.LiveFeedWrapper import LiveFeedWrapper
 from pattern_tracking.proper.logic.video.VideoReader import VideoReader
 from pattern_tracking.proper.qt_gui.dock_widgets.LivePlotterDockWidget import LivePlotterDockWidget
 from pattern_tracking.proper.qt_gui.top_menu_bar.plot.PlotMenu import PlotMenu
@@ -16,7 +18,7 @@ class AppMainWindow(QMainWindow):
     with the different menus, sidebar menus and buttons
     """
 
-    def __init__(self, tracker_manager: TrackerManager, live_feed: VideoReader):
+    def __init__(self, tracker_manager: TrackerManager, live_feed: LiveFeedWrapper):
         super().__init__()
         # -- Attributes
         self._TRACKER_MANAGER = tracker_manager
@@ -44,3 +46,6 @@ class AppMainWindow(QMainWindow):
     def get_plot_container_widget(self):
         """:return: the current plots container"""
         return self._PLOTS_CONTAINER_WIDGET
+
+    def change_feed_object(self):
+        self._live_
