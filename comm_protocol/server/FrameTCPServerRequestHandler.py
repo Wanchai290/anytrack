@@ -14,7 +14,7 @@ class FrameTCPServerRequestHandler(BaseRequestHandler):
     Only meant for use with the mentioned class
     """
 
-    MAX_READ_TIMEOUT_S = 1
+    MAX_READ_TIMEOUT_S = 30
     """Max allowed timeout in seconds"""
 
     def handle(self) -> None:

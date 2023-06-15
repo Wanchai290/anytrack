@@ -14,7 +14,7 @@ from comm_protocol.PacketType import PacketType
 
 class FrameTCPClient:
 
-    MAX_TIMEOUT_S = 2
+    MAX_TIMEOUT_S = 30
     LOGGER_NAME = "FrameTCPClientLogger"
 
     def __init__(self, host: str, port: int, halt: Event, connection_ended_event: Event):
@@ -25,7 +25,7 @@ class FrameTCPClient:
         self._logger = logging.getLogger(FrameTCPClient.LOGGER_NAME)
         self._logger.log(logging.INFO, "Client: Connection initialized.")
         self._halt_event = halt
-        self._thread = Thread(target=self.run)
+        self._thread = None
         self._force_stop = False
         self._connection_ended_event = connection_ended_event
 
@@ -79,6 +79,7 @@ class FrameTCPClient:
 
     def run_forever(self):
         self._logger.log(logging.INFO, "Client: Started")
+        self._thread = Thread(target=self.run)
         self._thread.start()
 
     def force_stop(self):
