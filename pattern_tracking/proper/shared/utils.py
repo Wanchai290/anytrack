@@ -182,3 +182,31 @@ def ndarray_to_qimage(image: np.ndarray,
         q_img = q_img.rgbSwapped()
 
     return q_img if not as_qpixmap else QPixmap(q_img)
+
+
+def opencv_list_available_camera_ports() -> tuple[list[int], list[int], list[int]]:
+    """
+    Not written by me. See https://stackoverflow.com/a/62639343
+    Answer's description :
+
+    Test the ports and returns a tuple with the available ports and the ones that are working.
+    :return Available ports, Working ports, Non-working ports
+    """
+    non_working_ports = []
+    dev_port = 0
+    working_ports = []
+    available_ports = []
+    while len(non_working_ports) < 6:  # if there are more than 5 non-working ports stop the testing.
+        camera = cv.VideoCapture(dev_port)
+        if not camera.isOpened():
+            non_working_ports.append(dev_port)
+        else:
+            is_reading, img = camera.read()
+            w = camera.get(3)
+            h = camera.get(4)
+            if is_reading:
+                working_ports.append(dev_port)
+            else:
+                available_ports.append(dev_port)
+        dev_port += 1
+    return available_ports, working_ports, non_working_ports

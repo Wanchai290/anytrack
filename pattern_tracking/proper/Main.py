@@ -8,6 +8,7 @@ from pattern_tracking.proper.logic.tracker.TemplateTracker import TemplateTracke
 from pattern_tracking.proper.logic.tracker.TrackerManager import TrackerManager
 from pattern_tracking.proper.logic.VideoReader import VideoReader
 from pattern_tracking.proper.qt_gui.AppMainWindow import AppMainWindow
+from pattern_tracking.proper.shared import utils
 
 
 class Main:
@@ -23,7 +24,8 @@ class Main:
         """Event used to halt operations on separate threads. Should only be modified by the Qt aboutToQuit() signal"""
         self._tracker_manager = TrackerManager()
         """Contains all current trackers used"""
-        self._live_feed = VideoReader(0, False, self._halt_event)
+        _, working_ports, _ = utils.opencv_list_available_camera_ports()
+        self._live_feed = VideoReader(working_ports[0], False, self._halt_event)
         """Continuously reads the current video stream"""
         self._main_window = AppMainWindow(self._tracker_manager, self._live_feed)
         """QT Main window object"""

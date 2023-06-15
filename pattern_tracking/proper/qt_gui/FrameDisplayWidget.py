@@ -85,9 +85,6 @@ class FrameDisplayWidget(QLabel):
             return False
         return True
 
-    # -- Mouse events binding
-    # We override Qt's mouse interaction methods to manage our events
-
     def change_frame_to_display(self, frame: np.ndarray, swap_rgb: bool = False):
         """
         Updates the current image displayed by this QLabel,
@@ -100,6 +97,9 @@ class FrameDisplayWidget(QLabel):
         self._current_frame = frame
         q_img = utils.ndarray_to_qimage(frame, swap_rgb, as_qpixmap=True)
         self.setPixmap(q_img)
+
+    # -- Mouse events binding
+    # We override Qt's mouse interaction methods to manage our events
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         if not self._check_current_active_tracker_valid():
