@@ -7,7 +7,7 @@ from numpy import ndarray
 
 class FrameTCPServer(TCPServer):
 
-    DEFAULT_PORT = 47827
+    DEFAULT_PORT = 22215
     LOGGER_NAME = "FrameTCPServerLogger"
 
     def __init__(self, frames_queue: Queue[int, ndarray], *args):

@@ -24,7 +24,7 @@ class Packet:
     # A 16-bit CRC should cover enough unique values for integrity checks
     # We use the fastcrc module because it is like 10x better over a 100 runs speed test with timeit
     CRC_COMPUTER = fastcrc.crc16
-    BYTE_ORDER = "big"
+    BYTE_ORDER = "little"
     # Defining the protocol's values here. Sizes are defined in number of **bytes** unless mentioned otherwise
     PROTOCOL_VER = 0b10
 
@@ -74,7 +74,7 @@ class Packet:
     # Read the official documentation of struct.pack() for more details
     # You need to update it according to the above ! Otherwise, tests will fail !
     PACKING_FORMAT_START = \
-        "!" \
+        "=" \
         f"{LEN_START_MAGIC_WORD}s" \
         f"{LEN_PROVER_PTYPE_CCOUNT_DTYPE}c" \
         "I" \
@@ -164,7 +164,7 @@ class Packet:
     @staticmethod
     def compute_payload_ser_format(payload_length: int) -> str:
         """With the payload's length, determines the format used by struct.pack()"""
-        return f"{payload_length}s"
+        return "%ss" % payload_length
 
     @classmethod
     def bytes_to_int(cls, data: bytes):
