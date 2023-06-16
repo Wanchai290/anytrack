@@ -25,3 +25,7 @@ class LiveFeedWrapper:
 
     def change_feed(self, feed_origin: str | int, is_video: bool, loop_video: bool = False):
         self._feed.change_feed(feed_origin, is_video, loop_video)
+
+    def change_feed_to_server(self, feed: FramesFromDistantServer):
+        self._feed = feed
+        self._feed.start()
