@@ -19,42 +19,47 @@ class FrameTCPClient:
 
     def __init__(self, host: str, port: int, halt: Event, connection_ended_event: Event):
         logging.basicConfig(level=logging.NOTSET)
+        self._logger = logging.getLogger(FrameTCPClient.LOGGER_NAME)
         self.received_frames_queue: Queue[tuple[int, ndarray]] = Queue()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._logger.info("Initializing connection")
         self.socket.connect((host, port))
-        self._logger = logging.getLogger(FrameTCPClient.LOGGER_NAME)
-        self._logger.log(logging.INFO, "Client: Connection initialized.")
+        self._logger.log(logging.INFO, "Connection initialized.")
         self._halt_event = halt
         self._thread = None
         self._force_stop = False
         self._connection_ended_event = connection_ended_event
 
     def ask_for_new_frame(self):
-        self._logger.log(logging.INFO, "Client: Received frame correctly, asking for another")
+        self._logger.log(logging.INFO, "Received frame correctly, asking for another")
         p = Packet.placeholder()
         p.packet_type = PacketType.OK
         self.socket.send(p.serialize())
 
     def request_same_frame_again(self):
-        self._logger.log(logging.WARN, "Client: Erroneous frame, requesting again")
+        self._logger.log(logging.WARN, "Erroneous frame, requesting again")
         p = Packet.placeholder()
         p.packet_type = PacketType.REQUEST
         self.socket.send(p.serialize())
 
     def end_connection(self):
-        self._logger.log(logging.INFO, "Client : Sending end of connection")
+        self._logger.log(logging.INFO, "Sending end of connection")
         p = Packet.placeholder()
         p.packet_type = PacketType.HALT
         self.socket.send(p.serialize())
         self.socket.close()
-        self._logger.log(logging.INFO, "Client : Closing socket")
+        self._logger.log(logging.INFO, "Closing socket")
         self._connection_ended_event.set()
 
     def read_response(self) -> Packet:
         start = PacketHandler.read_start_word(self.socket)
         if start is not None:
-            response = start + PacketHandler.read_until_end_word(self.socket, time.time(), FrameTCPClient.MAX_TIMEOUT_S)
-            return Packet.deserialize(response)
+            self._logger.info("Start of packet read, reading the rest of the packet")
+            end = PacketHandler.read_until_end_word(self.socket, time.time(), FrameTCPClient.MAX_TIMEOUT_S)
+            if end is not None:
+                self._logger.info("Rest of the packet is valid, sending")
+                response = start + end
+                return Packet.deserialize(response)
 
     def run(self):
         try:

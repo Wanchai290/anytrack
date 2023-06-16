@@ -28,12 +28,12 @@ class PacketHandler:
         # so Packet.END_MAGIC_WORD[0] returns 110, and not b"n"
         while not finished_reading and not timed_out:
             data += received
-            received = request.recv(1)
+            received = request.recv(16)
             timed_out = round(time.time() - start_time) >= max_timeout_s
-            if received[0] == Packet.END_MAGIC_WORD[0]:
-                # check if it is end of packet
-                received += request.recv(Packet.LEN_END_MAGIC_WORD - 1)
-                if received == Packet.END_MAGIC_WORD:
+            if Packet.END_MAGIC_WORD in received:
+                idx_end_word_start = received.index(Packet.END_MAGIC_WORD[0])
+                idx_end_word_end = idx_end_word_start + Packet.LEN_END_MAGIC_WORD
+                if received[idx_end_word_start : idx_end_word_end] == Packet.END_MAGIC_WORD:
                     finished_reading = True
 
         # the end word gets skipped, we add it back here
