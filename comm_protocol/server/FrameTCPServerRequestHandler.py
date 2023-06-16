@@ -41,6 +41,7 @@ class FrameTCPServerRequestHandler(BaseRequestHandler):
             logger.info("Retrieving new frame from queue and sending it")
             # Actualize the data we have to send, then send it right away
             self.server.current_data_to_send = self.server.frames_queue.get(block=True)
+            logger.info("Obtained new frame from queue, sending")
             self._send_current_data()
         elif deserialized.packet_type == PacketType.REQUEST:
             logger.info("Re-sending current frame")
@@ -54,6 +55,6 @@ class FrameTCPServerRequestHandler(BaseRequestHandler):
 
     def _send_current_data(self):
         """Sends a packet frame to the other end"""
-        frame_number, payload = self.server.current_data_to_send
-        packet = Packet(frame_number, PacketType.FRAME, payload)
+        frame_number, image = self.server.current_data_to_send
+        packet = Packet(frame_number, PacketType.FRAME, image)
         self.request.sendall(packet.serialize())
