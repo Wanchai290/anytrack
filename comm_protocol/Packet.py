@@ -74,7 +74,7 @@ class Packet:
     # Read the official documentation of struct.pack() for more details
     # You need to update it according to the above ! Otherwise, tests will fail !
     PACKING_FORMAT_START = \
-        "=" \
+        "<" \
         f"{LEN_START_MAGIC_WORD}s" \
         f"{LEN_PROVER_PTYPE_CCOUNT_DTYPE}c" \
         "I" \

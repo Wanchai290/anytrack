@@ -23,6 +23,5 @@ class LiveFeedWrapper:
     def get_halt_event(self):
         return self._feed.get_halt_event()
 
-    def change(self, feed: VideoReader | FramesFromDistantServer):
-        self._feed = feed
-        self._feed.start()
+    def change_feed(self, feed_origin: str | int, is_video: bool, loop_video: bool = False):
+        self._feed.change_feed(feed_origin, is_video, loop_video)
