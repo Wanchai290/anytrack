@@ -14,7 +14,7 @@ from comm_protocol.PacketType import PacketType
 
 class FrameTCPClient:
 
-    MAX_TIMEOUT_S = 30
+    MAX_TIMEOUT_S = 120
     LOGGER_NAME = "FrameTCPClientLogger"
 
     def __init__(self, host: str, port: int, halt: Event, connection_ended_event: Event):
