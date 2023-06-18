@@ -1,14 +1,12 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMainWindow
 
-from pattern_tracking.proper.logic.video.AbstractFrameProvider import AbstractFrameProvider
 from pattern_tracking.proper.logic.video.LiveFeedWrapper import LiveFeedWrapper
-from pattern_tracking.proper.logic.video.VideoReader import VideoReader
 from pattern_tracking.proper.qt_gui.dock_widgets.LivePlotterDockWidget import LivePlotterDockWidget
 from pattern_tracking.proper.qt_gui.top_menu_bar.plot.PlotMenu import PlotMenu
 from pattern_tracking.proper.qt_gui.top_menu_bar.trackers.TrackersMenu import TrackersMenu
 from pattern_tracking.proper.logic.tracker import TrackerManager
-from pattern_tracking.proper.qt_gui.FrameDisplayWidget import FrameDisplayWidget
+from pattern_tracking.proper.qt_gui.widgets.FrameDisplayWidget import FrameDisplayWidget
 from pattern_tracking.proper.qt_gui.top_menu_bar.video.VideoMenu import VideoMenu
 
 

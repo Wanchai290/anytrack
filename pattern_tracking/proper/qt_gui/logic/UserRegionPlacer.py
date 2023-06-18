@@ -10,7 +10,7 @@ from pattern_tracking.proper.shared.constants import POI_WIDTH, POI_HEIGHT
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pattern_tracking.proper.qt_gui.FrameDisplayWidget import FrameDisplayWidget
+    from pattern_tracking.proper.qt_gui.widgets.FrameDisplayWidget import FrameDisplayWidget
 
 
 class UserRegionPlacer:
