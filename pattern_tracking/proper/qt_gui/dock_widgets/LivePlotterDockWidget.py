@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDockWidget, QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton
 
 from pattern_tracking.proper.logic.DistanceComputer import DistanceComputer
-from pattern_tracking.proper.qt_gui.top_menu_bar.plot.DistancePlotWidget import DistancePlotWidget
+from pattern_tracking.proper.qt_gui.DistancePlotWidget import DistancePlotWidget
 
 
 class LivePlotterDockWidget(QDockWidget):
