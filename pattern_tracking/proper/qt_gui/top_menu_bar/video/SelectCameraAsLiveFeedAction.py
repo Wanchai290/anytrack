@@ -1,6 +1,5 @@
 from PySide6.QtGui import QAction
 
-from pattern_tracking.proper.logic.video.AbstractFrameProvider import AbstractFrameProvider
 from pattern_tracking.proper.logic.video.LiveFeedWrapper import LiveFeedWrapper
 from pattern_tracking.proper.logic.video.VideoReader import VideoReader
 from pattern_tracking.proper.shared import utils

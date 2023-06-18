@@ -2,7 +2,6 @@ from pattern_tracking.proper.logic.tracker.AbstractTracker import AbstractTracke
 from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
 
 import numpy as np
-import cv2 as cv
 
 
 class FixedPointTracker(AbstractTracker):

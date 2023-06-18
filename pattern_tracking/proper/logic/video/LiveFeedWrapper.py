@@ -1,4 +1,3 @@
-from typing import Callable
 
 from pattern_tracking.proper.logic.video.FramesFromDistantServer import FramesFromDistantServer
 from pattern_tracking.proper.logic.video.VideoReader import VideoReader

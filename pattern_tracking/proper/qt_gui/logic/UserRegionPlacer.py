@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 
-from pattern_tracking.proper.logic.tracker import AbstractTracker
 from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
 from pattern_tracking.proper.shared.constants import POI_WIDTH, POI_HEIGHT
 

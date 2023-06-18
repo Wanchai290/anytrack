@@ -1,10 +1,8 @@
-from queue import Queue
 from threading import Event
 
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QLineEdit, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QDialogButtonBox
 
-from comm_protocol.FrameTCPClient import FrameTCPClient
 from comm_protocol.server.FrameTCPServer import FrameTCPServer
 from pattern_tracking.proper.logic.video.FramesFromDistantServer import FramesFromDistantServer
 from pattern_tracking.proper.qt_gui.generic.GenericAssets import GenericAssets

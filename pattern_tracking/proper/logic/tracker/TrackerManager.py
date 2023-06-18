@@ -5,9 +5,6 @@ import numpy as np
 from PySide6.QtGui import QAction
 
 from pattern_tracking.proper.logic.tracker.AbstractTracker import AbstractTracker
-from pattern_tracking.proper.logic.tracker.FixedPointTracker import FixedPointTracker
-from pattern_tracking.proper.logic.tracker.KCFTracker import KCFTracker
-from pattern_tracking.proper.logic.tracker.TemplateTracker import TemplateTracker
 from pattern_tracking.proper.logic.tracker.TrackerType import TrackerType
 from pattern_tracking.proper.objects.RegionOfInterest import RegionOfInterest
 

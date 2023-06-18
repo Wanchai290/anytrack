@@ -1,6 +1,5 @@
 from PySide6.QtWidgets import QMenu
 
-from pattern_tracking.proper.logic.tracker.AbstractTracker import AbstractTracker
 from pattern_tracking.proper.logic.tracker.TrackerManager import TrackerManager
 from pattern_tracking.proper.qt_gui.dock_widgets.LivePlotterDockWidget import LivePlotterDockWidget
 from pattern_tracking.proper.qt_gui.top_menu_bar.plot.ClearActivePlotAction import ClearActivePlotAction

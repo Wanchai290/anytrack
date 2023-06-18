@@ -1,6 +1,6 @@
 import PySide6.QtCore
 from PySide6.QtGui import QMouseEvent
-from PySide6.QtWidgets import QLabel, QMessageBox
+from PySide6.QtWidgets import QLabel
 
 import numpy as np
 

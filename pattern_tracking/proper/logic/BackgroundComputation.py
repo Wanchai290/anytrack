@@ -3,7 +3,6 @@ import cv2 as cv
 
 from pattern_tracking.proper.logic.tracker.TrackerManager import TrackerManager
 from pattern_tracking.proper.logic.video.LiveFeedWrapper import LiveFeedWrapper
-from pattern_tracking.proper.logic.video.VideoReader import VideoReader
 from pattern_tracking.proper.qt_gui.FrameDisplayWidget import FrameDisplayWidget
 from pattern_tracking.proper.qt_gui.dock_widgets.LivePlotterDockWidget import LivePlotterDockWidget
 

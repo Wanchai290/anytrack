@@ -1,9 +1,7 @@
 import time
-from queue import Queue
 from threading import Thread, Event
 
 import cv2 as cv
-import numpy as np
 
 from pattern_tracking.proper.logic.video.AbstractFrameProvider import AbstractFrameProvider
 
