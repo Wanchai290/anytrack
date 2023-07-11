@@ -19,7 +19,7 @@ class PacketHandler:
             word = request.recv(Packet.LEN_START_MAGIC_WORD)
             if word == Packet.START_MAGIC_WORD:
                 result = word
-        except BlockingIOError as e:
+        except BlockingIOError:
             logger.warning(f"Other end is not ready, waiting a full-second and re-stepping through buffer again")
             time.sleep(1)
         finally:

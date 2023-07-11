@@ -12,10 +12,10 @@ from comm_protocol.server.FrameTCPServerRequestHandler import FrameTCPServerRequ
 
 class Main:
 
-    def __init__(self, host: str, port: int):
+    def __init__(self, host: str, port: int, halt_event: Event):
         self.frames_queue = Queue()
         self.conn_info = (host, port)
-        self.server = FrameTCPServer(self.frames_queue, self.conn_info, FrameTCPServerRequestHandler)
+        self.server = FrameTCPServer(self.frames_queue, halt_event, self.conn_info, FrameTCPServerRequestHandler)
 
     def serve(self):
         self.server.serve_forever()
@@ -25,7 +25,8 @@ class Main:
 
 
 if __name__ == "__main__":
-    m = Main("localhost", FrameTCPServer.DEFAULT_PORT)
+    halt = Event()
+    m = Main("localhost", FrameTCPServer.DEFAULT_PORT, halt)
     img = Image.open("cat_look.jpeg")
     frame = np.asarray(img, dtype=np.uint8)
     m.frames_queue.put((0, frame))
@@ -33,7 +34,6 @@ if __name__ == "__main__":
     t = Thread(target=m.serve)
     t.start()
 
-    halt = Event()
     client = FrameTCPClient("localhost", FrameTCPServer.DEFAULT_PORT, halt, Event())
     client.run_forever()
     _ = client.received_frames_queue.get()
