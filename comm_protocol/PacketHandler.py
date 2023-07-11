@@ -1,3 +1,5 @@
+import logging
+import socket
 import time
 
 from comm_protocol.Packet import Packet
@@ -10,13 +12,22 @@ class PacketHandler:
     """
 
     @staticmethod
-    def read_start_word(request) -> bytes | None:
-        word = request.recv(Packet.LEN_START_MAGIC_WORD)
-        if word == Packet.START_MAGIC_WORD:
-            return word
+    def read_start_word(request: socket.socket, logger: logging.Logger) -> bytes | None:
+        result = None
+        request.setblocking(False)
+        try:
+            word = request.recv(Packet.LEN_START_MAGIC_WORD)
+            if word == Packet.START_MAGIC_WORD:
+                result = word
+        except BlockingIOError as e:
+            logger.warning(f"Other end is not ready, waiting a full-second and re-stepping through buffer again")
+            time.sleep(1)
+        finally:
+            request.setblocking(True)
+            return result
 
     @staticmethod
-    def read_until_end_word(request, start_time: float, max_timeout_s: int) -> bytes | None:
+    def read_until_end_word(request: socket.socket, start_time: float, max_timeout_s: int) -> bytes | None:
         data = b""
         # since we already read the start word, we subtract its size to what we have to read
         received = request.recv(Packet.PAYLOAD_LEN_IDX - Packet.LEN_START_MAGIC_WORD)

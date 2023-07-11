@@ -27,7 +27,7 @@ class FrameTCPClient:
         self._logger.log(logging.INFO, "Connection initialized.")
         self._halt_event = halt
         self._thread = None
-        self._force_stop = False
+        self._end_connection = False
         self._connection_ended_event = connection_ended_event
 
     def ask_for_new_frame(self):
@@ -52,19 +52,19 @@ class FrameTCPClient:
         self._connection_ended_event.set()
 
     def read_response(self) -> Packet:
-        start = PacketHandler.read_start_word(self.socket)
+        start = PacketHandler.read_start_word(self.socket, self._logger)
         if start is not None:
             self._logger.info("Start of packet read, reading the rest of the packet")
             end = PacketHandler.read_until_end_word(self.socket, time.time(), FrameTCPClient.MAX_TIMEOUT_S)
             if end is not None:
-                self._logger.info("Rest of the packet is valid, sending")
+                self._logger.info("Rest of the packet is valid, deserializing packet")
                 response = start + end
                 return Packet.deserialize(response)
 
     def run(self):
         try:
             ask_method: Callable[[None], None] = self.ask_for_new_frame
-            while not self._halt_event.is_set() and not self._force_stop:
+            while not self._halt_event.is_set() and not self._end_connection:
                 ask_method()
                 packet = self.read_response()
                 if packet is None:
@@ -74,6 +74,8 @@ class FrameTCPClient:
                     # Read the frame and put it in the queue
                     self.received_frames_queue.put((packet.frame_number, packet.payload))
                     ask_method = self.ask_for_new_frame
+                elif packet.packet_type == PacketType.HALT:
+                    self._end_connection = True
                 else:
                     # Ask for the frame again
                     ask_method = self.request_same_frame_again
@@ -89,4 +91,4 @@ class FrameTCPClient:
 
     def force_stop(self):
         self._logger.log(logging.INFO, "Client: Forced stop requested")
-        self._force_stop = True
+        self._end_connection = True
