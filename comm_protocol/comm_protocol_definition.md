@@ -15,8 +15,9 @@
 - 2 bytes : Payload CRC
 - 4 bytes : Packet end magic word
 
+Here's an image to visualize the packet
+![comm_protocol_tmita.jpg](../docs_images/custom_integration/comm_protocol_tmita.jpg)
 ## Communication structure
-### Initializing the connection
 
 The server should be started on its own and serve forever.  
 To start, the client must send a packet with the PacketType set to OK (whatever the content).  

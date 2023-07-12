@@ -34,7 +34,7 @@ to me and this was the solution that has been developed.
     - KCF Tracker (implementation of OpenCV)
 - Live tracking from a video feed
 - Client/Server architecture available for remote or linked integration with a microscope
-(more details ![here](#client-server-protocol))
+(more details ![below](#client-server-protocol))
 
 ### Why not use ImageJ or integrate other open-source software ?
 I was a 2nd year Computer Science student at the time, and I had only heard about those software. The problem is that I had the choice of
@@ -44,7 +44,7 @@ Given the limited time frame I had, and knowing that I had never performed the f
 to ensure a result could be produced at the end. This way, I was sure my university would consider my work as valid, I wasn't very
 sure if integration would get me a good enough grade as well.
 
-## Client Server protocol
+## <p id=client-server-protocol>Client Server protocol</p>
 The main idea of Agnès-sensei, my mentor, was to retrieve the live video feed of a microscope to perform real-time analyses
 on an external software. Learning that it was not possible to retrieve the feed of the existing microscopes at the laboratory,
 the task has been changed to allow the software to communicate with a RaspberryPI containing a camera. This system would imitate
