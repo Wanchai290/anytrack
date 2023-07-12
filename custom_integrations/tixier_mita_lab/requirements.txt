@@ -1,0 +1,4 @@
+easygui==0.98.3
+picamera==1.13
+pynput==1.7.6
+pyserial==3.5
