@@ -1,2 +1,1 @@
-export PYTHONPATH="$(pwd):"
-python3 pattern_tracking/proper/Main.py
+python3 -m pattern_tracking.proper.Main
