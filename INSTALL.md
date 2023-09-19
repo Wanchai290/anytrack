@@ -2,7 +2,7 @@
 
 This file explains how to install the tracking software. If you were looking
 for the custom RaspberryPI installation at the Tixier-Mita laboratory,
-please click ![here](./custom_integrations/tixier_mita_lab/README.md)
+please click ![here](docs/custom_integrations/tixier_mita_lab/README.md)
 
 ## Pre-requisites
 
@@ -16,21 +16,21 @@ Head to the following link : https://github.com/Wanchai290/tmita-optical-cardyom
 
 The software is published under the `Releases` menu on the right. Click
 on this title to see all available releases.
-![GitHub project page](docs_images/images/github_project_page.png)
+![GitHub project page](docs/docs_images/images/github_project_page.png)
 Find this section on the right !
-![GitHub project page, Releases section](docs_images/images/github_project_page_releases_focus.png)  
+![GitHub project page, Releases section](docs/docs_images/images/github_project_page_releases_focus.png)  
 
 
 There will be multiple releases displayed, download the source code of the latest release
 to be up-to-date.
 
-![GitHub project releases page](docs_images/images/github_releases_page.png)
+![GitHub project releases page](docs/docs_images/images/github_releases_page.png)
 
 Click on the `Source code` button below, for the latest version.  
 Higher version means the most recent. If you're unsure which one to pick,
 just pick the `zip` version.
 
-![GitHub project releases page, Source code download button](docs_images/images/github_releases_source_code_button_focus.png)
+![GitHub project releases page, Source code download button](docs/docs_images/images/github_releases_source_code_button_focus.png)
 
 ## Installing the dependencies
 
