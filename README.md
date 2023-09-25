@@ -53,7 +53,7 @@ the custom microscope.
 
 To perform this, a Client/Server architecture has been developed that also implements a custom 
 Application Layer communication protocol. Consider that the RaspberryPI acts as a server, which sends video
-frames to the live tracking software, namely the client. More information about the communication protocol definition ![here](./comm_protocol/comm_protocol_definition.md)
+frames to the live tracking software, namely the client. More information about the communication protocol definition ![here](src/comm_protocol/comm_protocol_definition.md)
 
 Any developer can implement the protocol to send frames over the TCP protocol. A guide to implement this
 will be written in the future.
