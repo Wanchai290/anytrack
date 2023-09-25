@@ -1,1 +1,1 @@
-py -m pattern_tracking.proper.Main
+py -m src.pattern_tracking.Main
