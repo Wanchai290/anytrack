@@ -17,7 +17,7 @@ class VideoReader(AbstractFrameProvider):
                  halt_work: Event,
                  max_frames_in_queue: int = 30,
                  loop_video: bool = False):
-        super().__init__(halt_work, max_frames_in_queue)
+        super().__init__(halt_work, is_video, max_frames_in_queue)
 
         self._video_feed: cv.VideoCapture = None
         """Video feed"""
@@ -41,6 +41,9 @@ class VideoReader(AbstractFrameProvider):
         """Start a thread, reads & places all grabbed frames in the self._frames_queue attribute"""
         self._thread = Thread(target=self._run)
         self._thread.start()
+
+    def stop(self):
+        self._reset_event.set()
 
     def _run(self):
         """
@@ -76,31 +79,6 @@ class VideoReader(AbstractFrameProvider):
 
     def get_shape(self):
         return self._frames_shape
-
-    def change_feed(self, feed_origin: int | str, is_video: bool, loop_video: bool = False):
-        """
-        Changes the video feed used by this reader
-        :param feed_origin: ID of the feed to use, or the file name concatenated to the file path
-        :param is_video: True if the feed_origin var is a video file
-        :param loop_video: Set to True if we should loop the video. The frames number will restart at 0
-        :raise IOError if we couldn't open the video or the file
-        """
-        # Halt the running thread and wait for it to finish
-        self._reset_event.set()
-        self._thread.join()
-
-        # Change the parameters
-        self._feed_origin = feed_origin
-        self._initialize_reader()
-        self._is_video = is_video
-        self._loop = loop_video
-
-        # clear the reset event flag
-        self._reset_event.clear()
-
-        # start a new thread
-        self._thread = Thread(target=self._run)
-        self._thread.start()
 
     def _initialize_reader(self):
         """Instantiates the cv.VideoCapture object to use"""
