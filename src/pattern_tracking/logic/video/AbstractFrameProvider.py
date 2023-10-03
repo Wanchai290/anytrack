@@ -7,10 +7,10 @@ import numpy as np
 
 class AbstractFrameProvider(ABC):
 
-    def __init__(self, halt_event: Event, max_frames_in_queue: int = 30):
+    def __init__(self, halt_event: Event, is_video: bool, max_frames_in_queue: int = 30):
         self._halt_event = halt_event
         """Event used to check whether or not to continue working"""
-        self._is_video = False
+        self._is_video = is_video
         """True if the feed is a static video, false if it is live"""
         self._frames_queue: Queue[tuple[int, np.ndarray] | None] = Queue(max_frames_in_queue)
         """The queue containing all the frames grabbed by the reader"""
@@ -18,6 +18,10 @@ class AbstractFrameProvider(ABC):
     @abstractmethod
     def start(self):
         """Run this frame provider in the background, to make it acquire frames"""
+        pass
+
+    @abstractmethod
+    def stop(self):
         pass
 
     def grab_frame(self,
