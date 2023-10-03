@@ -17,12 +17,11 @@ class SelectVideoAction(QAction):
     def _select_video_dialog(self):
         file_name, _ = QFileDialog.getOpenFileName(self._dialog_parent, "Open video file", filter="Video files (*.avi *.jpg *.mp4)")
         if len(file_name) != 0:
-            if type(self._live_feed == VideoReader):
-                self._live_feed.change_feed(file_name, is_video=True, loop_video=True)
-            else:
-                self._live_feed = VideoReader(file_name,
-                                              halt_work=self._live_feed.get_halt_event(),
-                                              is_video=True, loop_video=True)
+            self._live_feed.change_feed(
+                VideoReader(file_name,
+                            halt_work=self._live_feed.get_halt_event(),
+                            is_video=True, loop_video=True)
+            )
 
 
 if __name__ == '__main__':

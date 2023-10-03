@@ -16,4 +16,4 @@ class SelectFramesFromServerAction(QAction):
         dlg = NewServerFeedQDialog(self._live_feed.get_halt_event())
         if dlg.exec():
             feed = dlg.get_connection_result()
-            self._live_feed.change_feed_to_server(feed)
+            self._live_feed.change_feed(feed)

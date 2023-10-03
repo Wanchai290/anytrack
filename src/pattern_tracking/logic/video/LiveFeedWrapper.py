@@ -1,6 +1,4 @@
-
-from src.pattern_tracking.logic.video.FramesFromDistantServer import FramesFromDistantServer
-from src.pattern_tracking.logic.video.VideoReader import VideoReader
+from src.pattern_tracking.logic.video.AbstractFrameProvider import AbstractFrameProvider
 
 
 class LiveFeedWrapper:
@@ -10,11 +8,14 @@ class LiveFeedWrapper:
     to all child classes who required the live feed
     """
 
-    def __init__(self, feed: VideoReader | FramesFromDistantServer):
+    def __init__(self, feed: AbstractFrameProvider):
         self._feed = feed
 
     def start(self):
         self._feed.start()
+
+    def stop(self):
+        self._feed.stop()
 
     def grab_frame(self, block: bool = True):
         return self._feed.grab_frame(block)
@@ -22,9 +23,7 @@ class LiveFeedWrapper:
     def get_halt_event(self):
         return self._feed.get_halt_event()
 
-    def change_feed(self, feed_origin: str | int, is_video: bool, loop_video: bool = False):
-        self._feed.change_feed(feed_origin, is_video, loop_video)
-
-    def change_feed_to_server(self, feed: FramesFromDistantServer):
+    def change_feed(self, feed: AbstractFrameProvider):
+        self._feed.stop()
         self._feed = feed
         self._feed.start()
