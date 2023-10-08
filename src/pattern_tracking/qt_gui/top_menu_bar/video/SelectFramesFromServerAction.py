@@ -13,7 +13,7 @@ class SelectFramesFromServerAction(QAction):
         self.triggered.connect(self._new_live_dialog)
 
     def _new_live_dialog(self):
-        dlg = NewServerFeedQDialog(self._live_feed.get_halt_event())
+        dlg = NewServerFeedQDialog(self._live_feed.get_global_halt_event())
         if dlg.exec():
             feed = dlg.get_connection_result()
             self._live_feed.change_feed(feed)
