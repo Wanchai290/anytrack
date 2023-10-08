@@ -13,11 +13,11 @@ class NewServerFeedQDialog(QDialog):
     Dialog to create a new FrameTCPServer object
     and use it as the main video feed in the application
     """
-    def __init__(self, halt_event: Event, parent: QWidget = None):
+    def __init__(self, global_halt_event: Event, parent: QWidget = None):
         super().__init__(parent)
         self._connection_result: FrameTCPServer | None = None
         """The resulting connection object created"""
-        self._halt_event = halt_event
+        self._global_halt_event = global_halt_event
         self._ip_address_line_edit = QLineEdit()
         self._port_line_edit = QLineEdit()
         self._port_line_edit.setText(str(FrameTCPServer.DEFAULT_PORT))
@@ -49,7 +49,7 @@ class NewServerFeedQDialog(QDialog):
     def validate(self):
         valid = False
         try:
-            result = FramesFromDistantServer(self._ip_address_line_edit.text(), int(self._port_line_edit.text()), self._halt_event)
+            result = FramesFromDistantServer(self._ip_address_line_edit.text(), int(self._port_line_edit.text()), self._global_halt_event)
             valid = True
         except OSError as err:
             GenericAssets.popup_message(
