@@ -34,7 +34,6 @@ class DummyVideoFeed(AbstractFrameProvider):
                     )
 
     def _run(self):
-        # TODO: refactor by overriding grab_frame()
         frame_num = 0
         current_frame_index = 0
         while not self._stop_working.is_set() and not self._global_halt.is_set():
