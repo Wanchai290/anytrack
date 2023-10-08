@@ -44,6 +44,3 @@ class AppMainWindow(QMainWindow):
     def get_plot_container_widget(self):
         """:return: the current plots container"""
         return self._PLOTS_CONTAINER_WIDGET
-
-    def change_feed_object(self):
-        self._live_

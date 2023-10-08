@@ -16,5 +16,5 @@ class SelectCameraAsLiveFeedAction(QAction):
     def _set_camera_as_live_feed(self):
         _, working_ports, _ = utils.opencv_list_available_camera_ports()
         self._live_feed.change_feed(VideoReader(working_ports[0],
-                                                halt_work=self._live_feed.get_halt_event(),
+                                                global_halt_event=self._live_feed.get_global_halt_event(),
                                                 is_video=False))

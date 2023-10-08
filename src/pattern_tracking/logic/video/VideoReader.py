@@ -14,10 +14,10 @@ class VideoReader(AbstractFrameProvider):
     """
     def __init__(self, feed_origin: str | int,
                  is_video: bool,
-                 halt_work: Event,
+                 global_halt_event: Event,
                  max_frames_in_queue: int = 30,
                  loop_video: bool = False):
-        super().__init__(halt_work, is_video, max_frames_in_queue)
+        super().__init__(global_halt_event, is_video, max_frames_in_queue)
 
         self._video_feed: cv.VideoCapture = None
         """Video feed"""
@@ -27,8 +27,6 @@ class VideoReader(AbstractFrameProvider):
         """Feed origin input"""
         self._loop = loop_video and is_video
         """Set to True if we want the video to serve forever"""
-        self._reset_event = Event()
-        """Used to halt this object's work and change its parameters (like the video source)"""
         self._thread: Thread | None = None
         """The thread used to process frames in the background"""
 
@@ -43,7 +41,7 @@ class VideoReader(AbstractFrameProvider):
         self._thread.start()
 
     def stop(self):
-        self._reset_event.set()
+        self._stop_working.set()
 
     def _run(self):
         """
@@ -57,8 +55,8 @@ class VideoReader(AbstractFrameProvider):
         capturing = True
         while capturing:
             frame_id = 0
-            while self._video_feed.isOpened() and not self._halt_event.is_set() \
-                    and not self._reset_event.is_set():
+            while self._video_feed.isOpened() and not self._global_halt.is_set() \
+                    and not self._stop_working.is_set():
                 ret, frame = self._video_feed.read()
                 if not ret:
                     break
@@ -69,11 +67,12 @@ class VideoReader(AbstractFrameProvider):
                     time.sleep(0.05)
 
             # enable looping if requested, and if not tasked to stop work
-            if self._loop and not self._halt_event.is_set() and not self._reset_event.is_set():
+            if self._loop:
                 self._video_feed.set(cv.CAP_PROP_POS_MSEC, 0)
                 # TODO: check property set correctly with VideoCapture.get(), otherwise re-init VideoCapture object
                 # architecture-dependant, see OpenCV's docs about this
             else:
+                # TODO: else unneeded ? replace with `capturing = self._loop`
                 capturing = False
         self._video_feed.release()
 

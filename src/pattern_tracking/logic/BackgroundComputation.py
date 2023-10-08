@@ -1,3 +1,4 @@
+import queue
 from threading import Event, Thread
 import cv2 as cv
 
@@ -14,12 +15,12 @@ class BackgroundComputation:
                  live_feed: LiveFeedWrapper,
                  frame_display_widget: FrameDisplayWidget,
                  plots_container: LivePlotterDockWidget,
-                 halt_event: Event):
+                 global_halt: Event):
         self._TRACKER_MANAGER = tracker_manager
         self._LIVE_FEED = live_feed
         self._FRAME_DISPLAY_WIDGET = frame_display_widget
         self._PLOTS_CONTAINER_WIDGET = plots_container
-        self._halt = halt_event
+        self._global_halt = global_halt
         self._thread: Thread | None = None
 
     def _run(self):
@@ -27,8 +28,11 @@ class BackgroundComputation:
         Continuously processes data to be displayed
         This method shouldn't be launched as is, but from a separate thread only
         """
-        while not self._halt.is_set():
-            frame_number, live_frame = self._LIVE_FEED.grab_frame(block=True)
+        while not self._global_halt.is_set():
+            try:
+                frame_number, live_frame = self._LIVE_FEED.grab_frame(block=False, timeout=0.01)
+            except queue.Empty:
+                continue
             resized_frame = cv.resize(live_frame, FrameDisplayWidget.WIDGET_SIZE)
             edited_frame = self._TRACKER_MANAGER.update_trackers(resized_frame, drawing_sheet=resized_frame.copy())
             self._PLOTS_CONTAINER_WIDGET.update_plots(frame_number)
