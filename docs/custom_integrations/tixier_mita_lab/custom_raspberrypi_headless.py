@@ -14,11 +14,14 @@
 # The camera is by default set at high resolution
 # WARNING this file code is JUST for camera for the moment
 
-import sys
-import serial
-import time
-from datetime import datetime
+from queue import Queue
+from threading import Thread
+
+import numpy as np
 from picamera import PiCamera
+
+from comm_protocol.server.FrameTCPServer import FrameTCPServer
+from comm_protocol.server.FrameTCPServerRequestHandler import FrameTCPServerRequestHandler
 
 # Camera
 camera = PiCamera()
@@ -59,10 +62,10 @@ def camera_reset():
 def main():
     camera_reset()  # start the camera preview
     np_shape = (*camera.resolution[::-1], 3)
-    frames_queue: Queue[tuple[int, ndarray]] = Queue()
+    frames_queue: Queue[tuple[int, np.ndarray]] = Queue()
     frame_num = 0
     ip_address = input("IP address of the RaspberryPi on interface eth0 ?")
-    server = FrameTCPServer(frames_queue, (ip_address, MainServer.MAIN_PORT), FrameTCPServerRequestHandler)
+    server = FrameTCPServer(frames_queue, (ip_address, FrameTCPServer.MAIN_PORT), FrameTCPServerRequestHandler)
 
     # start the server on a separate thread
     thread = Thread(target=server.serve)
@@ -74,3 +77,6 @@ def main():
         camera.capture(img_arr, 'rgb')
         frames_queue.put((frame_num, img_arr))
 
+
+if __name__ == '__main__':
+    main()
