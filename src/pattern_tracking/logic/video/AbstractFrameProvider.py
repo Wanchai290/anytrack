@@ -50,10 +50,6 @@ class AbstractFrameProvider(ABC):
                    timeout: float | None = None) -> tuple[int, np.ndarray]:
         """
         Returns the oldest frame obtained from the video feed.
-        If the feed has been tasked to stop working, then raise FeedAlreadyStoppedException
-
-        Note: If your override this method, you MUST raise `FeedAlreadyStoppedException`
-              in case the feed has already stopped working (if `self._global_halt_event.is_set()`)
         :param block: Blocks until a new frame is available
         :param timeout: If block is True, waits maximum 'timeout' time
         :return: The oldest frame captured
