@@ -1,6 +1,7 @@
 import logging
 import socket
 import time
+import typing
 
 from src.comm_protocol.Packet import Packet
 
@@ -12,7 +13,7 @@ class PacketHandler:
     """
 
     @staticmethod
-    def read_start_word(request: socket.socket, logger: logging.Logger) -> bytes | None:
+    def read_start_word(request: socket.socket, logger: logging.Logger) -> typing.Union[bytes, None]:
         result = None
         request.setblocking(False)
         try:
@@ -27,7 +28,7 @@ class PacketHandler:
             return result
 
     @staticmethod
-    def read_until_end_word(request: socket.socket, start_time: float, max_timeout_s: int) -> bytes | None:
+    def read_until_end_word(request: socket.socket, start_time: float, max_timeout_s: int) -> typing.Union[bytes, None]:
         data = b""
         # since we already read the start word, we subtract its size to what we have to read
         received = request.recv(Packet.PAYLOAD_LEN_IDX - Packet.LEN_START_MAGIC_WORD)

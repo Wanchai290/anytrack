@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import typing
 from enum import Enum
 from typing import Callable
 
@@ -72,9 +73,9 @@ class PacketDataType(Enum):
         return pdtype_value.type_
 
     @classmethod
-    def find(cls, test: Callable[[PacketDataTypeValue], bool]) -> PacketDataTypeValue | None:
+    def find(cls, test: Callable[[PacketDataTypeValue], bool]) -> typing.Union[PacketDataTypeValue, None]:
         finished = False
-        result: type | None = None
+        result: typing.Union[type, None] = None
         generator = enumerate(PacketDataType)
 
         v = next(generator)
