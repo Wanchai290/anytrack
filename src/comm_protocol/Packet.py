@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import struct
+import typing
 
 import numpy as np
 import fastcrc
@@ -177,7 +178,7 @@ class Packet:
         return Packet(0, PacketType.OK, np.array((), dtype=PacketDataType.U8_INT.value.type_))
 
     @classmethod
-    def deserialize(cls, raw_packet: bytes) -> Packet | None:
+    def deserialize(cls, raw_packet: bytes) -> typing.Union[Packet, None]:
         """Deserializes a packet, and returns a Packet object. Returns None in case of protocol or CRC mismatch"""
 
         # find payload's format in the raw packet
