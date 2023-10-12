@@ -46,8 +46,8 @@ class AbstractFrameProvider(ABC):
         pass
 
     def grab_frame(self,
-                   block: bool | None = None,
-                   timeout: float | None = None) -> tuple[int, np.ndarray]:
+                   block: bool | None = True,
+                   timeout: float | None = 0.5) -> tuple[int, np.ndarray]:
         """
         Returns the oldest frame obtained from the video feed.
         :param block: Blocks until a new frame is available
@@ -58,3 +58,7 @@ class AbstractFrameProvider(ABC):
 
     def get_global_halt_event(self):
         return self._global_halt
+
+    def available_frames(self):
+        """Returns the approximate number of elements in the frames queue. Not accurate, see queue.qsize()"""
+        return self._frames_queue.qsize()

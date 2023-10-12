@@ -37,6 +37,7 @@ class DummyVideoFeed(AbstractFrameProvider):
         frame_num = 0
         current_frame_index = 0
         while not self._stop_working.is_set() and not self._global_halt.is_set():
+            time.sleep(DummyVideoFeed.PAUSE_BEFORE_NEXT_FRAME)
             try:
                 self._frames_queue.put(
                     (frame_num, self._static_frames[current_frame_index]),
@@ -46,7 +47,6 @@ class DummyVideoFeed(AbstractFrameProvider):
                 continue
             frame_num += 1
             current_frame_index = 0 if current_frame_index >= len(self._static_frames) - 1 else current_frame_index + 1
-            time.sleep(DummyVideoFeed.PAUSE_BEFORE_NEXT_FRAME)
 
     def start(self):
         self._load_static_frames()
