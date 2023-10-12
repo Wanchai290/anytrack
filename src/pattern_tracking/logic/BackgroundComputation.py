@@ -30,9 +30,11 @@ class BackgroundComputation:
         """
         while not self._global_halt.is_set():
             try:
-                frame_number, live_frame = self._LIVE_FEED.grab_frame(block=False, timeout=0.01)
+                frame_number, live_frame = self._LIVE_FEED.grab_frame(block=True, timeout=0.5)
             except queue.Empty:
-                continue
+                # Wait for the video feed to get reset
+                while self._LIVE_FEED.is_feed_resetting():
+                    continue
             resized_frame = cv.resize(live_frame, FrameDisplayWidget.WIDGET_SIZE)
             edited_frame = self._TRACKER_MANAGER.update_trackers(resized_frame, drawing_sheet=resized_frame.copy())
             self._PLOTS_CONTAINER_WIDGET.update_plots(frame_number)
