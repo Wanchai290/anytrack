@@ -21,8 +21,8 @@ import atexit
 import numpy as np
 from picamera import PiCamera
 
-from comm_protocol.server.FrameTCPServer import FrameTCPServer
-from comm_protocol.server.FrameTCPServerRequestHandler import FrameTCPServerRequestHandler
+from src.comm_protocol.server.FrameTCPServer import FrameTCPServer
+from src.comm_protocol.server.FrameTCPServerRequestHandler import FrameTCPServerRequestHandler
 
 global server
 

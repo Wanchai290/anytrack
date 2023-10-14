@@ -19,7 +19,10 @@ Transfer both of these to the RaspberryPI and put them in the same folder.
 The final folder structure should look like this :
 
 	|
-	*-- comm_protocol
+	*-- src/
+    |    |
+    |    *-- comm_protocol/
+    |
 	*-- custom_raspberrypi_headless.py
 
 ### Setting up the Ethernet connection
