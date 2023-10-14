@@ -11,11 +11,11 @@ class FrameTCPServer(TCPServer):
     DEFAULT_PORT = 47828
     LOGGER_NAME = "FrameTCPServerLogger"
 
-    def __init__(self, frames_queue: Queue[int, ndarray], halt_event: Event, *args):
-        super().__init__(*args)
+    def __init__(self, server_address, RequestHandlerClass, frames_queue: Queue[int, ndarray], halt_event: Event):
+        super().__init__(server_address, RequestHandlerClass)
         logging.basicConfig(level=logging.NOTSET)
         self._logger = logging.getLogger(FrameTCPServer.LOGGER_NAME)
-        self._logger.info(f"Server initialized and bound to {args[0]}")
+        self._logger.info(f"Server initialized and bound to {server_address}")
         self.frames_queue = frames_queue
         self.halt_server_event = halt_event
         self.current_data_to_send = None

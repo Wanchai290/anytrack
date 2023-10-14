@@ -65,10 +65,14 @@ def main():
     frames_queue: Queue[tuple[int, np.ndarray]] = Queue()
     frame_num = 0
     ip_address = input("IP address of the RaspberryPi on interface eth0 ?")
-    server = FrameTCPServer(frames_queue, (ip_address, FrameTCPServer.DEFAULT_PORT), FrameTCPServerRequestHandler)
+    # Create an Event object for halting the server
+    halt_event = Event()
+    
+    # Create an instance of FrameTCPServer with all required arguments
+    server = FrameTCPServer((ip_address, FrameTCPServer.DEFAULT_PORT), FrameTCPServerRequestHandler, frames_queue, halt_event)
 
     # start the server on a separate thread
-    thread = Thread(target=server.serve)
+    thread = Thread(target=server.serve_forever)
     thread.start()
 
     # keep capturing data into the output
