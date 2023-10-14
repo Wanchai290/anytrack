@@ -17,11 +17,14 @@
 from queue import Queue
 from threading import Thread, Event
 
+import atexit
 import numpy as np
 from picamera import PiCamera
 
 from comm_protocol.server.FrameTCPServer import FrameTCPServer
 from comm_protocol.server.FrameTCPServerRequestHandler import FrameTCPServerRequestHandler
+
+global server
 
 # Camera
 camera = PiCamera()
@@ -34,6 +37,9 @@ zoom = 1.0  # start-up digital zoom factor
 
 filename = ""  # default filename prefix
 path = "/home/PIctures"  # default path
+
+# Create a global Event object for halting the server and the camera
+halt_event = Event()
 
 
 def camera_reset():
@@ -59,14 +65,21 @@ def camera_reset():
     camera.awb_mode = 'auto'
 
 
+def exit_handler():
+    global server, halt_event
+    halt_event.set()
+    server.shutdown()
+    camera.close()
+
+
 def main():
+    atexit.register(exit_handler)
+    global server, halt_event
     camera_reset()  # start the camera preview
     np_shape = (*camera.resolution[::-1], 3)
     frames_queue: Queue[tuple[int, np.ndarray]] = Queue()
     frame_num = 0
     ip_address = input("IP address of the RaspberryPi on interface eth0 ?")
-    # Create an Event object for halting the server
-    halt_event = Event()
     
     # Create an instance of FrameTCPServer with all required arguments
     server = FrameTCPServer((ip_address, FrameTCPServer.DEFAULT_PORT), FrameTCPServerRequestHandler, frames_queue, halt_event)
@@ -76,7 +89,7 @@ def main():
     thread.start()
 
     # keep capturing data into the output
-    while True:
+    while not halt_event.is_set():
         img_arr = np.empty(np_shape, dtype=np.uint8)
         camera.capture(img_arr, 'rgb')
         frames_queue.put((frame_num, img_arr))
