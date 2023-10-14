@@ -15,7 +15,7 @@
 # WARNING this file code is JUST for camera for the moment
 
 from queue import Queue
-from threading import Thread
+from threading import Thread, Event
 
 import numpy as np
 from picamera import PiCamera
