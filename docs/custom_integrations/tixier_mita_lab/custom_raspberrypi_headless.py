@@ -15,13 +15,11 @@
 # WARNING this file code is JUST for camera for the moment
 
 from queue import Queue
-from threading import Thread
-
+from threading import Thread, Event
+import atexit
 import numpy as np
 from picamera import PiCamera
-
-from comm_protocol.server.FrameTCPServer import FrameTCPServer
-from comm_protocol.server.FrameTCPServerRequestHandler import FrameTCPServerRequestHandler
+import zmq
 
 # Camera
 camera = PiCamera()
@@ -34,6 +32,14 @@ zoom = 1.0  # start-up digital zoom factor
 
 filename = ""  # default filename prefix
 path = "/home/PIctures"  # default path
+
+# Create a global Event object for halting the server and the camera
+halt_event = Event()
+
+def exit_handler():
+    global halt_event
+    halt_event.set()
+    camera.close()
 
 
 def camera_reset():
@@ -48,10 +54,9 @@ def camera_reset():
     camera.exposure_compensation = EV
     camera.saturation = saturation
     camera.sensor_mode = 2  # full field of view
-    camera.resolution = (3888, 2592)  # 10MP
+    camera.resolution = (4032, 3040)  # 10MP (4032,3040)
     camera.rotation = 180
     camera.annotate_text_size = 100
-    camera.annotate_text = ""
     camera.iso = 0
     camera.shutter_speed = 0
     camera.framerate = 30
@@ -61,25 +66,27 @@ def camera_reset():
 
 def main():
     camera_reset()  # start the camera preview
+    global halt_event
+    atexit.register(exit_handler)
     np_shape = (*camera.resolution[::-1], 3)
     frames_queue: Queue[tuple[int, np.ndarray]] = Queue()
     frame_num = 0
-    ip_address = input("IP address of the RaspberryPi on interface eth0 ?")
-    # Create an Event object for halting the server
-    halt_event = Event()
+
+    # Ask the user for the Raspberry Pi's IP address
+    ip_address = input("Enter the IP address of the Raspberry Pi on interface eth0: ")
     
-    # Create an instance of FrameTCPServer with all required arguments
-    server = FrameTCPServer((ip_address, FrameTCPServer.DEFAULT_PORT), FrameTCPServerRequestHandler, frames_queue, halt_event)
+    # ZeroMQ context and socket initialization (PUB socket)
+    context = zmq.Context()
+    socket = context.socket(zmq.PUB)
+    socket.bind(f"tcp://{ip_address}:5555")  # Bind to the user-provided IP address and port 5555 for PUB socket
 
-    # start the server on a separate thread
-    thread = Thread(target=server.serve_forever)
-    thread.start()
-
-    # keep capturing data into the output
-    while True:
+    # Start capturing frames and publishing via ZeroMQ
+    while not halt_event.is_set():
         img_arr = np.empty(np_shape, dtype=np.uint8)
         camera.capture(img_arr, 'rgb')
+        socket.send(img_arr.tobytes())  # Send the frame as bytes via ZeroMQ
         frames_queue.put((frame_num, img_arr))
+        
 
 
 if __name__ == '__main__':
