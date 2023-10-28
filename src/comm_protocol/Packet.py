@@ -215,6 +215,9 @@ class Packet:
             cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE + cls.BIT_LEN_CHANNEL_COUNT
         ]
         frame_channel_count = int(frame_channel_count, 2)
+        if frame_channel_count == 0:
+            raise ValueError("Channel count of received frame is 0, value has probably overflowed. "
+                             "Check BIT_LEN_CHANNEL_COUNT")
 
         payload_dtype = prover_ptype_ccount_pldtype_bin[
                         cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE + cls.BIT_LEN_CHANNEL_COUNT
