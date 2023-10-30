@@ -1,4 +1,5 @@
 import zmq
+import time  # used by variable time_fmt. it is nasty but it allows uniform formatting
 
 from src.comm_protocol.Packet import Packet
 
