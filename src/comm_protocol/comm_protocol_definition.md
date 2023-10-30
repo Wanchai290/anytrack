@@ -5,8 +5,7 @@
 - 3 bytes : Packet start magic word
 - 1 byte  : Protocol Version and PacketType concatenated together
     - 2 bits : Protocol version
-    - 2 bits : PacketType
-    - 2 bits : Number of channels in the frame
+    - 4 bits : Number of channels in the frame
     - 2 bits : dtype of the NumPy array representing the video frame
 - 4 bytes : Frame number
 - 4 bytes : Frame shape (same order as np.array().shape)
@@ -15,8 +14,10 @@
 - 2 bytes : Payload CRC
 - 4 bytes : Packet end magic word
 
-Here's an image to visualize the packet
-![comm_protocol_tmita.jpg](../../docs/docs_images/custom_integration/comm_protocol_tmita.jpg)
+[//]: # (-- Image is deprecated,  need to update it)
+[//]: # (Here's an image to visualize the packet)
+[//]: # (![comm_protocol_tmita.jpg]&#40;../../docs/docs_images/custom_integration/comm_protocol_tmita.jpg&#41;)
+
 ## Communication structure
 
 The server should be started on its own and serve forever.  
@@ -35,4 +36,4 @@ the client can close the socket, and the server will do the same.
 Using the NumPy array tobytes() method will flatten the array, so we need to reshape it when 
 deserializing it.
 
-Source : ![StackOverflow](https://stackoverflow.com/questions/47637758/how-can-i-make-a-numpy-ndarray-from-bytes)
+Source : [StackOverflow](https://stackoverflow.com/questions/47637758/how-can-i-make-a-numpy-ndarray-from-bytes)

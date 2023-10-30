@@ -7,7 +7,6 @@ import numpy as np
 from PIL import Image
 
 from src.comm_protocol.Packet import Packet
-from src.comm_protocol.PacketType import PacketType
 from src.comm_protocol.dummy_zmq_pub_sub.DummyZMQPub import DummyZMQPub
 from src.comm_protocol.dummy_zmq_pub_sub.DummyZMQSub import DummyZMQSub
 
@@ -62,7 +61,7 @@ if __name__ == '__main__':
     zmq_pub = DummyZMQPub(port)
     th_pub = Thread(
         target=zmq_pub.send_messages,
-        args=([Packet(i, PacketType.FRAME, frames[i]) for i in range(len(frames))], time_format)
+        args=([Packet(i, frames[i]) for i in range(len(frames))], time_format)
     )
     th_pub.run()
 
