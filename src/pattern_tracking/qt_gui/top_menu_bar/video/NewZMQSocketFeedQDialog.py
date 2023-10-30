@@ -8,7 +8,7 @@ from src.pattern_tracking.logic.video.FramesFromZMQSocket import FramesFromZMQSo
 from src.pattern_tracking.qt_gui.generic.GenericAssets import GenericAssets
 
 
-class NewServerFeedQDialog(QDialog):
+class NewZMQSocketFeedQDialog(QDialog):
     """
     Dialog to create a new FrameTCPServer object
     and use it as the main video feed in the application
