@@ -15,12 +15,12 @@ class NewServerFeedQDialog(QDialog):
     """
     def __init__(self, global_halt_event: Event, parent: QWidget = None):
         super().__init__(parent)
-        self._connection_result: FrameTCPServer | None = None
+        self._connection_result: FramesFromZMQSocket | None = None
         """The resulting connection object created"""
         self._global_halt_event = global_halt_event
         self._ip_address_line_edit = QLineEdit()
         self._port_line_edit = QLineEdit()
-        self._port_line_edit.setText(str(FrameTCPServer.DEFAULT_PORT))
+        self._port_line_edit.setText(str(FramesFromZMQSocket.DEFAULT_PORT))
         self._port_line_edit_validator = QIntValidator(1024, (2**16)-1, self)
         self._port_line_edit.setValidator(self._port_line_edit_validator)
 

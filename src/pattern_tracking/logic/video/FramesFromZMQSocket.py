@@ -13,6 +13,8 @@ class FramesFromZMQSocket(AbstractFrameProvider):
     Connection is initialized on object creation.
     """
 
+    DEFAULT_PORT = 47828
+
     def __init__(self, ip_address: str, port: int,
                  global_halt: Event, max_frames_in_queue: int = 30):
         super().__init__(global_halt, False, max_frames_in_queue)
