@@ -4,8 +4,6 @@ from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QLineEdit, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QDialogButtonBox
 from zmq import ZMQError
 
-from src.comm_protocol.server.FrameTCPServer import FrameTCPServer
-from src.pattern_tracking.logic.video.FramesFromDistantServer import FramesFromDistantServer
 from src.pattern_tracking.logic.video.FramesFromZMQSocket import FramesFromZMQSocket
 from src.pattern_tracking.qt_gui.generic.GenericAssets import GenericAssets
 
@@ -53,7 +51,6 @@ class NewServerFeedQDialog(QDialog):
         try:
             text = self._ip_address_line_edit.text()
             port = int(self._port_line_edit.text())
-            # result = FramesFromDistantServer(text, port, self._global_halt_event)
             result = FramesFromZMQSocket(text, port, self._global_halt_event)
             valid = True
         except ZMQError as err:
