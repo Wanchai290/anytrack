@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--pub',
                         action='store_true',
-                        help='Only launch on 127.0.0.1 (useful for main software test)')
+                        help='Only launch publisher on 127.0.0.1 (useful for main software test)')
 
     parser.add_argument('-p', '--port',
                         action='store',
