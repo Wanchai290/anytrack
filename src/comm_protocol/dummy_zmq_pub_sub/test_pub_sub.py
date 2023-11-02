@@ -9,6 +9,7 @@ from PIL import Image
 from src.comm_protocol.Packet import Packet
 from src.comm_protocol.dummy_zmq_pub_sub.DummyZMQPub import DummyZMQPub
 from src.comm_protocol.dummy_zmq_pub_sub.DummyZMQSub import DummyZMQSub
+from src.pattern_tracking.logic.video.FramesFromZMQSocket import FramesFromZMQSocket
 
 if __name__ == '__main__':
     # add args
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port',
                         action='store',
                         type=int,
-                        default=61089,
+                        default=FramesFromZMQSocket.DEFAULT_PORT,
                         help='Specify on which port the program will work')
 
     # load dummy frames
