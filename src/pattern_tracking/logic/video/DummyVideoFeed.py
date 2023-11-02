@@ -17,6 +17,7 @@ class DummyVideoFeed(AbstractFrameProvider):
     """
 
     PAUSE_BEFORE_NEXT_FRAME = 0.25
+    ASSETS_DIR = os.path.abspath('assets/dummy_feed_frames/')
 
     def __init__(self, global_halt: Event):
         super().__init__(global_halt, False)
@@ -24,14 +25,13 @@ class DummyVideoFeed(AbstractFrameProvider):
         self._thread: Thread | None = None
 
     def _load_static_frames(self):
-        with os.scandir(os.path.abspath('../../assets/dummy_feed_frames/')) as directory:
-            for obj in directory:
-                if obj.is_file():
-                    self._static_frames.append(
-                        np.array(
-                            Image.open(obj.path)
-                        )
-                    )
+        directory = os.listdir(DummyVideoFeed.ASSETS_DIR)
+        for f_name in sorted(directory):
+            self._static_frames.append(
+                np.array(
+                    Image.open(os.path.join(DummyVideoFeed.ASSETS_DIR, f_name))
+                )
+            )
 
     def _run(self):
         frame_num = 0

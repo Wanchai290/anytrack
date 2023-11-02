@@ -7,7 +7,6 @@ import numpy as np
 import fastcrc
 
 from src.comm_protocol.PacketDataType import PacketDataType
-from src.comm_protocol.PacketType import PacketType
 
 
 class Packet:
@@ -21,13 +20,14 @@ class Packet:
 
     Please read the given md file for more information on this protocol
     """
+
     # Frames can get corrupted during transport because of their size.
     # A 16-bit CRC should cover enough unique values for integrity checks
     # We use the fastcrc module because it is like 10x better over a 100 runs speed test with timeit
     CRC_COMPUTER = fastcrc.crc16
     BYTE_ORDER = "little"
     # Defining the protocol's values here. Sizes are defined in number of **bytes** unless mentioned otherwise
-    PROTOCOL_VER = 0b10
+    PROTOCOL_VER = 0b11
 
     START_MAGIC_WORD = b"INU"
     """Magic start word in buffer"""
@@ -37,15 +37,13 @@ class Packet:
     # -- definition of sizes in the protocol
     LEN_START_MAGIC_WORD = len(START_MAGIC_WORD)
     """Number of bytes of the magic start word"""
-    LEN_PROVER_PTYPE_CCOUNT_DTYPE = 1  # Protocol version, PacketType, Channel count, data type of the payload
-    """Number of byte that singlehandedly contains protocol version, packet type and frame channel count"""
+    LEN_PROVER_CCOUNT_DTYPE = 1  # Protocol version, Channel count, data type of the payload
+    """Number of byte that single-handedly contains protocol version, packet type and frame channel count"""
 
     # -- The 3 following sizes describe numbers of **bits**
     BIT_LEN_PROTOCOL_VER = 2
     """Number of bits for the protocol's version"""
-    BIT_LEN_PACKET_TYPE = 2
-    """Number of bits for the type of packet sent"""
-    BIT_LEN_CHANNEL_COUNT = 2
+    BIT_LEN_CHANNEL_COUNT = 4
     """Number of bits for the number of channels of the video frame"""
     BIT_LEN_PAYLOAD_DTYPE = 2
     """Number of bits for the type of the data stored in the payload"""
@@ -67,7 +65,7 @@ class Packet:
     LEN_END_MAGIC_WORD = len(END_MAGIC_WORD)
     """Number of bytes of the magic start word"""
 
-    PAYLOAD_LEN_IDX = sum((LEN_START_MAGIC_WORD, LEN_PROVER_PTYPE_CCOUNT_DTYPE,
+    PAYLOAD_LEN_IDX = sum((LEN_START_MAGIC_WORD, LEN_PROVER_CCOUNT_DTYPE,
                            LEN_FRAME_NUMBER, LEN_FRAME_XY_SHAPE))
     """Start index of the bytes describing the payload's length"""
     # Format string used during serialization
@@ -77,9 +75,9 @@ class Packet:
     PACKING_FORMAT_START = \
         "<" \
         f"{LEN_START_MAGIC_WORD}s" \
-        f"{LEN_PROVER_PTYPE_CCOUNT_DTYPE}c" \
+        f"{LEN_PROVER_CCOUNT_DTYPE}c" \
         "I" \
-        f"{LEN_FRAME_XY_SHAPE//2}H" \
+        f"{LEN_FRAME_XY_SHAPE // 2}H" \
         "I"
     """Start of the formatting used by struct.pack(), to serialize the packet."""
 
@@ -88,9 +86,8 @@ class Packet:
         f"{LEN_END_MAGIC_WORD}s"
     """End of the formatting used by struct.pack(), to serialize the packet."""
 
-    def __init__(self, frame_number: int, packet_type: PacketType, payload: np.ndarray):
+    def __init__(self, frame_number: int, payload: np.ndarray):
         self.frame_number = frame_number
-        self.packet_type = packet_type
 
         self.payload_dtype = PacketDataType.from_dtype(payload.dtype)
 
@@ -125,7 +122,6 @@ class Packet:
         if type(other) != Packet:
             return False
         return self.frame_number == other.frame_number \
-            and self.packet_type == other.packet_type \
             and self.payload_crc == other.payload_crc \
             and self.payload.shape == other.payload.shape \
             and (self.payload == other.payload).all()
@@ -134,11 +130,10 @@ class Packet:
         """Serialize this packet's content and returns the binary string"""
         # We concat ProtocolVer and PacketType to save some space and use only a single byte for their storage
         # Please check `comm_protocol_definition.md` for more details
-        proto_ptype_channelcount = (Packet.PROTOCOL_VER << 6
-                                    | self.packet_type.value << 4
-                                    | self.frame_channel_count << 2
-                                    | self.payload_dtype)
-        proto_ptype_channelcount_bytes = proto_ptype_channelcount.to_bytes(1, Packet.BYTE_ORDER)
+        proto_channelcount = (Packet.PROTOCOL_VER << 6
+                              | self.frame_channel_count << 2
+                              | self.payload_dtype)
+        proto_channelcount_bytes = proto_channelcount.to_bytes(1, Packet.BYTE_ORDER)
 
         # Compute payload length to find the shape of the format
         # to use with struct.pack()
@@ -147,7 +142,7 @@ class Packet:
         data = struct.pack(
             Packet.PACKING_FORMAT_START + actual_payload_length_format + Packet.PACKING_FORMAT_END,
             Packet.START_MAGIC_WORD,
-            proto_ptype_channelcount_bytes,
+            proto_channelcount_bytes,
             self.frame_number,
             *self.frame_shape[:2],
             self.payload_length(),
@@ -175,7 +170,7 @@ class Packet:
     @classmethod
     def placeholder(cls) -> Packet:
         """Returns a placeholder Packet object, its values are meant to be replaced, not used. Convenience method"""
-        return Packet(0, PacketType.OK, np.array((), dtype=PacketDataType.U8_INT.value.type_))
+        return Packet(0, np.array((), dtype=PacketDataType.U8_INT.value.type_))
 
     @classmethod
     def deserialize(cls, raw_packet: bytes) -> typing.Union[Packet, None]:
@@ -202,24 +197,20 @@ class Packet:
         if int(proto_ver, 2) != cls.PROTOCOL_VER:
             return
 
-        packet_type_bin = prover_ptype_ccount_pldtype_bin[
-                cls.BIT_LEN_PROTOCOL_VER
-                :
-                cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE
-        ]
-        packet_type = PacketType(int(packet_type_bin, 2))
-
         frame_channel_count = prover_ptype_ccount_pldtype_bin[
-            cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE
-            :
-            cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE + cls.BIT_LEN_CHANNEL_COUNT
-        ]
+                              cls.BIT_LEN_PROTOCOL_VER
+                              :
+                              cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_CHANNEL_COUNT
+                              ]
         frame_channel_count = int(frame_channel_count, 2)
+        if frame_channel_count == 0:
+            raise ValueError("Channel count of received frame is 0, value has probably overflowed. "
+                             "Check BIT_LEN_CHANNEL_COUNT")
 
         payload_dtype = prover_ptype_ccount_pldtype_bin[
-                        cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_PACKET_TYPE + cls.BIT_LEN_CHANNEL_COUNT
+                        cls.BIT_LEN_PROTOCOL_VER + cls.BIT_LEN_CHANNEL_COUNT
                         :
-        ]
+                        ]
         payload_dtype = PacketDataType.from_bin_form(int(payload_dtype, 2))
 
         # reshape payload
@@ -235,7 +226,6 @@ class Packet:
 
         # assign to packet object
         deserialized = cls.placeholder()
-        deserialized.packet_type = packet_type
         deserialized.frame_channel_count = frame_channel_count
         deserialized.frame_number = frame_number
         deserialized.frame_shape = shape
@@ -247,9 +237,14 @@ class Packet:
 
 
 if __name__ == '__main__':
-    og_payload = np.full((2, 2, 3), 4, dtype=np.uint8)
-    # og_payload = np.zeros((2, 2, 3), dtype=np.uint8)
-    p = Packet(0xFA, PacketType.FRAME, og_payload)
+    # The following prints out the binary content of a specific packet.
+    # They are the same ones used in `test_Packet.py`. Whenever the structure of a packet
+    # is modified, you need to launch this again for both payload, and replace the related value
+    # in TestPacket.test_serialize() at the assertEqual() calls
+
+    # og_payload = np.full((2, 2, 3), 4, dtype=np.uint8)
+    og_payload = np.zeros((2, 2, 3), dtype=np.uint8)
+    p = Packet(0xFA, og_payload)
     s = p.serialize()
     print(s)
     pds = Packet.deserialize(s)
