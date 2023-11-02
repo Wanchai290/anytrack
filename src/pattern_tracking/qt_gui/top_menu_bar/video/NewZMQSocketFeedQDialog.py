@@ -2,25 +2,25 @@ from threading import Event
 
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QLineEdit, QDialog, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QDialogButtonBox
+from zmq import ZMQError
 
-from src.comm_protocol.server.FrameTCPServer import FrameTCPServer
-from src.pattern_tracking.logic.video.FramesFromDistantServer import FramesFromDistantServer
+from src.pattern_tracking.logic.video.FramesFromZMQSocket import FramesFromZMQSocket
 from src.pattern_tracking.qt_gui.generic.GenericAssets import GenericAssets
 
 
-class NewServerFeedQDialog(QDialog):
+class NewZMQSocketFeedQDialog(QDialog):
     """
     Dialog to create a new FrameTCPServer object
     and use it as the main video feed in the application
     """
     def __init__(self, global_halt_event: Event, parent: QWidget = None):
         super().__init__(parent)
-        self._connection_result: FrameTCPServer | None = None
+        self._connection_result: FramesFromZMQSocket | None = None
         """The resulting connection object created"""
         self._global_halt_event = global_halt_event
         self._ip_address_line_edit = QLineEdit()
         self._port_line_edit = QLineEdit()
-        self._port_line_edit.setText(str(FrameTCPServer.DEFAULT_PORT))
+        self._port_line_edit.setText(str(FramesFromZMQSocket.DEFAULT_PORT))
         self._port_line_edit_validator = QIntValidator(1024, (2**16)-1, self)
         self._port_line_edit.setValidator(self._port_line_edit_validator)
 
@@ -32,7 +32,7 @@ class NewServerFeedQDialog(QDialog):
         self._layout.addLayout(layout_ip)
 
         layout_port = QHBoxLayout()
-        layout_port.addWidget(QLabel("IP Address"))
+        layout_port.addWidget(QLabel("Port"))
         layout_port.addWidget(self._port_line_edit)
         self._layout.addLayout(layout_port)
 
@@ -49,9 +49,11 @@ class NewServerFeedQDialog(QDialog):
     def validate(self):
         valid = False
         try:
-            result = FramesFromDistantServer(self._ip_address_line_edit.text(), int(self._port_line_edit.text()), self._global_halt_event)
+            text = self._ip_address_line_edit.text()
+            port = int(self._port_line_edit.text())
+            result = FramesFromZMQSocket(text, port, self._global_halt_event)
             valid = True
-        except OSError as err:
+        except ZMQError as err:
             GenericAssets.popup_message(
                 "Invalid settings",
                 "The IP address and/or port specified is invalid, please change it. \n"
