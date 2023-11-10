@@ -15,11 +15,12 @@
 # WARNING this file code is JUST for camera for the moment
 
 from queue import Queue
-from threading import Thread, Event
+from threading import Event
+from src.comm_protocol.Packet import Packet
 import atexit
 import numpy as np
-from picamera import PiCamera
 import zmq
+from picamera import PiCamera
 
 # Camera
 camera = PiCamera()
@@ -35,6 +36,7 @@ path = "/home/PIctures"  # default path
 
 # Create a global Event object for halting the server and the camera
 halt_event = Event()
+
 
 def exit_handler():
     global halt_event
@@ -84,10 +86,11 @@ def main():
     while not halt_event.is_set():
         img_arr = np.empty(np_shape, dtype=np.uint8)
         camera.capture(img_arr, 'rgb')
-        socket.send(img_arr.tobytes())  # Send the frame as bytes via ZeroMQ
+        packet = Packet(frame_num, img_arr)
+        socket.send(packet.serialize())  # Send the frame as bytes via ZeroMQ
         frames_queue.put((frame_num, img_arr))
+        frame_num = frame_num + 1
         
-
 
 if __name__ == '__main__':
     main()
