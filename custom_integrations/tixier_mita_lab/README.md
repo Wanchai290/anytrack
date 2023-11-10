@@ -12,14 +12,14 @@ configured by Alex DUFOUR with an integrated camera.
 
 ### Getting the source code required
 
-You will need to copy the `src/` folder, which should
+You will need to copy the `src/` and `custom_integrations/` folders, which should
 contain everything the RaspberryPi will need to execute the script
 
-Transfer the folder to the RaspberryPI. there is no need to modify the file structure.
+Transfer the folders to the RaspberryPI. there is no need to modify the file structure.
 We recommend that you put this `src/` folder into another one, instead of modifying its name.
-You must not modify the name of the transferred folder.
+You must not modify the name of the transferred folders.
 
-Launch the associated script with the following
+Navigate to `custom_integrations/tixier_mita_lab/` and launch the associated script with the following
 ```bash
 ./raspberrypi_serve.sh
 ```
