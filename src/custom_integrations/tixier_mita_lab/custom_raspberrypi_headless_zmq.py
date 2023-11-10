@@ -87,7 +87,7 @@ def main():
         img_arr = np.empty(np_shape, dtype=np.uint8)
         camera.capture(img_arr, 'rgb')
         packet = Packet(frame_num, img_arr)
-        socket.send(packet.serialize())  # Send the frame as bytes via ZeroMQ
+        socket.send(packet.serialize())  # Send the frame as a custom Packet via ZeroMQ
         frames_queue.put((frame_num, img_arr))
         frame_num = frame_num + 1
         
