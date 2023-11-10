@@ -12,11 +12,14 @@ configured by Alex DUFOUR with an integrated camera.
 
 ### Getting the source code required
 
-You will need to copy the  `comm_protocol` above, which should
+You will need to copy the `src/` folder, which should
 contain everything the RaspberryPi will need to execute the script
 
 Transfer the folder to the RaspberryPI. there is no need to modify the file structure.
-Just launch the associated script with the following
+We recommend that you put this `src/` folder into another one, instead of modifying its name.
+You must not modify the name of the transferred folder.
+
+Launch the associated script with the following
 ```bash
 ./raspberrypi_serve.sh
 ```
@@ -41,7 +44,7 @@ ip -br a
 ```
 
 This should print out something like this : 
-![img.png](../../docs_images/custom_integration/interfaces.png)
+![img.png](../../../docs/docs_images/custom_integration/interfaces.png)
 Focus on the left column of the output, you must search for something named like `eth#` where # is a number,
 or like the screenshot, something called `enp5s0`. The name should start with `e`. We will call this
 your Ethernet interface throughout the manual.
@@ -77,7 +80,7 @@ The setup is a little more complicated, so follow along these steps :
 Press the `Windows` button on your keyboard and type `cmd`.
 Next, click on `Execute as administrator` on the menu that appeared.
 
-![windows_administrator_cmd.png](../../docs_images/custom_integration/windows_administrator_cmd.png)
+![windows_administrator_cmd.png](../../../docs/docs_images/custom_integration/windows_administrator_cmd.png)
 
 Type in the following line :
 ```
@@ -108,7 +111,7 @@ It will then serve forever.
 Now you can head on to the other computer, start the tracking software, head to the `Video` submenu and
 click `From live server`. Input the following to start fetching data from the RaspberryPi server :
 
-![img.png](../../docs_images/custom_integration/software_fromliveserver_modal_window.png)
+![img.png](../../../docs/docs_images/custom_integration/software_fromliveserver_modal_window.png)
 
 If all went well, you should be seeing the images from the RaspberryPi !
 Please contact the author if any problems happen during configuration.
