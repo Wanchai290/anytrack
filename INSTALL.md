@@ -2,7 +2,7 @@
 
 This file explains how to install the tracking software. If you were looking
 for the custom RaspberryPI installation at the Tixier-Mita laboratory,
-please click ![here](docs/custom_integrations/tixier_mita_lab/README.md)
+please click [here](src/custom_integrations/tixier_mita_lab/README.md)
 
 ## Pre-requisites
 

@@ -12,18 +12,15 @@ configured by Alex DUFOUR with an integrated camera.
 
 ### Getting the source code required
 
-You will need to download the contents of the folder named `comm_protocol` above
-and the `custom_raspberrypi_headless.py` file as well.
+You will need to copy the  `comm_protocol` above, which should
+contain everything the RaspberryPi will need to execute the script
 
-Transfer both of these to the RaspberryPI and put them in the same folder.  
-The final folder structure should look like this :
-
-	|
-	*-- src/
-    |    |
-    |    *-- comm_protocol/
-    |
-	*-- custom_raspberrypi_headless.py
+Transfer the folder to the RaspberryPI. there is no need to modify the file structure.
+Just launch the associated script with the following
+```bash
+./raspberrypi_serve.sh
+```
+The script will perform the necessary steps to launch the Python program.
 
 ### Setting up the Ethernet connection
 For both the RaspberryPi and the host computer with the tracking software to work together, you will need to configure the Ethernet
@@ -101,7 +98,7 @@ Congratulations ! Now both the RaspberryPi and the software computer can talk to
 To launch the main server on the RaspberryPI, open a terminal in the folder with the structure above and
 run the following command
 ```bash
-python3 custom_raspberrypi_headless.py
+python3 custom_raspberrypi_headless_zmq.py
 ```
 
 The server will ask you the IP address of the RaspberryPI on its Ethernet interface.
