@@ -80,7 +80,7 @@ def main():
     # ZeroMQ context and socket initialization (PUB socket)
     context = zmq.Context()
     socket = context.socket(zmq.PUB)
-    socket.bind(f"tcp://{ip_address}:5555")  # Bind to the user-provided IP address and port 5555 for PUB socket
+    socket.bind(f"tcp://{ip_address}:47828")  # Bind to the user-provided IP address and port 5555 for PUB socket
 
     # Start capturing frames and publishing via ZeroMQ
     while not halt_event.is_set():
