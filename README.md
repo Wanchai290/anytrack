@@ -13,7 +13,7 @@
 - Institute of Industrial Science (IIS), The University of Tokyo, Tokyo
 
 ## Installation
-Please refer to the ![INSTALL.md file](./INSTALL.md)
+Please refer to the [INSTALL.md file](./INSTALL.md)
 
 ## Context
 ### About the project
