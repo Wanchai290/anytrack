@@ -4,7 +4,6 @@ import struct
 import typing
 
 import numpy as np
-import fastcrc
 
 from src.comm_protocol.PacketDataType import PacketDataType
 
@@ -22,9 +21,6 @@ class Packet:
     """
 
     # Frames can get corrupted during transport because of their size.
-    # A 16-bit CRC should cover enough unique values for integrity checks
-    # We use the fastcrc module because it is like 10x better over a 100 runs speed test with timeit
-    CRC_COMPUTER = fastcrc.crc16
     BYTE_ORDER = "little"
     # Defining the protocol's values here. Sizes are defined in number of **bytes** unless mentioned otherwise
     PROTOCOL_VER = 0b11
@@ -60,8 +56,6 @@ class Packet:
     the payload's length (i.e. the number of bytes that we have to read
     to grab the whole payload)"""
     # actual payload's length is computed during runtime
-    LEN_PAYLOAD_CRC = 2  # because we use Crc16
-    """Number of bytes of the CRC value"""
     LEN_END_MAGIC_WORD = len(END_MAGIC_WORD)
     """Number of bytes of the magic start word"""
 
@@ -82,7 +76,6 @@ class Packet:
     """Start of the formatting used by struct.pack(), to serialize the packet."""
 
     PACKING_FORMAT_END = \
-        f"H" \
         f"{LEN_END_MAGIC_WORD}s"
     """End of the formatting used by struct.pack(), to serialize the packet."""
 
@@ -107,22 +100,14 @@ class Packet:
         self.payload = payload
         """NumPy array representing an image. Its datatype must be the same during serialization and deserialization"""
 
-        # CRC is computed over packet's unique data
-        self.payload_crc = Packet.compute_crc(self)
-
     def payload_length(self):
         """Returns the number of **bytes** required to store this payload."""
         return len(self.payload.tobytes())
-
-    def is_valid(self):
-        return self.payload_crc == Packet.CRC_COMPUTER.arc(self.payload.tobytes()) \
-            and self.frame_number >= 0
 
     def __eq__(self, other):
         if type(other) != Packet:
             return False
         return self.frame_number == other.frame_number \
-            and self.payload_crc == other.payload_crc \
             and self.payload.shape == other.payload.shape \
             and (self.payload == other.payload).all()
 
@@ -147,15 +132,9 @@ class Packet:
             *self.frame_shape[:2],
             self.payload_length(),
             self.payload.tobytes(),
-            self.payload_crc,
             Packet.END_MAGIC_WORD
         )
         return data
-
-    @staticmethod
-    def compute_crc(packet: Packet):
-        """Computes and returns the payload's CRC when converted to bytes using NumPy's tobytes() method"""
-        return Packet.CRC_COMPUTER.arc(packet.payload.tobytes())
 
     @staticmethod
     def compute_payload_ser_format(payload_length: int) -> str:
@@ -174,7 +153,7 @@ class Packet:
 
     @classmethod
     def deserialize(cls, raw_packet: bytes) -> typing.Union[Packet, None]:
-        """Deserializes a packet, and returns a Packet object. Returns None in case of protocol or CRC mismatch"""
+        """Deserializes a packet, and returns a Packet object. Returns None in case of protocol mismatch"""
 
         # find payload's format in the raw packet
         payload_length = raw_packet[cls.PAYLOAD_LEN_IDX: cls.PAYLOAD_LEN_IDX + cls.LEN_PAYLOAD_LENGTH]
@@ -186,7 +165,7 @@ class Packet:
         packed_data = struct.unpack(format, raw_packet)
 
         # unpack into variables, and convert into ints
-        _, prover_ptype_ccount, frame_number, frame_x_shape, frame_y_shape, _, payload_bin, payload_crc, _ = packed_data
+        _, prover_ptype_ccount, frame_number, frame_x_shape, frame_y_shape, _, payload_bin, _ = packed_data
         prover_ptype_ccount = cls.bytes_to_int(prover_ptype_ccount)
 
         # extract data from the special byte containing
@@ -220,10 +199,6 @@ class Packet:
             shape = shape[:2]
         payload = payload.reshape(shape)
 
-        # check if payload crc is valid
-        if payload_crc != cls.CRC_COMPUTER.arc(payload_bin):
-            return
-
         # assign to packet object
         deserialized = cls.placeholder()
         deserialized.frame_channel_count = frame_channel_count
@@ -231,7 +206,6 @@ class Packet:
         deserialized.frame_shape = shape
         deserialized.payload = payload
         deserialized.payload_dtype = payload_dtype
-        deserialized.payload_crc = payload_crc
 
         return deserialized
 
@@ -242,8 +216,8 @@ if __name__ == '__main__':
     # is modified, you need to launch this again for both payload, and replace the related value
     # in TestPacket.test_serialize() at the assertEqual() calls
 
-    # og_payload = np.full((2, 2, 3), 4, dtype=np.uint8)
-    og_payload = np.zeros((2, 2, 3), dtype=np.uint8)
+    og_payload = np.full((2, 2, 3), 4, dtype=np.uint8)
+    # og_payload = np.zeros((2, 2, 3), dtype=np.uint8)
     p = Packet(0xFA, og_payload)
     s = p.serialize()
     print(s)

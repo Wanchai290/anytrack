@@ -27,18 +27,17 @@ class TestPacket(TestCase):
         self.assertEqual(type(p_deser.frame_shape), type(self._p.frame_shape))
         self.assertEqual(type(p_deser.frame_channel_count), type(self._p.frame_channel_count))
         self.assertEqual(type(p_deser.payload), type(self._p.payload))
-        self.assertEqual(type(p_deser.payload_crc), type(self._p.payload_crc))
 
     def test_serialize(self):
         p = Packet(0xFA, np.zeros((2, 2, 3), dtype=np.uint8))
         p_ser = p.serialize()
-        self.assertEqual(p_ser, b'INU\xcc\xfa\x00\x00\x00\x02\x00\x02\x00\x0c\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00NEKO')
+        self.assertEqual(p_ser, b'INU\xcc\xfa\x00\x00\x00\x02\x00\x02\x00\x0c\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00NEKO')
         self.assertEqual(Packet.deserialize(p_ser), p)
 
         p = Packet(0xFA, np.full((2, 2, 3), 4, dtype=np.uint8))
         p_ser = p.serialize()
 
-        self.assertEqual(p_ser, b'INU\xcc\xfa\x00\x00\x00\x02\x00\x02\x00\x0c\x00\x00\x00\x04\x04\x04\x04\x04\x04\x04\x04\x04\x04\x04\x04`oNEKO')
+        self.assertEqual(p_ser, b'INU\xcc\xfa\x00\x00\x00\x02\x00\x02\x00\x0c\x00\x00\x00\x04\x04\x04\x04\x04\x04\x04\x04\x04\x04\x04\x04NEKO')
         self.assertEqual(Packet.deserialize(p_ser), p)
 
     def test_serialize_twodim_arr(self):
