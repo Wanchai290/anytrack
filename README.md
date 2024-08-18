@@ -12,8 +12,10 @@
 - Universitary Institute of Technology (IUT) of Bordeaux-Gradignan, France
 - Institute of Industrial Science (IIS), The University of Tokyo, Tokyo
 
-## Installation
-Please refer to the [INSTALL.md file](./INSTALL.md)
+## Guides
+- [User Manual](./docs/USER_MANUAL.md)
+- [Installation](./INSTALL.md)
+- [Development Guide](./docs/DEV_MANUAL.md)
 
 ## Context
 ### About the project
