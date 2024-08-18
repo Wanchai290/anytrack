@@ -1,4 +1,4 @@
-# Tixier-Mita laboratory - Live tracking software
+# Tixier-Mita laboratory - Anytrack
 
 ## Authors (of software and summary)
 - Thomas Wanchaï MENIER (2023)
