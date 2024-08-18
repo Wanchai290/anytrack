@@ -1,7 +1,7 @@
 fastcrc==0.2.1
 numpy==1.26.1
 opencv_python==4.8.1.78
-Pillow==10.1.0
+Pillow==10.3.0
 pyqtgraph==0.13.3
 PySide6==6.6.0
 pyzmq==25.1.1
