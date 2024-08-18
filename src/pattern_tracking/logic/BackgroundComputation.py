@@ -9,6 +9,10 @@ from src.pattern_tracking.qt_gui.dock_widgets.LivePlotterDockWidget import LiveP
 
 
 class BackgroundComputation:
+    """
+    Connects all components of the applications together,
+    and runs the objects' processes in a separate thread
+    """
 
     def __init__(self,
                  tracker_manager: TrackerManager,
