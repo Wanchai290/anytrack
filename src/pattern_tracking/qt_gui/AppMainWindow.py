@@ -18,6 +18,7 @@ class AppMainWindow(QMainWindow):
 
     def __init__(self, tracker_manager: TrackerManager, live_feed: LiveFeedWrapper):
         super().__init__()
+        self.setWindowTitle("Anytrack")
         # -- Attributes
         self._TRACKER_MANAGER = tracker_manager
 
