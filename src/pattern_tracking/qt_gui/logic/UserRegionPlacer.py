@@ -3,7 +3,8 @@ from __future__ import annotations
 import numpy as np
 
 from src.pattern_tracking.objects.RegionOfInterest import RegionOfInterest
-from src.pattern_tracking.shared.constants import POI_WIDTH, POI_HEIGHT
+#from src.pattern_tracking.shared.constants import POI_WIDTH, POI_HEIGHT
+import src.pattern_tracking.shared.constants as constants
 
 # used to avoid circular imports because of type hinting
 # see https://adamj.eu/tech/2021/05/13/python-type-hints-how-to-fix-circular-imports/
@@ -46,7 +47,7 @@ class UserRegionPlacer:
         # the center of the point of interest
         computed_poi = RegionOfInterest.new(
             self._FRAME_DISPLAY_WIDGET.get_current_frame(),
-            int(mx - POI_WIDTH / 2), POI_WIDTH, int(my - POI_HEIGHT / 2), POI_HEIGHT
+            int(mx - constants.POI_WIDTH / 2), constants.POI_WIDTH, int(my - constants.POI_HEIGHT / 2), constants.POI_HEIGHT
         )
 
         # Only consider the POI useful if

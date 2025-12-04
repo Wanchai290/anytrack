@@ -21,11 +21,11 @@ class Main:
         """Qt GUI application object"""
         self._global_halt = Event()
         """Event used to halt operations on separate threads. Should only be modified by the Qt aboutToQuit() signal"""
-        self._tracker_manager = TrackerManager()
-        """Contains all current trackers used"""
         self._live_feed_wrapper: LiveFeedWrapper = LiveFeedWrapper(DummyVideoFeed(self._global_halt))
         """Continuously reads the current video stream. Dummy feed on startup, replaced by a proper one by the user"""
-        self._main_window = AppMainWindow(self._tracker_manager, self._live_feed_wrapper)
+        self._tracker_manager = TrackerManager(self._live_feed_wrapper)
+        """Contains all current trackers used"""
+        self._main_window = AppMainWindow(self._tracker_manager, self._live_feed_wrapper, self._global_halt)
         """QT Main window object"""
         self._app.aboutToQuit.connect(self._stop_children_operations)
         """Allows us to do properly stop children threads before the Qt interface exits"""

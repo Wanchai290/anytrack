@@ -7,7 +7,7 @@ from src.pattern_tracking.logic.video.AbstractFrameProvider import AbstractFrame
 
 
 class VideoReader(AbstractFrameProvider):
-    """
+    """ 
     Continuously reads frames from a video file
     or from a video feed, and puts them in a readable
     queue, alongside the frame number
@@ -15,7 +15,7 @@ class VideoReader(AbstractFrameProvider):
     def __init__(self, feed_origin: str | int,
                  is_video: bool,
                  global_halt_event: Event,
-                 max_frames_in_queue: int = 30,
+                 max_frames_in_queue: int = 3_000_000,
                  loop_video: bool = False):
         super().__init__(global_halt_event, is_video, max_frames_in_queue)
 
@@ -55,7 +55,7 @@ class VideoReader(AbstractFrameProvider):
         capturing = True
         while capturing:
             frame_id = 0
-            while self._video_feed.isOpened() and not self._global_halt.is_set() \
+            while self._initialized and not self._global_halt.is_set() \
                     and not self._stop_working.is_set():
                 ret, frame = self._video_feed.read()
                 if not ret:
@@ -75,6 +75,7 @@ class VideoReader(AbstractFrameProvider):
                 # TODO: else unneeded ? replace with `capturing = self._loop`
                 capturing = False
         self._video_feed.release()
+        self._global_halt.set()
 
     def get_shape(self):
         return self._frames_shape

@@ -1,4 +1,7 @@
+import threading
+
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import QMainWindow
 
 from src.pattern_tracking.logic.video.LiveFeedWrapper import LiveFeedWrapper
@@ -16,8 +19,9 @@ class AppMainWindow(QMainWindow):
     with the different menus, sidebar menus and buttons
     """
 
-    def __init__(self, tracker_manager: TrackerManager, live_feed: LiveFeedWrapper):
+    def __init__(self, tracker_manager: TrackerManager, live_feed: LiveFeedWrapper, halt_event: threading.Event):
         super().__init__()
+        self.halt_event = halt_event
         self.setWindowTitle("Anytrack")
         # -- Attributes
         self._TRACKER_MANAGER = tracker_manager
@@ -45,3 +49,7 @@ class AppMainWindow(QMainWindow):
     def get_plot_container_widget(self):
         """:return: the current plots container"""
         return self._PLOTS_CONTAINER_WIDGET
+
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Space:
+            self.halt_event.set()

@@ -20,7 +20,7 @@ class SelectVideoAction(QAction):
             self._live_feed.change_feed(
                 VideoReader(file_name,
                             global_halt_event=self._live_feed.get_global_halt_event(),
-                            is_video=True, loop_video=True)
+                            is_video=True, loop_video=False)
             )
 
 

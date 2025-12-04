@@ -16,6 +16,9 @@ class LiveFeedWrapper:
     def __init__(self, feed: AbstractFrameProvider):
         self._feed = feed
         self._reset_feed_mutex = Lock()
+        self._last_frame = None
+        self._tracker_poi_detected = True
+        self.ready = False
 
     def start(self):
         self._feed.start()
@@ -25,7 +28,11 @@ class LiveFeedWrapper:
 
     def grab_frame(self, block: bool = True, timeout: float = 0.5):
         """Wrapper for AbstractFrameProvider.grab_frame() instance method"""
-        return self._feed.grab_frame(block, timeout)
+        if not self.ready or self._tracker_poi_detected:
+            self._last_frame = self._feed.grab_frame(block, timeout)
+            return self._last_frame
+        else:
+            return self._last_frame
 
     def get_global_halt_event(self):
         return self._feed.get_global_halt_event()
@@ -44,6 +51,7 @@ class LiveFeedWrapper:
         while self._feed.available_frames() == 0:
             continue
         self._reset_feed_mutex.release()
+        self.ready = True
 
     def is_feed_resetting(self):
         """

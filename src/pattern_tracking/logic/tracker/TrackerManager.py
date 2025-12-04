@@ -7,7 +7,15 @@ from PySide6.QtGui import QAction
 from src.pattern_tracking.logic.tracker.AbstractTracker import AbstractTracker
 from src.pattern_tracking.logic.tracker.TrackerType import TrackerType
 from src.pattern_tracking.objects.RegionOfInterest import RegionOfInterest
+from src.pattern_tracking.logic.video import LiveFeedWrapper
+from src.pattern_tracking.logic.video.DummyVideoFeed import DummyVideoFeed
+from src.pattern_tracking.shared import constants
 
+
+o_w, o_h = \
+    [0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0] * 5, \
+    [0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 0, 0] * 5
+index = 0
 
 class TrackerManager:
     """
@@ -16,7 +24,7 @@ class TrackerManager:
     on a single frame to display to the user
     """
 
-    def __init__(self):
+    def __init__(self, live_feed):
         self._active_tracker: AbstractTracker | None = None
         """The tracker that the user is currently editing"""
         self._collection: dict[uuid.UUID, AbstractTracker] = {}
@@ -26,6 +34,8 @@ class TrackerManager:
         Any modification operation MUST get the lock before modifying the collection of this manager
         Otherwise, the program might run into a RuntimeError because the collection would change while it's being read
         """
+        self._centers = []
+        self._live_feed = live_feed
 
         self._qt_actions: dict[str, QAction] = {}
 
@@ -81,7 +91,7 @@ class TrackerManager:
             self._collection_mutex.release()
         return has_tracker
 
-    def update_trackers(self, live_frame: np.ndarray, drawing_sheet: np.ndarray) -> np.ndarray:
+    def update_trackers(self, live_feed: LiveFeedWrapper, live_frame: np.ndarray, drawing_sheet: np.ndarray) -> np.ndarray:
         """
         Updates all trackers with the new live framed passed in parameter,
         so that all trackers compute the new location of the region
@@ -90,12 +100,28 @@ class TrackerManager:
         :param drawing_sheet: The image on which the trackers should draw
         :return: The frame edited by all trackers, that highlights regions tracked
         """
+        global o_w, o_h, index
         # Wait for any modification operation to end
         self._collection_mutex.acquire(blocking=True)
+        all_found = True
         for tr in self._collection.values():
             tr.update(live_frame, drawing_sheet)
             drawing_sheet = tr.get_edited_frame()
+            all_found = all_found and not tr._found_poi.is_undefined()
 
+        live_feed._tracker_poi_detected = all_found and len(self._collection) > 0
+
+        if all_found and len(self._collection) > 0 and self._live_feed.ready:
+            tr = [t for t in self._collection.values()][0]
+            center = tr.get_found_poi_center().tolist()
+            self._centers.append(center)
+            constants.UPDATED = True
+        elif self._live_feed.ready and constants.UPDATED and len(self._collection) > 0:
+            constants.POI_WIDTH -= o_w[index]
+            constants.POI_HEIGHT -= o_h[index]
+            index += 1
+            constants.UPDATED = False
+            print("constants updated")
         self._collection_mutex.release()
         return drawing_sheet
 

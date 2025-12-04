@@ -1,3 +1,4 @@
+import json
 import queue
 from threading import Event, Thread
 import cv2 as cv
@@ -6,6 +7,7 @@ from src.pattern_tracking.logic.tracker.TrackerManager import TrackerManager
 from src.pattern_tracking.logic.video.LiveFeedWrapper import LiveFeedWrapper
 from src.pattern_tracking.qt_gui.widgets.FrameDisplayWidget import FrameDisplayWidget
 from src.pattern_tracking.qt_gui.dock_widgets.LivePlotterDockWidget import LivePlotterDockWidget
+from src.pattern_tracking.logic.video import VideoReader
 
 
 class BackgroundComputation:
@@ -40,9 +42,16 @@ class BackgroundComputation:
                 while self._LIVE_FEED.is_feed_resetting():
                     continue
             resized_frame = cv.resize(live_frame, FrameDisplayWidget.WIDGET_SIZE)
-            edited_frame = self._TRACKER_MANAGER.update_trackers(resized_frame, drawing_sheet=resized_frame.copy())
-            self._PLOTS_CONTAINER_WIDGET.update_plots(frame_number)
+            edited_frame = self._TRACKER_MANAGER.update_trackers(self._LIVE_FEED, resized_frame, drawing_sheet=resized_frame.copy())
+            #self._PLOTS_CONTAINER_WIDGET.update_plots(frame_number)
             self._FRAME_DISPLAY_WIDGET.change_frame_to_display(edited_frame, swap_rgb=True)
+
+        name = self._LIVE_FEED._feed._feed_origin
+        with open(name + ".json", "w+") as f:
+            f.write(json.dumps(self._TRACKER_MANAGER._centers))
+            f.flush()
+        print("[BackgroundComputation] Finished writing JSON file")
+
 
     def start(self):
         """Starts this class' job in the background"""

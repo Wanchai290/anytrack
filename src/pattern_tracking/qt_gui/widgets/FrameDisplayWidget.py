@@ -94,9 +94,11 @@ class FrameDisplayWidget(QLabel):
         :param swap_rgb: True if we have to swap the RGB order of the image
                          Often necessary when working with OpenCV for example
         """
+        if (frame == self._current_frame).all():
+            return
         self._current_frame = frame
         q_img = utils.ndarray_to_qimage(frame, swap_rgb, as_qpixmap=True)
-        self.setPixmap(q_img)
+        self.setPixmap(q_img) # CRASH IS HERE
 
     # -- Mouse events binding
     # We override Qt's mouse interaction methods to manage our events
