@@ -1,5 +1,6 @@
 import json
 import queue
+import time
 from threading import Event, Thread
 import cv2 as cv
 
@@ -41,6 +42,8 @@ class BackgroundComputation:
                 # Wait for the video feed to get reset
                 while self._LIVE_FEED.is_feed_resetting():
                     continue
+            if self._LIVE_FEED._tracker_poi_detected:
+                time.sleep(0.05)
             resized_frame = cv.resize(live_frame, FrameDisplayWidget.WIDGET_SIZE)
             edited_frame = self._TRACKER_MANAGER.update_trackers(self._LIVE_FEED, resized_frame, drawing_sheet=resized_frame.copy())
             #self._PLOTS_CONTAINER_WIDGET.update_plots(frame_number)

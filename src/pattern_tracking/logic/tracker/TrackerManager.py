@@ -115,13 +115,6 @@ class TrackerManager:
             tr = [t for t in self._collection.values()][0]
             center = tr.get_found_poi_center().tolist()
             self._centers.append(center)
-            constants.UPDATED = True
-        elif self._live_feed.ready and constants.UPDATED and len(self._collection) > 0:
-            constants.POI_WIDTH -= o_w[index]
-            constants.POI_HEIGHT -= o_h[index]
-            index += 1
-            constants.UPDATED = False
-            print("constants updated")
         self._collection_mutex.release()
         return drawing_sheet
 

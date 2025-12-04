@@ -11,7 +11,7 @@ from src.pattern_tracking.qt_gui.top_menu_bar.trackers.TrackersMenu import Track
 from src.pattern_tracking.logic.tracker import TrackerManager
 from src.pattern_tracking.qt_gui.widgets.FrameDisplayWidget import FrameDisplayWidget
 from src.pattern_tracking.qt_gui.top_menu_bar.video.VideoMenu import VideoMenu
-
+from src.pattern_tracking.shared import constants
 
 class AppMainWindow(QMainWindow):
     """
@@ -51,5 +51,9 @@ class AppMainWindow(QMainWindow):
         return self._PLOTS_CONTAINER_WIDGET
 
     def keyReleaseEvent(self, event):
-        if event.key() == Qt.Key_Space:
-            self.halt_event.set()
+        if event.key() == Qt.Key_Plus:
+            constants.POI_WIDTH  += 1
+            constants.POI_HEIGHT += 1
+        elif event.key() == Qt.Key_Minus:
+            constants.POI_WIDTH  -= 1
+            constants.POI_HEIGHT -= 1

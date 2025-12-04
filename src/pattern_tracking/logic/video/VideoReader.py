@@ -75,7 +75,6 @@ class VideoReader(AbstractFrameProvider):
                 # TODO: else unneeded ? replace with `capturing = self._loop`
                 capturing = False
         self._video_feed.release()
-        self._global_halt.set()
 
     def get_shape(self):
         return self._frames_shape
